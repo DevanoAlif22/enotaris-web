@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+.color-primary {
+  @apply bg-[#0256c4];
+}
+
+.bg-gradient {
+  background: linear-gradient(135deg, #0256c4 0%, #0377ff 50%, #00aaff 100%);
+}
