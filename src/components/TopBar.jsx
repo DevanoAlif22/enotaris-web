@@ -1,9 +1,13 @@
+"use client";
+
 import {
   BellIcon,
   Bars3Icon,
   SunIcon,
   MoonIcon,
-  ChevronDownIcon,
+  UserIcon,
+  DocumentTextIcon,
+  ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
@@ -27,19 +31,17 @@ export default function TopBar({
   }, []);
 
   return (
-    <div className="bg-white dark:bg-[#0b0255] shadow-lg px-4 md:px-6 py-3 sticky top-0 z-10">
+    <div className="bg-white  shadow-lg px-4 md:px-6 py-3 sticky top-0 z-10">
       <div className="flex items-center justify-between">
         {/* Left */}
         <div className="flex items-center gap-3">
           <button
             onClick={onToggleSidebar}
-            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10"
+            className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
           >
-            <Bars3Icon className="w-6 h-6 text-gray-800 dark:text-white" />
+            <Bars3Icon className="w-6 h-6 text-gray-800" />
           </button>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-            {pageTitle}
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-800">{pageTitle}</h1>
         </div>
 
         {/* Right */}
@@ -55,7 +57,7 @@ export default function TopBar({
 
           {/* Notifications */}
           <button className="relative p-2 rounded-lg">
-            <BellIcon className="w-6 h-6 text-gray-700 dark:text-white" />
+            <BellIcon className="w-6 h-6 text-gray-700" />
             {noOfNotifications > 0 && (
               <span className="absolute -top-1 -right-1 bg-[#0256c4] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                 {noOfNotifications}
@@ -72,29 +74,33 @@ export default function TopBar({
               <img
                 src="/images/profile-black.png"
                 alt="profile"
-                className="w-9 h-9 rounded-full block dark:hidden"
+                className="w-9 h-9 rounded-full block"
               />
-              <img
-                src="/images/profile-white.png"
-                alt="profile"
-                className="w-9 h-9 rounded-full hidden dark:block"
-              />
-              <ChevronDownIcon className="w-4 h-4 text-gray-600 dark:text-white" />
             </button>
 
             {menuOpen && (
-              <div className="absolute right-0 mt-2 w-56 rounded-lg bg-white dark:bg-[#0b0255] shadow-lg overflow-hidden">
-                <Link to="/app/settings-profile" className="block px-4 py-2">
-                  Profile Settings
+              <div className="absolute right-0 mt-2 w-56 rounded-lg bg-white shadow-lg border border-gray-100 overflow-hidden py-1">
+                <Link
+                  to="/app/settings-profile"
+                  className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-[#0256c4] hover:text-white hover:rounded-md duration-100 ease-in"
+                >
+                  <UserIcon className="w-5 h-5" />
+                  <span>Profile Settings</span>
                 </Link>
-                <Link to="/app/settings-billing" className="block px-4 py-2">
-                  Bill History
+                <Link
+                  to="/app/settings-billing"
+                  className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-[#0256c4] hover:text-white hover:rounded-md duration-100 ease-in"
+                >
+                  <DocumentTextIcon className="w-5 h-5" />
+                  <span>Bill History</span>
                 </Link>
+                <div className="border-t border-gray-100 my-1"></div>
                 <button
-                  className="w-full text-left px-4 py-2"
+                  className="flex items-center gap-3 w-full text-left px-4 py-3 text-gray-700 hover:bg-[#0256c4] hover:text-white hover:rounded-md duration-100 ease-in"
                   onClick={() => (window.location.href = "/logout")}
                 >
-                  Logout
+                  <ArrowRightOnRectangleIcon className="w-5 h-5" />
+                  <span>Logout</span>
                 </button>
               </div>
             )}
