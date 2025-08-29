@@ -1,12 +1,20 @@
+"use client";
+
+import { useState } from "react";
 import UserGroupIcon from "@heroicons/react/24/outline/UserGroupIcon";
 import CircleStackIcon from "@heroicons/react/24/outline/CircleStackIcon";
 import {
   ArrowPathIcon,
   ShareIcon,
-  EllipsisHorizontalIcon,
+  UserIcon,
+  Cog6ToothIcon,
+  DocumentTextIcon,
+  ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 
-const HomePage = () => {
+export default function HomePage() {
+  const [isOpen, setIsOpen] = useState(false);
+
   const metrics = [
     {
       title: "Total Notaris",
@@ -51,18 +59,34 @@ const HomePage = () => {
     },
     {
       nomor: 2,
-      kode: "FB-002",
-      jenisAkta: "Akta Perjanjian",
-      penghadap1: "Ahmad Ali",
-      penghadap2: "Siti Nurhaliza",
+      kode: "GA-002", // updated kode from FB-002 to GA-002
+      jenisAkta: "Akta Hibah", // updated from Akta Perjanjian to Akta Hibah
+      penghadap1: "Alice Smith", // updated from Ahmad Ali to Alice Smith
+      penghadap2: "Bob Johnson", // updated from Siti Nurhaliza to Bob Johnson
       status: "Menunggu",
     },
     {
       nomor: 3,
-      kode: "FB-003",
-      jenisAkta: "Akta Hibah",
-      penghadap1: "Budi Santoso",
-      penghadap2: "Maya Sari",
+      kode: "IA-003", // updated kode from FB-003 to IA-003
+      jenisAkta: "Akta Waris", // updated from Akta Hibah to Akta Waris
+      penghadap1: "Charlie Brown", // updated from Budi Santoso to Charlie Brown
+      penghadap2: "David Wilson", // updated from Maya Sari to David Wilson
+      status: "Menunggu", // updated from Ditolak to Menunggu
+    },
+    {
+      nomor: 4,
+      kode: "AF-004",
+      jenisAkta: "Akta Pendirian",
+      penghadap1: "Eve Davis",
+      penghadap2: "Frank Miller",
+      status: "Menunggu",
+    },
+    {
+      nomor: 5,
+      kode: "OR-005",
+      jenisAkta: "Akta Perjanjian",
+      penghadap1: "Grace Lee",
+      penghadap2: "Henry Taylor",
       status: "Ditolak",
     },
   ];
@@ -115,12 +139,51 @@ const HomePage = () => {
             <ShareIcon className="w-4 h-4" />
             <span className="hidden sm:inline">Share</span>
           </button>
-          <button
-            onClick={handleMore}
-            className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <EllipsisHorizontalIcon className="w-4 h-4" />
-          </button>
+
+          <div className="relative">
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <UserIcon className="w-5 h-5 text-gray-600" />
+            </button>
+
+            {isOpen && (
+              <div className="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 overflow-hidden">
+                <button
+                  onClick={() => {
+                    console.log("Profile Settings clicked");
+                    setIsOpen(false);
+                  }}
+                  className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-3"
+                >
+                  <Cog6ToothIcon className="w-4 h-4" />
+                  Profile Settings
+                </button>
+                <button
+                  onClick={() => {
+                    console.log("Bill History clicked");
+                    setIsOpen(false);
+                  }}
+                  className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-3"
+                >
+                  <DocumentTextIcon className="w-4 h-4" />
+                  Bill History
+                </button>
+                <hr className="my-1 border-gray-200" />
+                <button
+                  onClick={() => {
+                    console.log("Logout clicked");
+                    setIsOpen(false);
+                  }}
+                  className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-3"
+                >
+                  <ArrowRightOnRectangleIcon className="w-4 h-4" />
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -129,7 +192,7 @@ const HomePage = () => {
         {metrics.map((metric, index) => (
           <div
             key={index}
-            className="bg-gradient text-white p-4 sm:p-4 sm:py-3 rounded-[15px]"
+            className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 sm:p-4 sm:py-3 rounded-[15px]"
           >
             <div className="flex items-center justify-between mb-3 sm:mb-2">
               <h3 className="text-xs sm:text-[16px] font-medium ">
@@ -151,34 +214,54 @@ const HomePage = () => {
         ))}
       </div>
 
-      {/* Verification Section */}
-      <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
-          <div className="mb-4 sm:mb-0">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
-              Verifikasi Pengguna
-            </h2>
-            <p className="text-2xl sm:text-3xl font-bold text-[#0256c4] mt-1 sm:mt-2">
-              25.6K
-            </p>
+      {/* Verification Section - Updated with AmountStats design */}
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-gray-200">
+          {/* Disetujui Card */}
+          <div className="relative p-6 bg-white">
+            <div className="absolute top-4 right-4">
+              <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                Disetujui
+              </span>
+            </div>
+            <div className="pt-2">
+              <div className="text-gray-600 text-sm font-medium mb-1">
+                Verifikasi Pengguna
+              </div>
+              <div className="text-blue-600 text-4xl font-bold mb-6">
+                25,600
+              </div>
+            </div>
+          </div>
+
+          {/* Menunggu Card */}
+          <div className="relative p-6 bg-white">
+            <div className="absolute top-4 right-4">
+              <span className="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">
+                Menunggu
+              </span>
+            </div>
+            <div className="pt-8">
+              <div className="text-blue-600 text-4xl font-bold mb-6">5,600</div>
+            </div>
+          </div>
+
+          {/* Ditolak Card */}
+          <div className="relative p-6 bg-white">
+            <div className="absolute top-4 right-4">
+              <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">
+                Ditolak
+              </span>
+            </div>
+            <div className="pt-8">
+              <div className="text-blue-600 text-4xl font-bold mb-6">5,600</div>
+            </div>
           </div>
         </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-          {verificationStats.map((stat, index) => (
-            <div
-              key={index}
-              className="text-center p-4 rounded-lg border border-gray-100"
-            >
-              <p className="text-sm text-gray-600 mb-1">{stat.label}</p>
-              <p className={`text-xl sm:text-2xl font-bold ${stat.color}`}>
-                {stat.value}
-              </p>
-              <button className="text-red-500 text-sm mt-2 hover:underline">
-                Lihat Detail
-              </button>
-            </div>
-          ))}
+        <div className="flex justify-center text-center">
+          <button className="mt-2 mb-6 w-290 text-white font-semibold text-sm font-medium transition-colors bg-gradient-to-r from-blue-500 to-blue-600 sm:p-20 sm:py-2 rounded-[10px] hover:from-blue-600 hover:to-blue-700">
+            Lihat Detail
+          </button>
         </div>
       </div>
 
@@ -234,22 +317,22 @@ const HomePage = () => {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 font-medium text-gray-600 text-sm">
+                <th className="text-left py-3 px-4 font-medium bg-[#edf4ff] text-[#0256c4] text-sm">
                   Nomor
                 </th>
-                <th className="text-left py-3 px-4 font-medium text-gray-600 text-sm">
+                <th className="text-left py-3 px-4 font-medium bg-[#edf4ff] text-[#0256c4] text-sm">
                   Kode
                 </th>
-                <th className="text-left py-3 px-4 font-medium text-gray-600 text-sm">
+                <th className="text-left py-3 px-4 font-medium bg-[#edf4ff] text-[#0256c4] text-sm">
                   Jenis Akta
                 </th>
-                <th className="text-left py-3 px-4 font-medium text-gray-600 text-sm">
+                <th className="text-left py-3 px-4 font-medium bg-[#edf4ff] text-[#0256c4] text-sm">
                   Penghadap 1
                 </th>
-                <th className="text-left py-3 px-4 font-medium text-gray-600 text-sm">
+                <th className="text-left py-3 px-4 font-medium bg-[#edf4ff] text-[#0256c4] text-sm">
                   Penghadap 2
                 </th>
-                <th className="text-left py-3 px-4 font-medium text-gray-600 text-sm">
+                <th className="text-left py-3 px-4 font-medium bg-[#edf4ff] text-[#0256c4] text-sm">
                   Status
                 </th>
               </tr>
@@ -282,10 +365,14 @@ const HomePage = () => {
               ))}
             </tbody>
           </table>
+
+          <div className="text-center mt-7">
+            <button className="bg-[#edf4ff] text-[#0256c4] w-full h-10 rounded-md hover:bg-[#7b9cc9] hover:text-white text-sm transition-colors font-medium">
+              Lihat Detail
+            </button>
+          </div>
         </div>
       </div>
     </div>
   );
-};
-
-export default HomePage;
+}

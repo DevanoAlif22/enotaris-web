@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap");
+
 @import "tailwindcss";
 
 .color-primary {
@@ -6,4 +8,35 @@
 
 .bg-gradient {
   background: linear-gradient(135deg, #0256c4 0%, #0377ff 50%, #00aaff 100%);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s ease-out forwards;
+}
+.animate-zoomIn {
+  animation: zoomIn 0.25s ease-out forwards;
+}
+@layer base {
+  html {
+    font-family: "Poppins", sans-serif;
+  }
 }
