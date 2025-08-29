@@ -18,7 +18,7 @@ export default function MainLayout() {
   }, [theme]);
 
   return (
-    <div className="min-h-screen bg-[#f7f7f7] dark:bg-[#0b0b16]">
+    <div className="min-h-screen bg-[#f7f7f7] ">
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* area konten geser 18rem saat lg+ */}
