@@ -1,12 +1,12 @@
-export default function InputField({
+export default function TextAreaField({
   label,
-  type,
   placeholder,
   name,
   value,
   onChange,
   required = false,
   disabled = false,
+  rows = 4,
 }) {
   return (
     <div className="mb-4">
@@ -16,14 +16,14 @@ export default function InputField({
           {required && <span className="ml-1 text-red-500">*</span>}
         </label>
       )}
-      <input
-        type={type}
+      <textarea
         name={name}
         placeholder={placeholder}
         value={value}
         onChange={onChange}
         disabled={disabled}
-        className={`w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none ${
+        rows={rows}
+        className={`w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none resize-y ${
           disabled ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""
         }`}
       />
