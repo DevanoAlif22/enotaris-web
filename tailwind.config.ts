@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
-export default {
+const config: Config = {
+  darkMode: "class", // 🔥 penting biar bisa pakai class "dark"
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
@@ -17,6 +18,7 @@ export default {
         primary: ["Poppins", "sans-serif"],
       },
       container: {
+        center: true, // biar auto center container
         screens: {
           sm: "640px",
           md: "880px",
@@ -32,9 +34,11 @@ export default {
         },
       },
       margin: {
-        standart: "1.75rem", // 28px margin-bottom
+        standard: "1.75rem", // typo: ubah "standart" → "standard"
       },
     },
   },
   plugins: [],
-} satisfies Config;
+};
+
+export default config;

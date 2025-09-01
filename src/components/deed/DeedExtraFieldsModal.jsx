@@ -50,13 +50,13 @@ export default function DeedExtraFieldsModal({
     <Modal
       open={open}
       onClose={onClose}
-      title="Tambah Data Tambahan"
+      title={<span className="dark:text-[#f5fefd]">Tambah Data Tambahan</span>}
       size="md"
       actions={
         <>
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-white/10"
+            className="px-4 py-2 rounded-lg dark:text-gray-600 bg-gray-100 dark:bg-[#f5fefd]"
           >
             Tutup
           </button>
@@ -72,14 +72,16 @@ export default function DeedExtraFieldsModal({
       <div className="space-y-5">
         {/* Akta (read-only) */}
         <div>
-          <div className="text-sm text-gray-500 mb-2">Akta</div>
-          <div className="px-4 py-3 rounded-xl bg-gray-100 text-gray-800">
+          <div className="text-sm font-semibold text-gray-500 dark:text-[#f5fefd] mb-2">
+            Akta
+          </div>
+          <div className="px-4 py-3 rounded-xl bg-[#f5fefd] text-gray-800">
             {deed?.name || "-"}
           </div>
         </div>
 
         {/* Nama */}
-        <div>
+        <div className="dark:text-[#f5fefd]">
           <InputField
             label="Nama Data"
             type="text"
