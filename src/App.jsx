@@ -18,39 +18,17 @@ import RequirementPage from "./pages/dashboard/RequirementPage";
 import RequirementNotarisPage from "./pages/dashboard/RequirementNotarisPage";
 import ActivityFlowPage from "./pages/dashboard/ActivityFlowPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import { ToastContainer } from "react-toastify";
+import ProtectedRoute from "./components/routing/ProtectedRoute";
 
 function App() {
   return (
     <>
+      {/* Biarkan SATU ToastContainer di luar <Routes> */}
+      <ToastContainer />
+
       <Routes>
-        {/* Layout Utama */}
-        <Route path="/tes" element={<HomePage />} />
-        <Route element={<MainLayout />}>
-          <Route path="/app" element={<HomePage />} />
-          <Route path="/about" element={<AboutPage />} />
-
-          {/* profil */}
-          <Route path="/app/deed" element={<DeedPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/requirement" element={<RequirementPage />} />
-          <Route
-            path="/requirement-notaris"
-            element={<RequirementNotarisPage />}
-          />
-          <Route path="/app/user" element={<UserPage />} />
-          <Route path="/app/project-notaris" element={<NotaryActivityPage />} />
-          <Route path="/app/project-flow" element={<ActivityFlowPage />} />
-          <Route
-            path="/app/project-client-notaris"
-            element={<NotarisClientActivityPage />}
-          />
-          <Route
-            path="/app/verification-user"
-            element={<VerificationUserPage />}
-          />
-        </Route>
-
-        {/* Layout Auth */}
+        {/* Public (Auth) */}
         <Route element={<AuthLayout />}>
           <Route path="/forgot-password" element={<ForgotPage />} />
           <Route path="/verify-code" element={<VerifyCodePage />} />
@@ -58,7 +36,43 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
         </Route>
 
-        {/* 404 Not Found - harus di paling bawah */}
+        {/* Protected: semua user login */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<MainLayout />}>
+            <Route path="/app" element={<HomePage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/app/deed" element={<DeedPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/requirement" element={<RequirementPage />} />
+            <Route path="/app/user" element={<UserPage />} />
+            <Route path="/app/project-flow" element={<ActivityFlowPage />} />
+            <Route
+              path="/app/verification-user"
+              element={<VerificationUserPage />}
+            />
+          </Route>
+        </Route>
+
+        {/* Protected: khusus Notaris (role_id = 3) */}
+        <Route element={<ProtectedRoute allow={[3]} />}>
+          <Route element={<MainLayout />}>
+            <Route
+              path="/requirement-notaris"
+              element={<RequirementNotarisPage />}
+            />
+            <Route
+              path="/app/project-notaris"
+              element={<NotaryActivityPage />}
+            />
+            <Route
+              path="/app/project-client-notaris"
+              element={<NotarisClientActivityPage />}
+            />
+          </Route>
+        </Route>
+
+        {/* Public lain */}
+        <Route path="/tes" element={<HomePage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </>

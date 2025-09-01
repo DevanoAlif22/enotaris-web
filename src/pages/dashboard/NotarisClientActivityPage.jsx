@@ -6,6 +6,7 @@ import StatusBadge from "../../utils/StatusBadge";
 import ActionButton from "../../components/ActionButton";
 import VerificationDecisionModal from "../../components/verification/VerificationDecisionModal";
 import ScheduleViewModal from "../../components/activitynotarisclient/ScheduleViewModal";
+import { Link } from "react-router";
 // import { fmtDate } from "../../helpers/fmtDate";
 // import { fmtTime } from "../../helpers/fmtTime";
 
@@ -256,7 +257,9 @@ export default function NotarisClientActivityPage() {
                   </td>
                   <td className="py-4 px-5 whitespace-nowrap">
                     <div className="flex items-center gap-2">
-                      <ActionButton variant="info">Detail</ActionButton>
+                      <ActionButton variant="info">
+                        <Link to={"/app/project-flow"}>Detail</Link>
+                      </ActionButton>
                       <ActionButton
                         variant="success"
                         onClick={() => askApprove(r)}

@@ -1,21 +1,53 @@
 import { useState } from "react";
 import InputField from "../../components/input/InputField";
+import { showSuccess, showError } from "../../utils/toastConfig";
+import LoadingOverlay from "../../components/common/LoadingOverlay";
+import { authService } from "../../services/authService";
+import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const afterLoginRoute = (role_id) => {
+    // Silakan sesuaikan mapping route setelah login
+    if (role_id === 3) return "/app/project-notaris"; // Notaris
+    return "/app"; // Penghadap/user
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", form);
+
+    if (form.email.trim() === "" || form.password.trim() === "") {
+      showError("Email dan password wajib diisi!");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const res = await authService.login(form);
+      showSuccess(res?.message || "Login berhasil! Selamat datang kembali!");
+      const roleId = res?.data?.role_id;
+      navigate(afterLoginRoute(roleId), { replace: true });
+    } catch (err) {
+      showError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="flex items-center justify-center">
-      <div className="rounded-lg flex w-full max-w-5xl overflow-hidden">
+    <div className="flex items-center justify-center relative">
+      {/* overlay loader */}
+      <LoadingOverlay show={isSubmitting} />
+
+      <div className="rounded-lg flex w-full max-w-5xl overflow-hidden bg-white">
         {/* Left side */}
         <div className="hidden lg:flex lg:w-1/2 bg-[#0256c4] flex-col justify-center items-center text-white">
           <div className="flex flex-col items-center mb-6">
@@ -48,6 +80,7 @@ export default function LoginPage() {
               placeholder="Masukkan email"
               value={form.email}
               onChange={handleChange}
+              disabled={isSubmitting}
             />
 
             <InputField
@@ -57,6 +90,7 @@ export default function LoginPage() {
               placeholder="Masukkan kata sandi"
               value={form.password}
               onChange={handleChange}
+              disabled={isSubmitting}
             />
 
             {/* Forgot password */}
@@ -69,6 +103,7 @@ export default function LoginPage() {
             {/* Submit */}
             <button
               type="submit"
+              disabled={isSubmitting}
               className="w-full bg-[#0256c4] text-white rounded-full py-3 text-lg font-semibold hover:bg-blue-700 transition"
             >
               Masuk
@@ -78,12 +113,12 @@ export default function LoginPage() {
           {/* Register link */}
           <p className="mt-6 text-center text-sm text-gray-600">
             Belum punya akun?{" "}
-            <a
-              href="/register"
+            <Link
               className="text-blue-600 font-medium hover:underline"
+              to="/register"
             >
-              Daftar
-            </a>
+              Register
+            </Link>
           </p>
         </div>
       </div>
