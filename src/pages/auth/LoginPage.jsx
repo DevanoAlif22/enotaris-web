@@ -1,5 +1,6 @@
 import { useState } from "react";
 import InputField from "../../components/input/InputField";
+import { showSuccess, showError } from "../../utils/toastConfig";
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -10,7 +11,15 @@ export default function LoginPage() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (form.email.trim() === "" || form.password.trim() === "") {
+      showError("Email dan password wajib diisi!");
+      return;
+    }
+
+    // simulasi login berhasil
     console.log("Form submitted:", form);
+    showSuccess("Login berhasil! Selamat datang kembali!");
   };
 
   return (

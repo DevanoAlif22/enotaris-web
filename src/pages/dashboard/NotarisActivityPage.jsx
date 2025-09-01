@@ -6,6 +6,7 @@ import ActionButton from "../../components/ActionButton";
 import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 import ScheduleModal from "../../components/activitynotaris/ScheduleModal";
 import ActivityFormModal from "../../components/activitynotaris/ActivityFormModal";
+import { Link } from "react-router";
 
 export default function NotaryActivityPage() {
   const [rows, setRows] = useState([
@@ -308,7 +309,7 @@ export default function NotaryActivityPage() {
                   <td className="py-4 px-5 whitespace-nowrap">
                     <div className="flex items-center gap-2">
                       <ActionButton variant="info" onClick="">
-                        Detail
+                        <Link to="/app/project-flow">Detail</Link>
                       </ActionButton>
                       <ActionButton
                         variant="success"

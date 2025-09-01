@@ -18,10 +18,12 @@ import RequirementPage from "./pages/dashboard/RequirementPage";
 import RequirementNotarisPage from "./pages/dashboard/RequirementNotarisPage";
 import ActivityFlowPage from "./pages/dashboard/ActivityFlowPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import { ToastContainer } from "react-toastify";
 
 function App() {
   return (
     <>
+      <ToastContainer />
       <Routes>
         {/* Layout Utama */}
         <Route path="/tes" element={<HomePage />} />

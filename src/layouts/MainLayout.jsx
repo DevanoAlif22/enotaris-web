@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
+import Footer from "../components/Footer";
 
 export default function MainLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -29,8 +30,14 @@ export default function MainLayout() {
           onToggleTheme={() => setTheme(theme === "dark" ? "light" : "dark")}
           className="sticky top-0 z-20" // biar topbar juga nempel atas
         />
-        <main className="flex-1 overflow-auto">
-          <Outlet />
+        <main className="flex flex-col min-h-screen">
+          {/* konten utama isi penuh */}
+          <div className="flex-1 overflow-auto">
+            <Outlet />
+          </div>
+
+          {/* footer selalu di bawah */}
+          <Footer />
         </main>
       </div>
     </div>
