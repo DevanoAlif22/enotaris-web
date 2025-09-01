@@ -10,7 +10,13 @@ import {
   Cog6ToothIcon,
   DocumentTextIcon,
   ArrowRightOnRectangleIcon,
+  ArrowDownIcon,
+  ArchiveBoxIcon,
+  ArrowDownTrayIcon,
+  EnvelopeIcon,
+  EllipsisHorizontalIcon,
 } from "@heroicons/react/24/outline";
+import { ArchiveBoxArrowDownIcon } from "@heroicons/react/16/solid";
 
 export default function HomePage() {
   const [isOpen, setIsOpen] = useState(false);
@@ -120,66 +126,57 @@ export default function HomePage() {
   return (
     <div className="p-4 sm:p-6 space-y-6">
       {/* Header dengan Tanggal dan Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white rounded-xl p-4 shadow-sm">
-        <div className="text-sm font-medium text-gray-600">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white dark:bg-[#002d6a] rounded-xl p-4 shadow-sm">
+        <div className="text-sm font-medium text-gray-600 dark:text-[#f5fefd]">
           {getCurrentDate()}
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={handleRefresh}
-            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 dark:hover:bg-[#0256c4] rounded-lg transition-colors"
           >
-            <ArrowPathIcon className="w-4 h-4" />
-            <span className="hidden sm:inline">Refresh Data</span>
+            <ArrowPathIcon className="w-4 h-4 dark:text-[#f5fefd]" />
+            <span className="hidden sm:inline dark:text-[#f5fefd]">
+              Refresh Data
+            </span>
           </button>
           <button
             onClick={handleShare}
-            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 dark:hover:bg-[#0256c4] rounded-lg transition-colors"
           >
-            <ShareIcon className="w-4 h-4" />
-            <span className="hidden sm:inline">Share</span>
+            <ShareIcon className="w-4 h-4 dark:text-[#f5fefd]" />
+            <span className="hidden sm:inline dark:text-[#f5fefd]">Share</span>
           </button>
 
           <div className="relative">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-[#0256c4] rounded-full transition-colors"
             >
-              <UserIcon className="w-5 h-5 text-gray-600" />
+              <EllipsisHorizontalIcon className="w-5 h-5 text-gray-600 dark:text-[#f5fefd]" />
             </button>
 
             {isOpen && (
               <div className="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 overflow-hidden">
                 <button
                   onClick={() => {
-                    console.log("Profile Settings clicked");
+                    console.log("Email Digests clicked");
                     setIsOpen(false);
                   }}
-                  className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-3"
+                  className="w-full flex text-sm items-center gap-3 px-4 py-3 text-gray-700 hover:bg-[#0256c4] hover:text-white hover:rounded-md duration-100 ease-in"
                 >
-                  <Cog6ToothIcon className="w-4 h-4" />
-                  Profile Settings
+                  <EnvelopeIcon className="w-4 h-4" />
+                  Email Digests
                 </button>
                 <button
                   onClick={() => {
-                    console.log("Bill History clicked");
+                    console.log("Download clicked");
                     setIsOpen(false);
                   }}
-                  className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-3"
+                  className="w-full flex text-sm items-center gap-3 px-4 py-3 text-gray-700 hover:bg-[#0256c4] hover:text-white hover:rounded-md duration-100 ease-in"
                 >
-                  <DocumentTextIcon className="w-4 h-4" />
-                  Bill History
-                </button>
-                <hr className="my-1 border-gray-200" />
-                <button
-                  onClick={() => {
-                    console.log("Logout clicked");
-                    setIsOpen(false);
-                  }}
-                  className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-3"
-                >
-                  <ArrowRightOnRectangleIcon className="w-4 h-4" />
-                  Logout
+                  <ArrowDownTrayIcon className="w-4 h-4" />
+                  Download
                 </button>
               </div>
             )}
@@ -192,7 +189,7 @@ export default function HomePage() {
         {metrics.map((metric, index) => (
           <div
             key={index}
-            className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 sm:p-4 sm:py-3 rounded-[15px]"
+            className="bg-gradient-to-r from-blue-500 to-[#0256c4] text-white p-4 sm:p-4 sm:py-3 rounded-[15px]"
           >
             <div className="flex items-center justify-between mb-3 sm:mb-2">
               <h3 className="text-xs sm:text-[16px] font-medium ">
@@ -215,66 +212,73 @@ export default function HomePage() {
       </div>
 
       {/* Verification Section - Updated with AmountStats design */}
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-[#003782] rounded-xl shadow-sm overflow-hidden">
+        <div className="text-lg sm:text-xl text-gray-600 dark:text-white font-medium mt-5 ml-5">
+          Verifikasi Pengguna
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-gray-200">
           {/* Disetujui Card */}
-          <div className="relative p-6 bg-white">
+          <div className="relative p-6 bg-white dark:bg-[#003782]">
             <div className="absolute top-4 right-4">
               <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
                 Disetujui
               </span>
             </div>
-            <div className="pt-2">
-              <div className="text-gray-600 text-sm font-medium mb-1">
-                Verifikasi Pengguna
-              </div>
-              <div className="text-blue-600 text-4xl font-bold mb-6">
+            <div className="pt-8">
+              <div className="text-center text-blue-600 text-4xl font-bold mb-6 dark:text-[#f5fefd]">
                 25,600
               </div>
             </div>
           </div>
 
           {/* Menunggu Card */}
-          <div className="relative p-6 bg-white">
+          <div className="relative p-6 bg-white dark:bg-[#003782] ">
             <div className="absolute top-4 right-4">
               <span className="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">
                 Menunggu
               </span>
             </div>
             <div className="pt-8">
-              <div className="text-blue-600 text-4xl font-bold mb-6">5,600</div>
+              <div className="text-center text-blue-600 text-4xl font-bold mb-6 dark:text-[#f5fefd]">
+                5,600
+              </div>
             </div>
           </div>
 
           {/* Ditolak Card */}
-          <div className="relative p-6 bg-white">
+          <div className="relative p-6 bg-white dark:bg-[#003782] ">
             <div className="absolute top-4 right-4">
               <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">
                 Ditolak
               </span>
             </div>
             <div className="pt-8">
-              <div className="text-blue-600 text-4xl font-bold mb-6">5,600</div>
+              <div className="text-center text-blue-600 text-4xl font-bold mb-6 dark:text-[#f5fefd]">
+                5,600
+              </div>
             </div>
           </div>
         </div>
         <div className="flex justify-center text-center">
-          <button className="mt-2 mb-6 w-290 text-white font-semibold text-sm font-medium transition-colors bg-gradient-to-r from-blue-500 to-blue-600 sm:p-20 sm:py-2 rounded-[10px] hover:from-blue-600 hover:to-blue-700">
+          <button className="mt-2 mb-6 w-290 text-white font-semibold text-sm transition-colors bg-gradient-to-r from-blue-500 to-[#0256c4] sm:p-20 sm:py-2 rounded-[10px] hover:from-blue-600 hover:to-blue-700">
             Lihat Detail
           </button>
         </div>
       </div>
 
       {/* Recent Activities Table */}
-      <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm">
-        <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4 sm:mb-6">
+      <div className="bg-white dark:bg-[#003782] rounded-xl p-4 sm:p-6 shadow-sm">
+        <h2 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-[#f5fefd] mb-4 sm:mb-6">
           Aktivitas Terkini
         </h2>
 
         {/* Mobile Card View */}
         <div className="block sm:hidden space-y-4">
           {activities.map((activity, index) => (
-            <div key={index} className="border border-gray-200 rounded-lg p-4">
+            <div
+              key={index}
+              className="border border-gray-200 dark:border-[#7b9cc9] rounded-lg p-4"
+            >
               <div className="flex justify-between items-start mb-2">
                 <span className="font-medium text-gray-900">
                   #{activity.nomor}
@@ -316,23 +320,23 @@ export default function HomePage() {
         <div className="hidden sm:block overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 font-medium bg-[#edf4ff] text-[#0256c4] text-sm">
+              <tr className="border-b border-gray-200 dark:border-[#7b9cc9]">
+                <th className="text-center py-3 px-4 font-medium bg-[#edf4ff] dark:bg-[#0256c4] text-[#0256c4] dark:text-[#f5fefd] text-sm">
                   Nomor
                 </th>
-                <th className="text-left py-3 px-4 font-medium bg-[#edf4ff] text-[#0256c4] text-sm">
+                <th className="text-center py-3 px-4 font-medium bg-[#edf4ff] dark:bg-[#0256c4] text-[#0256c4] dark:text-[#f5fefd] text-sm">
                   Kode
                 </th>
-                <th className="text-left py-3 px-4 font-medium bg-[#edf4ff] text-[#0256c4] text-sm">
+                <th className="text-center py-3 px-4 font-medium bg-[#edf4ff] dark:bg-[#0256c4] text-[#0256c4] dark:text-[#f5fefd] text-sm">
                   Jenis Akta
                 </th>
-                <th className="text-left py-3 px-4 font-medium bg-[#edf4ff] text-[#0256c4] text-sm">
+                <th className="text-center py-3 px-4 font-medium bg-[#edf4ff] dark:bg-[#0256c4] text-[#0256c4] dark:text-[#f5fefd] text-sm">
                   Penghadap 1
                 </th>
-                <th className="text-left py-3 px-4 font-medium bg-[#edf4ff] text-[#0256c4] text-sm">
+                <th className="text-center py-3 px-4 font-medium bg-[#edf4ff] dark:bg-[#0256c4] text-[#0256c4] dark:text-[#f5fefd] text-sm">
                   Penghadap 2
                 </th>
-                <th className="text-left py-3 px-4 font-medium bg-[#edf4ff] text-[#0256c4] text-sm">
+                <th className="text-center py-3 px-4 font-medium bg-[#edf4ff] dark:bg-[#0256c4] text-[#0256c4] dark:text-[#f5fefd] text-sm">
                   Status
                 </th>
               </tr>
@@ -341,7 +345,7 @@ export default function HomePage() {
               {activities.map((activity, index) => (
                 <tr
                   key={index}
-                  className="border-b border-gray-100 hover:bg-gray-50"
+                  className="text-center border-b border-gray-100 hover:bg-[#002d6a] dark:text-[#f5fefd]"
                 >
                   <td className="py-3 px-4 text-sm">{activity.nomor}</td>
                   <td className="py-3 px-4 text-sm">{activity.kode}</td>
@@ -367,7 +371,7 @@ export default function HomePage() {
           </table>
 
           <div className="text-center mt-7">
-            <button className="bg-[#edf4ff] text-[#0256c4] w-full h-10 rounded-md hover:bg-[#7b9cc9] hover:text-white text-sm transition-colors font-medium">
+            <button className="w-full h-10 rounded-md text-sm transition-colors font-medium bg-[#edf4ff] text-[#0256c4] hover:text-white hover:bg-gradient-to-r hover:from-blue-600 hover:to-[#0256c4] dark:text-[#edf4ff] dark:bg-[#0256c4] dark:hover:bg-[#003782]">
               Lihat Detail
             </button>
           </div>

@@ -172,7 +172,9 @@ export default function NotaryActivityPage() {
       <div className="bg-white dark:bg-[#0f1220] rounded-2xl shadow-sm p-5 md:p-8">
         {/* Header */}
         <div className="flex items-center justify-between gap-3">
-          <h1 className="text-2xl font-semibold">Proyek Notaris</h1>
+          <h1 className="text-2xl font-semibold dark:text-[#f5fefd]">
+            Proyek Notaris
+          </h1>
 
           <div className="flex items-center gap-2 w-full max-w-3xl justify-end">
             {/* Tabs */}
@@ -186,8 +188,8 @@ export default function NotaryActivityPage() {
                     className={
                       "px-3 py-2 text-sm font-semibold " +
                       (active
-                        ? "bg-[#0256c4] text-white"
-                        : "bg-white text-gray-800")
+                        ? "bg-gradient-to-r from-blue-500 to-[#0256c4] text-[#f5fefd]"
+                        : "bg-[#f5fefd] text-gray-800")
                     }
                   >
                     {t}

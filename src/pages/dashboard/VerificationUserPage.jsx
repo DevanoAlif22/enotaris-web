@@ -122,14 +122,16 @@ export default function VerificationUserPage() {
 
   return (
     <div className="p-4 md:p-6">
-      <div className="bg-white dark:bg-[#0f1220] rounded-2xl shadow-sm p-5 md:p-8">
+      <div className="bg-white dark:bg-[#002d6a] rounded-2xl shadow-sm p-5 md:p-8">
         {/* Header */}
         <div className="flex items-center justify-between gap-3">
-          <h1 className="text-2xl font-semibold">Verifikasi Identitas</h1>
+          <h1 className="text-2xl font-semibold dark:text-[#f5fefd]">
+            Verifikasi Identitas
+          </h1>
 
           <div className="flex items-center gap-2">
             {/* Tabs */}
-            <div className="flex rounded-lg border overflow-hidden">
+            <div className="flex rounded-lg border dark:border-[#f5fefd] overflow-hidden">
               {tabs.map((t) => {
                 const active = activeTab === t;
                 return (
@@ -139,8 +141,8 @@ export default function VerificationUserPage() {
                     className={
                       "px-3 py-2 text-sm font-semibold " +
                       (active
-                        ? "bg-[#0256c4] text-white"
-                        : "bg-white text-gray-800")
+                        ? "bg-gradient-to-r from-blue-500 to-[#0256c4] text-[#f5fefd]"
+                        : "bg-[#f5fefd] text-gray-800")
                     }
                   >
                     {t}
@@ -155,7 +157,7 @@ export default function VerificationUserPage() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Cari nama atau email..."
-                className="w-full h-11 pl-4 pr-10 rounded-lg border outline-none focus:ring-2 focus:ring-[#0256c4]/40"
+                className="dark:text-[#f5fefd] w-full h-11 pl-4 pr-10 rounded-lg border outline-none focus:ring-2 focus:ring-[#0256c4]/40"
               />
               <MagnifyingGlassIcon className="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-500" />
             </div>
@@ -170,25 +172,25 @@ export default function VerificationUserPage() {
           <table className="w-full min-w-max">
             <thead>
               <tr className="text-left text-gray-500 border-b border-gray-200/80">
-                <th className="py-3 px-5 font-semibold whitespace-nowrap">
+                <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
                   Nama
                 </th>
-                <th className="py-3 px-5 font-semibold whitespace-nowrap">
+                <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
                   Email
                 </th>
-                <th className="py-3 px-5 font-semibold whitespace-nowrap">
+                <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
                   NIK
                 </th>
-                <th className="py-3 px-5 font-semibold whitespace-nowrap">
+                <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
                   KTP
                 </th>
-                <th className="py-3 px-5 font-semibold whitespace-nowrap">
+                <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
                   Status
                 </th>
-                <th className="py-3 px-5 font-semibold whitespace-nowrap">
+                <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
                   Diperbarui
                 </th>
-                <th className="py-3 px-5 font-semibold whitespace-nowrap">
+                <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
                   Aksi
                 </th>
               </tr>
@@ -201,13 +203,13 @@ export default function VerificationUserPage() {
                     idx === 0 ? "border-t-0" : ""
                   }`}
                 >
-                  <td className="py-4 px-5 whitespace-nowrap font-semibold">
+                  <td className="py-4 px-5 whitespace-nowrap dark:text-[#f5fefd] font-semibold">
                     {r.name}
                   </td>
-                  <td className="py-4 px-5 whitespace-nowrap text-[#6b7280]">
+                  <td className="py-4 px-5 whitespace-nowrap text-[#6b7280] dark:text-gray-400">
                     {r.email}
                   </td>
-                  <td className="py-4 px-5 whitespace-nowrap">
+                  <td className="py-4 px-5 dark:text-[#f5fefd] whitespace-nowrap">
                     {r.nik || "-"}
                   </td>
                   <td className="py-4 px-5 whitespace-nowrap">
@@ -216,7 +218,7 @@ export default function VerificationUserPage() {
                   <td className="py-4 px-5 whitespace-nowrap">
                     <StatusBadge status={r.status} />
                   </td>
-                  <td className="py-4 px-5 whitespace-nowrap">
+                  <td className="py-4 px-5 dark:text-[#f5fefd] whitespace-nowrap">
                     {fmtDate(r.updated_at)}
                   </td>
                   <td className="py-4 px-5 whitespace-nowrap">
@@ -259,9 +261,11 @@ export default function VerificationUserPage() {
 
         {/* Footer: pagination */}
         <div className="mt-6 flex items-center justify-between text-sm text-gray-600">
-          <p>
-            Menampilkan {paged.length} – dari {filtered.length}
-          </p>
+          <div className="dark:text-[#f5fefd]">
+            <p>
+              Menampilkan {paged.length} – dari {filtered.length}
+            </p>
+          </div>
           <div className="flex items-center gap-2">
             <button
               className="px-3 py-2 rounded-lg bg-gray-100"

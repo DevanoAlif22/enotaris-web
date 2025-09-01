@@ -131,10 +131,12 @@ export default function DeedPage() {
   return (
     <div className="p-4 md:p-6">
       {/* Card */}
-      <div className="bg-white dark:bg-[#0f1220] rounded-2xl shadow-sm p-5 md:p-6">
+      <div className="bg-white dark:bg-[#002d6a] rounded-2xl shadow-sm p-5 md:p-6">
         {/* Header */}
         <div className="flex items-center justify-between gap-3">
-          <h1 className="text-2xl font-semibold">Akta Otentik</h1>
+          <h1 className="text-2xl font-semibold dark:text-[#f5fefd]">
+            Akta Otentik
+          </h1>
 
           <div className="flex items-center gap-3 w-full max-w-xl">
             <div className="relative flex-1">
@@ -142,13 +144,13 @@ export default function DeedPage() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Cari nama atau deskripsi…"
-                className="w-full h-11 pl-4 pr-10 rounded-lg border outline-none focus:ring-2 focus:ring-[#0256c4]/40"
+                className="w-full h-11 pl-4 pr-10 rounded-lg border outline-none focus:ring-2 focus:ring-[#0256c4]/40 dark:text-[#f5fefd]"
               />
-              <MagnifyingGlassIcon className="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-500" />
+              <MagnifyingGlassIcon className="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-[#f5fefd]" />
             </div>
             <button
               onClick={openAdd}
-              className="h-11 px-4 rounded-lg font-semibold bg-[#0256c4] text-white hover:opacity-90"
+              className="h-11 px-4 rounded-lg font-semibold bg-[#0256c4] text-white hover:opacity-90 transition-colors"
             >
               Tambah
             </button>
@@ -162,7 +164,7 @@ export default function DeedPage() {
         <div className="mt-3 overflow-x-auto">
           <table className="min-w-max">
             <thead>
-              <tr className="text-left text-gray-500 border-b border-gray-200/80">
+              <tr className="text-center text-gray-500 border-b border-gray-200/80 dark:text-[#f5fefd]">
                 <th className="py-3 px-4 font-semibold whitespace-nowrap">
                   Nama
                 </th>
@@ -194,13 +196,13 @@ export default function DeedPage() {
                   <td className="py-4 px-4 align-top whitespace-nowrap font-semibold text-[#0e1528] dark:text-white">
                     {row.name}
                   </td>
-                  <td className="py-4 px-4 align-top whitespace-nowrap text-[#6b7280]">
+                  <td className="py-4 px-4 align-top whitespace-nowrap text-[#6b7280] text-center dark:text-[#f5fefd]">
                     {row.description}
                   </td>
-                  <td className="py-4 px-4 align-top whitespace-nowrap">
+                  <td className="py-4 px-4 align-top whitespace-nowrap text-center dark:text-[#f5fefd]">
                     {row.penghadap_count}
                   </td>
-                  <td className="py-4 px-4 align-top whitespace-nowrap">
+                  <td className="py-4 px-4 align-top whitespace-nowrap text-center dark:text-[#f5fefd]">
                     {row.extra_fields?.length ? (
                       <div className="flex items-center gap-2">
                         {row.extra_fields.map((t) => (
@@ -262,9 +264,11 @@ export default function DeedPage() {
 
         {/* Footer: pagination */}
         <div className="mt-6 flex items-center justify-between text-sm text-gray-600">
-          <p>
-            Menampilkan {paged.length} – dari {filtered.length}
-          </p>
+          <div className="dark:text-[#f5fefd]">
+            <p>
+              Menampilkan {paged.length} – dari {filtered.length}
+            </p>
+          </div>
           <div className="flex items-center gap-2">
             <button
               className="px-3 py-2 rounded-lg bg-gray-100"

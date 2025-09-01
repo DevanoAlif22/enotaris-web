@@ -31,7 +31,7 @@ export default function TopBar({
   }, []);
 
   return (
-    <div className="bg-white  shadow-lg px-4 md:px-6 py-3 sticky top-0 z-10">
+    <div className="bg-white dark:bg-[#002d6a] shadow-lg px-4 md:px-6 py-3 sticky top-0 z-10">
       <div className="flex items-center justify-between">
         {/* Left */}
         <div className="flex items-center gap-3">
@@ -41,13 +41,18 @@ export default function TopBar({
           >
             <Bars3Icon className="w-6 h-6 text-gray-800" />
           </button>
-          <h1 className="text-2xl font-bold text-gray-800">{pageTitle}</h1>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-[#f5fefd]">
+            {pageTitle}
+          </h1>
         </div>
 
         {/* Right */}
         <div className="flex items-center gap-2 md:gap-3">
           {/* Theme toggle */}
-          <button onClick={onToggleTheme} className="p-2 rounded-lg">
+          <button
+            onClick={onToggleTheme}
+            className="p-2 rounded-lg hover:rounded-full dark:hover:bg-[#01043c]"
+          >
             {theme === "dark" ? (
               <SunIcon className="w-6 h-6 text-yellow-300" />
             ) : (
@@ -56,8 +61,8 @@ export default function TopBar({
           </button>
 
           {/* Notifications */}
-          <button className="relative p-2 rounded-lg">
-            <BellIcon className="w-6 h-6 text-gray-700" />
+          <button className="relative p-2 rounded-lg hover:rounded-full dark:hover:bg-[#01043c]">
+            <BellIcon className="w-6 h-6 text-gray-700 dark:text-[#f5fefd]" />
             {noOfNotifications > 0 && (
               <span className="absolute -top-1 -right-1 bg-[#0256c4] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                 {noOfNotifications}
@@ -69,12 +74,18 @@ export default function TopBar({
           <div className="relative" ref={ref}>
             <button
               onClick={() => setMenuOpen((v) => !v)}
-              className="flex items-center gap-2 p-1 rounded-lg"
+              className="flex items-center gap-2 p-1 rounded-lg hover:rounded-full dark:hover:bg-[#01043c]"
             >
               <img
                 src="/images/profile-black.png"
                 alt="profile"
-                className="w-9 h-9 rounded-full block"
+                className="w-9 h-9 rounded-full block dark:text-[#f5fefd] dark:hidden"
+              />
+
+              <img
+                src="/images/profile-white.png"
+                alt="profile"
+                className="w-9 h-9 rounded-full dark:text-[#f5fefd] hidden dark:block"
               />
             </button>
 

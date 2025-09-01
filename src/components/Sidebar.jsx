@@ -62,7 +62,7 @@ export default function Sidebar({ className = "", open, onClose }) {
   }, [open]);
 
   const base =
-    "fixed inset-y-0 left-0 z-40 w-72 bg-[#0256c4] text-white flex flex-col " +
+    "fixed inset-y-0 left-0 z-40 w-72 bg-[#0256c4] dark:bg-[#002d6a] text-white flex flex-col " +
     "transition-transform duration-200 h-screen overflow-y-auto";
   const visible = open ? "translate-x-0" : "-translate-x-full";
 
@@ -115,7 +115,7 @@ export default function Sidebar({ className = "", open, onClose }) {
                 `w-full flex items-center gap-4 px-3 py-2 rounded-[8px] mb-2 transition
                  ${
                    isActive
-                     ? "bg-white text-[#0256c4] shadow font-semibold"
+                     ? "bg-white dark:bg-[#01043c] text-[#0256c4] dark:text-[#f5fefd] shadow font-semibold"
                      : "text-white hover:bg-white/10"
                  }`
               }
