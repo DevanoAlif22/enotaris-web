@@ -156,19 +156,21 @@ export default function NotarisClientActivityPage() {
 
   return (
     <div className="p-4 md:p-6">
-      <div className="bg-white dark:bg-[#0f1220] rounded-2xl shadow-sm p-5 md:p-6">
+      <div className="bg-white dark:bg-[#002d6a] rounded-2xl shadow-sm p-5 md:p-6">
         {/* Header */}
         <div className="flex items-center justify-between gap-3">
-          <h1 className="text-2xl font-semibold">Project Penghadap</h1>
+          <h1 className="text-2xl font-semibold dark:text-[#f5fefd]">
+            Project Penghadap
+          </h1>
 
           <div className="relative w-96">
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Cari kode, nama, jenis akta, atau penghadap..."
-              className="w-full h-11 pl-4 pr-10 rounded-lg border outline-none focus:ring-2 focus:ring-[#0256c4]/40"
+              className="w-full h-11 pl-4 pr-10 rounded-lg border outline-none focus:ring-2 focus:ring-[#0256c4]/40 dark:text-[#f5fefd]"
             />
-            <MagnifyingGlassIcon className="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-500" />
+            <MagnifyingGlassIcon className="dark:text-[#f5fefd] w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-500" />
           </div>
         </div>
 
@@ -176,10 +178,10 @@ export default function NotarisClientActivityPage() {
         <div className="mt-4 h-px bg-gray-200 dark:bg-white/10" />
 
         {/* Table */}
-        <div className="mt-3 -mx-5 overflow-x-auto">
+        <div className="text-center mt-3 -mx-5 overflow-x-auto">
           <table className="w-full min-w-max">
             <thead>
-              <tr className="text-left text-gray-500 border-b border-gray-200/80">
+              <tr className="text-center text-gray-500 border-b border-gray-200/80 dark:text-[#f5fefd]">
                 <th className="py-3 px-5 font-semibold whitespace-nowrap">
                   Kode
                 </th>
@@ -226,18 +228,22 @@ export default function NotarisClientActivityPage() {
                     idx === 0 ? "border-t-0" : ""
                   }`}
                 >
-                  <td className="py-4 px-5 whitespace-nowrap">{r.code}</td>
-                  <td className="py-4 px-5 whitespace-nowrap font-semibold">
+                  <td className="py-4 px-5 whitespace-nowrap dark:text-[#f5fefd]">
+                    {r.code}
+                  </td>
+                  <td className="py-4 px-5 whitespace-nowrap dark:text-[#f5fefd] font-semibold">
                     {r.name}
                   </td>
-                  <td className="py-4 px-5 whitespace-nowrap">{r.deed_type}</td>
-                  <td className="py-4 px-5 whitespace-nowrap">
+                  <td className="py-4 px-5 whitespace-nowrap dark:text-[#f5fefd]">
+                    {r.deed_type}
+                  </td>
+                  <td className="py-4 px-5 dark:text-[#f5fefd] whitespace-nowrap">
                     {renderPenghadap(r.party1)}
                   </td>
                   {/* <td className="py-4 px-5 whitespace-nowrap">
                     <StatusBadge status={r.party1_status} />
                   </td> */}
-                  <td className="py-4 px-5 whitespace-nowrap">
+                  <td className="py-4 px-5 dark:text-[#f5fefd] whitespace-nowrap">
                     {renderPenghadap(r.party2 || "-")}
                   </td>
                   {/* <td className="py-4 px-5 whitespace-nowrap">
@@ -289,9 +295,11 @@ export default function NotarisClientActivityPage() {
 
         {/* Footer */}
         <div className="mt-6 flex items-center justify-between text-sm text-gray-600">
-          <p>
-            Menampilkan {paged.length} – dari {filtered.length}
-          </p>
+          <div className="dark:text-[#f5fefd]">
+            <p>
+              Menampilkan {paged.length} – dari {filtered.length}
+            </p>
+          </div>
           <div className="flex items-center gap-2">
             <button
               className="px-3 py-2 rounded-lg bg-gray-100"

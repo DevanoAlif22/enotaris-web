@@ -169,7 +169,7 @@ export default function NotaryActivityPage() {
 
   return (
     <div className="p-4 md:p-6">
-      <div className="bg-white dark:bg-[#0f1220] rounded-2xl shadow-sm p-5 md:p-8">
+      <div className="bg-white dark:bg-[#002d6a] rounded-2xl shadow-sm p-5 md:p-8">
         {/* Header */}
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-2xl font-semibold dark:text-[#f5fefd]">
@@ -178,7 +178,7 @@ export default function NotaryActivityPage() {
 
           <div className="flex items-center gap-2 w-full max-w-3xl justify-end">
             {/* Tabs */}
-            <div className="flex rounded-lg border overflow-hidden">
+            <div className="flex rounded-lg border border-[#f5fefd] overflow-hidden">
               {tabs.map((t) => {
                 const active = activeTab === t;
                 return (
@@ -204,14 +204,14 @@ export default function NotaryActivityPage() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Cari kode, jenis akta, penghadap..."
-                className="w-full h-11 pl-4 pr-10 rounded-lg border outline-none focus:ring-2 focus:ring-[#0256c4]/40"
+                className="w-full h-11 pl-4 pr-10 rounded-lg border outline-none focus:ring-2 focus:ring-[#0256c4]/40 dark:text-[#f5fefd]"
               />
-              <MagnifyingGlassIcon className="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-500" />
+              <MagnifyingGlassIcon className="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-[#f5fefd]" />
             </div>
 
             <button
               onClick={openAdd}
-              className="h-11 px-4 rounded-lg font-semibold bg-[#0256c4] text-white hover:opacity-90"
+              className="h-11 px-4 rounded-lg font-semibold bg-[#0256c4] text-white hover:opacity-90 transition-colors"
             >
               Tambah
             </button>
@@ -222,25 +222,25 @@ export default function NotaryActivityPage() {
         <div className="mt-4 h-px bg-gray-200 dark:bg-white/10" />
         {/* Table */}
         <div className="mt-3 -mx-5 overflow-x-auto ">
-          <table className="w-full min-w-max ">
+          <table className="text-center w-full min-w-max ">
             <thead className="">
-              <tr className="text-left text-gray-500 border-b border-gray-200/80">
-                <th className="py-3 px-5 font-semibold whitespace-nowrap">
+              <tr className="text-center text-gray-500 border-b border-gray-200/80">
+                <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
                   Kode
                 </th>
-                <th className="py-3 px-5 font-semibold whitespace-nowrap">
+                <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
                   Nama
                 </th>
-                <th className="py-3 px-5 font-semibold whitespace-nowrap">
+                <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
                   Jenis Akta
                 </th>
-                <th className="py-3 px-5 font-semibold whitespace-nowrap">
+                <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
                   Penghadap 1
                 </th>
                 {/* <th className="py-3 px-5 font-semibold whitespace-nowrap">
                   Status Penghadap 1
                 </th> */}
-                <th className="py-3 px-5 font-semibold whitespace-nowrap">
+                <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
                   Penghadap 2
                 </th>
                 {/* <th className="py-3 px-5 font-semibold whitespace-nowrap">
@@ -255,10 +255,10 @@ export default function NotaryActivityPage() {
                 {/* <th className="py-3 px-5 font-semibold whitespace-nowrap">
                   Penjadwalan
                 </th> */}
-                <th className="py-3 px-5 font-semibold whitespace-nowrap">
+                <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
                   Status
                 </th>
-                <th className="py-3 px-5 font-semibold whitespace-nowrap">
+                <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
                   Aksi
                 </th>
               </tr>
@@ -267,12 +267,12 @@ export default function NotaryActivityPage() {
               {paged.map((r, idx) => (
                 <tr
                   key={r.id}
-                  className={`border-t border-gray-200/80 ${
+                  className={`border-t border-gray-200/80 dark:text-[#f5fefd] ${
                     idx === 0 ? "border-t-0" : ""
                   }`}
                 >
                   <td className="py-4 px-5 whitespace-nowrap">{r.code}</td>
-                  <td className="py-4 px-5 whitespace-nowrap font-semibold">
+                  <td className="py-4 px-5 whitespace-nowrap font-semibold dark:text-[#f5fefd]">
                     {r.name}
                   </td>
                   <td className="py-4 px-5 whitespace-nowrap">{r.deed_type}</td>
@@ -344,9 +344,11 @@ export default function NotaryActivityPage() {
 
         {/* Footer */}
         <div className="mt-6 flex items-center justify-between text-sm text-gray-600">
-          <p>
-            Menampilkan {paged.length} – dari {filtered.length}
-          </p>
+          <div className="dark:text-[#f5fefd]">
+            <p>
+              Menampilkan {paged.length} – dari {filtered.length}
+            </p>
+          </div>
           <div className="flex items-center gap-2">
             <button
               className="px-3 py-2 rounded-lg bg-gray-100"

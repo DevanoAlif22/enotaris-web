@@ -159,7 +159,7 @@ export default function VerificationUserPage() {
                 placeholder="Cari nama atau email..."
                 className="dark:text-[#f5fefd] w-full h-11 pl-4 pr-10 rounded-lg border outline-none focus:ring-2 focus:ring-[#0256c4]/40"
               />
-              <MagnifyingGlassIcon className="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-500" />
+              <MagnifyingGlassIcon className="dark:text-[#f5fefd] w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-500" />
             </div>
           </div>
         </div>
@@ -168,10 +168,10 @@ export default function VerificationUserPage() {
         <div className="mt-4 h-px bg-gray-200 dark:bg-white/10" />
 
         {/* Table (full bleed) */}
-        <div className="mt-3 -mx-5 overflow-x-auto">
+        <div className="text-center mt-3 -mx-5 overflow-x-auto">
           <table className="w-full min-w-max">
             <thead>
-              <tr className="text-left text-gray-500 border-b border-gray-200/80">
+              <tr className="text-center text-gray-500 border-b border-gray-200/80">
                 <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
                   Nama
                 </th>

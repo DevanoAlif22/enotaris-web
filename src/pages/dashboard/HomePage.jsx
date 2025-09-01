@@ -157,13 +157,13 @@ export default function HomePage() {
             </button>
 
             {isOpen && (
-              <div className="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 overflow-hidden">
+              <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-[#01043c] rounded-lg shadow-lg border border-gray-200 py-2 z-50 overflow-hidden">
                 <button
                   onClick={() => {
                     console.log("Email Digests clicked");
                     setIsOpen(false);
                   }}
-                  className="w-full flex text-sm items-center gap-3 px-4 py-3 text-gray-700 hover:bg-[#0256c4] hover:text-white hover:rounded-md duration-100 ease-in"
+                  className="w-full flex text-sm items-center gap-3 px-4 py-3 text-gray-700 dark:text-[#f5fefd] hover:bg-[#0256c4] dark:hover:bg-[#003782] hover:text-white hover:rounded-md duration-100 ease-in"
                 >
                   <EnvelopeIcon className="w-4 h-4" />
                   Email Digests
@@ -173,7 +173,7 @@ export default function HomePage() {
                     console.log("Download clicked");
                     setIsOpen(false);
                   }}
-                  className="w-full flex text-sm items-center gap-3 px-4 py-3 text-gray-700 hover:bg-[#0256c4] hover:text-white hover:rounded-md duration-100 ease-in"
+                  className="w-full flex text-sm items-center gap-3 px-4 py-3 text-gray-700 dark:text-[#f5fefd] hover:bg-[#0256c4]  dark:hover:bg-[#003782] hover:text-white hover:rounded-md duration-100 ease-in"
                 >
                   <ArrowDownTrayIcon className="w-4 h-4" />
                   Download

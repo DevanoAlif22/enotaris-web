@@ -90,24 +90,24 @@ export default function TopBar({
             </button>
 
             {menuOpen && (
-              <div className="absolute right-0 mt-2 w-56 rounded-lg bg-white shadow-lg border border-gray-100 overflow-hidden py-1">
+              <div className="absolute right-0 mt-2 w-56 rounded-lg bg-white dark:bg-[#01043c] shadow-lg border border-gray-100 overflow-hidden py-1">
                 <Link
                   to="/app/settings-profile"
-                  className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-[#0256c4] hover:text-white hover:rounded-md duration-100 ease-in"
+                  className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-[#f5fefd] hover:bg-[#0256c4] dark:hover:bg-[#003782] hover:text-white hover:rounded-md duration-100 ease-in"
                 >
                   <UserIcon className="w-5 h-5" />
                   <span>Profile Settings</span>
                 </Link>
                 <Link
                   to="/app/settings-billing"
-                  className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-[#0256c4] hover:text-white hover:rounded-md duration-100 ease-in"
+                  className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-[#f5fefd] hover:bg-[#0256c4] dark:hover:bg-[#003782] hover:text-white hover:rounded-md duration-100 ease-in"
                 >
                   <DocumentTextIcon className="w-5 h-5" />
                   <span>Bill History</span>
                 </Link>
                 <div className="border-t border-gray-100 my-1"></div>
                 <button
-                  className="flex items-center gap-3 w-full text-left px-4 py-3 text-gray-700 hover:bg-[#0256c4] hover:text-white hover:rounded-md duration-100 ease-in"
+                  className="flex items-center gap-3 w-full text-left px-4 py-3 text-gray-700 dark:text-[#f5fefd] dark:hover:bg-[#003782] hover:bg-[#0256c4] hover:text-white hover:rounded-md duration-100 ease-in"
                   onClick={() => (window.location.href = "/logout")}
                 >
                   <ArrowRightOnRectangleIcon className="w-5 h-5" />
