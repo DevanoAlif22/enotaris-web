@@ -11,6 +11,9 @@ import {
 } from "@heroicons/react/24/outline";
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { authService } from "../services/authService"; // pastikan path benar
+import { useNavigate } from "react-router-dom";
+import { showSuccess } from "../utils/toastConfig";
 
 export default function TopBar({
   onToggleSidebar,
@@ -21,6 +24,18 @@ export default function TopBar({
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const ref = useRef(null);
+
+  const navigate = useNavigate();
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+      showSuccess("Anda berhasil logout!");
+      navigate("/login", { replace: true });
+    } catch (err) {
+      console.error("Logout error:", err);
+      navigate("/login", { replace: true });
+    }
+  };
 
   useEffect(() => {
     const onClickOutside = (e) => {
@@ -97,7 +112,7 @@ export default function TopBar({
                 <div className="border-t border-gray-100 my-1"></div>
                 <button
                   className="flex items-center gap-3 w-full text-left px-4 py-3 text-gray-700 hover:bg-[#0256c4] hover:text-white hover:rounded-md duration-100 ease-in"
-                  onClick={() => (window.location.href = "/logout")}
+                  onClick={handleLogout}
                 >
                   <ArrowRightOnRectangleIcon className="w-5 h-5" />
                   <span>Logout</span>

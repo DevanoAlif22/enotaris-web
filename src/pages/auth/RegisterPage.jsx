@@ -1,7 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import InputField from "../../components/input/InputField";
 import CheckCardGroup from "../../components/input/CheckCardGroup";
 import { ScaleIcon, UserIcon } from "@heroicons/react/24/outline";
+import LoadingOverlay from "../../components/common/LoadingOverlay";
+import { showError, showSuccess } from "../../utils/toastConfig";
+import { authService } from "../../services/authService";
+import { Link } from "react-router-dom";
 
 export default function RegisterPage() {
   const [registerObj, setRegisterObj] = useState({
@@ -9,21 +14,67 @@ export default function RegisterPage() {
     email: "",
     password: "",
     confirmPassword: "",
-    role: "",
+    role: "", // "notaris" | "klien"
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   const updateFormValue = (updateType, value) => {
     setRegisterObj((prev) => ({ ...prev, [updateType]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const validate = () => {
+    if (!registerObj.name.trim()) return "Nama wajib diisi.";
+    if (!registerObj.email.trim()) return "Email wajib diisi.";
+    if (!/\S+@\S+\.\S+/.test(registerObj.email))
+      return "Format email tidak valid.";
+    if (!registerObj.password) return "Kata sandi wajib diisi.";
+    if (registerObj.password.length < 6)
+      return "Kata sandi minimal 6 karakter.";
+    if (!registerObj.confirmPassword)
+      return "Konfirmasi kata sandi wajib diisi.";
+    if (registerObj.password !== registerObj.confirmPassword)
+      return "Konfirmasi kata sandi tidak sama.";
+    if (!registerObj.role) return "Peran wajib dipilih (Notaris/Klien).";
+    return null;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Register Data:", registerObj);
+    const msg = validate();
+    if (msg) return showError(msg);
+
+    try {
+      setIsSubmitting(true);
+      const res = await authService.register(registerObj);
+      showSuccess(
+        res?.message ||
+          "Registrasi berhasil. Silakan cek email untuk kode verifikasi."
+      );
+      // Arahkan ke halaman verifikasi dengan prefill email
+      navigate("/verify-code", {
+        state: { email: registerObj.email },
+        replace: true,
+      });
+    } catch (err) {
+      if (err?.errors) {
+        // Ambil error pertama yang paling relevan
+        const first = Object.values(err.errors)[0];
+        showError(Array.isArray(first) ? first[0] : String(first));
+      } else {
+        showError(err.message);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="flex items-center justify-center overflow-x-auto">
-      <div className="rounded-lg flex w-full max-w-5xl overflow-hidden">
+    <div className="flex items-center justify-center relative overflow-x-auto">
+      {/* overlay loader */}
+      <LoadingOverlay show={isSubmitting} />
+
+      <div className="rounded-lg flex w-full max-w-5xl overflow-hidden bg-white">
         {/* Left Side */}
         <div className="hidden lg:flex lg:w-1/2 bg-[#0256c4] relative flex-col justify-center items-center text-white">
           <div className="absolute top-0 left-0 w-full h-full">
@@ -62,6 +113,7 @@ export default function RegisterPage() {
               placeholder="Masukkan nama lengkap Anda"
               value={registerObj.name}
               onChange={(e) => updateFormValue("name", e.target.value)}
+              disabled={isSubmitting}
             />
 
             <InputField
@@ -71,6 +123,7 @@ export default function RegisterPage() {
               placeholder="Masukkan email"
               value={registerObj.email}
               onChange={(e) => updateFormValue("email", e.target.value)}
+              disabled={isSubmitting}
             />
 
             <InputField
@@ -80,6 +133,7 @@ export default function RegisterPage() {
               placeholder="Masukkan kata sandi"
               value={registerObj.password}
               onChange={(e) => updateFormValue("password", e.target.value)}
+              disabled={isSubmitting}
             />
 
             <InputField
@@ -91,6 +145,7 @@ export default function RegisterPage() {
               onChange={(e) =>
                 updateFormValue("confirmPassword", e.target.value)
               }
+              disabled={isSubmitting}
             />
 
             <CheckCardGroup
@@ -111,24 +166,26 @@ export default function RegisterPage() {
               defaultValue={registerObj.role}
               updateType="role"
               updateFormValue={updateFormValue}
+              disabled={isSubmitting}
             />
 
             <button
               type="submit"
-              className="mt-6 w-full bg-[#0256c4] text-white rounded-full py-3 text-lg font-semibold hover:bg-blue-700 transition"
+              disabled={isSubmitting}
+              className="mt-6 w-full bg-[#0256c4] text-white rounded-full py-3 text-lg font-semibold hover:bg-blue-700 transition disabled:opacity-60"
             >
-              Daftar
+              {isSubmitting ? "Memproses..." : "Daftar"}
             </button>
           </form>
 
           <p className="mt-2 text-center text-sm text-gray-600">
-            Sudah punya akun?{" "}
-            <a
-              href="/login"
+            Sudah punya akun?
+            <Link
               className="text-blue-600 font-medium hover:underline"
+              to="/login"
             >
               Masuk
-            </a>
+            </Link>
           </p>
         </div>
       </div>
