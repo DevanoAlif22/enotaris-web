@@ -107,7 +107,7 @@ export default function TopBar({
             {menuOpen && (
               <div className="absolute right-0 mt-2 w-56 rounded-lg bg-white dark:bg-[#01043c] shadow-lg border border-gray-100 overflow-hidden py-1">
                 <Link
-                  to="/app/settings-profile"
+                  to="/profile"
                   className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-[#f5fefd] hover:bg-[#0256c4] dark:hover:bg-[#003782] hover:text-white hover:rounded-md duration-100 ease-in"
                 >
                   <UserIcon className="w-5 h-5" />

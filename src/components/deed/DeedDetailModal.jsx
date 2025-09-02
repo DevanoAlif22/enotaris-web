@@ -1,10 +1,19 @@
 "use client";
 import Modal from "../Modal";
 
-function Pill({ children }) {
+function Pill({ children, onDelete }) {
   return (
-    <span className="inline-flex items-center px-3 py-1 rounded-full border text-sm whitespace-nowrap">
+    <span className="inline-flex items-center px-3 py-1 rounded-full border text-sm whitespace-nowrap bg-white">
       {children}
+      {onDelete && (
+        <button
+          onClick={onDelete}
+          className="ml-2 text-red-500 hover:text-red-700 font-bold focus:outline-none"
+          title="Hapus"
+        >
+          ×
+        </button>
+      )}
     </span>
   );
 }
@@ -12,7 +21,6 @@ function Pill({ children }) {
 const fmtDateTime = (iso) => {
   if (!iso) return "-";
   const d = new Date(iso);
-  // "25 Aug 2025 15:04"
   const dd = d.toLocaleString("en-GB", {
     day: "2-digit",
     month: "short",
@@ -26,7 +34,12 @@ const fmtDateTime = (iso) => {
   return `${dd} ${hh}`;
 };
 
-export default function DeedDetailModal({ open, onClose, data }) {
+export default function DeedDetailModal({
+  open,
+  onClose,
+  data,
+  onDeleteExtra,
+}) {
   if (!data) return null;
 
   return (
@@ -34,7 +47,7 @@ export default function DeedDetailModal({ open, onClose, data }) {
       open={open}
       onClose={onClose}
       title="Detail Akta"
-      titleAlign="center" // <-- pusatkan judul (lihat patch Modal di bawah)
+      titleAlign="center"
       size="lg"
       actions={
         <button
@@ -76,11 +89,23 @@ export default function DeedDetailModal({ open, onClose, data }) {
 
         {/* Dokumen Tambahan */}
         <div className="bg-gray-100 rounded-xl p-4">
-          <div className="text-sm text-gray-500 mb-1">Dokumen Tambahan</div>
-          {data.extra_fields?.length ? (
+          <div className="text-sm text-gray-500 mb-2">Dokumen Tambahan</div>
+          {data.extra_requirements?.length ? (
             <div className="flex flex-wrap gap-2">
-              {data.extra_fields.map((t) => (
-                <Pill key={t}>{t}</Pill>
+              {data.extra_requirements.map((req) => (
+                <span
+                  key={req.id}
+                  className="inline-flex items-center px-3 py-1 rounded-full border text-sm whitespace-nowrap bg-white"
+                >
+                  {req.name}
+                  <button
+                    onClick={() => onDeleteExtra?.(data.id, req.id, req.name)}
+                    className="ml-2 text-red-500 hover:text-red-700 font-bold focus:outline-none"
+                    title="Hapus"
+                  >
+                    ×
+                  </button>
+                </span>
               ))}
             </div>
           ) : (

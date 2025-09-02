@@ -1,0 +1,79 @@
+// services/notaris/activityService.js
+import api from "./api"; // axios instance kamu
+
+const normErr = (err) => {
+  const data = err?.response?.data;
+  return {
+    message: data?.message || err?.message || "Terjadi kesalahan",
+    errors: data?.data || data?.errors || null,
+    status: err?.response?.status,
+  };
+};
+
+export const activityService = {
+  async list({ page = 1, per_page = 10, search = "", status = "" }) {
+    try {
+      const { data } = await api.get("/notaris/activity", {
+        params: { page, per_page, search, status },
+      });
+      return data; // { success, data: [], meta: {...} }
+    } catch (e) {
+      throw normErr(e);
+    }
+  },
+
+  async detail(id) {
+    try {
+      const { data } = await api.get(`/notaris/activity/${id}`);
+      return data; // { success, data: {...} }
+    } catch (e) {
+      throw normErr(e);
+    }
+  },
+
+  async create({ name, deed_id, client_ids }) {
+    try {
+      const { data } = await api.post("/notaris/activity", {
+        name,
+        deed_id,
+        client_ids,
+      });
+      return data;
+    } catch (e) {
+      throw normErr(e);
+    }
+  },
+
+  async update(id, payload) {
+    try {
+      const { data } = await api.post(
+        `/notaris/activity/update/${id}`,
+        payload
+      );
+      return data;
+    } catch (e) {
+      throw normErr(e);
+    }
+  },
+
+  async destroy(id) {
+    try {
+      const { data } = await api.delete(`/notaris/activity/${id}`);
+      return data;
+    } catch (e) {
+      throw normErr(e);
+    }
+  },
+
+  // dropdown klien terverifikasi (opsional untuk form)
+  async listClients(search = "") {
+    try {
+      const { data } = await api.get("/notaris/activity/user/client", {
+        params: { search },
+      });
+      return data; // { success, data: [{value,label,name,email,avatar}] }
+    } catch (e) {
+      throw normErr(e);
+    }
+  },
+};
