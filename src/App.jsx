@@ -50,6 +50,10 @@ function App() {
               path="/app/verification-user"
               element={<VerificationUserPage />}
             />
+            <Route
+              path="/app/project-client-notaris"
+              element={<NotarisClientActivityPage />}
+            />
           </Route>
         </Route>
 
@@ -63,10 +67,6 @@ function App() {
             <Route
               path="/app/project-notaris"
               element={<NotaryActivityPage />}
-            />
-            <Route
-              path="/app/project-client-notaris"
-              element={<NotarisClientActivityPage />}
             />
           </Route>
         </Route>
