@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-  darkMode: "class", // 🔥 penting biar bisa pakai class "dark"
+  darkMode: "class",
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
@@ -18,7 +18,7 @@ const config: Config = {
         primary: ["Poppins", "sans-serif"],
       },
       container: {
-        center: true, // biar auto center container
+        center: true, // auto center container
         screens: {
           sm: "640px",
           md: "880px",

@@ -117,7 +117,7 @@ export default function LoginPage() {
               className="text-blue-600 font-medium hover:underline"
               to="/register"
             >
-              Register
+              Daftar
             </Link>
           </p>
         </div>
