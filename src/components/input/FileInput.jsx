@@ -131,7 +131,7 @@ function FileInput({
 
       {/* 1) FILE LOKAL */}
       {hasLocalFile && (
-        <div className="border border-gray-300 rounded-lg p-4 bg-white">
+        <div className="border border-gray-300 rounded-lg p-4 bg-white dark:bg-[#002d6a]">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-3">
               <div className="flex-shrink-0">
@@ -166,8 +166,10 @@ function FileInput({
                 )}
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-900">{fileName}</p>
-                <p className="text-xs text-gray-500">
+                <p className="text-sm font-medium text-gray-900 dark:text-[#f5fefd]">
+                  {fileName}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-300">
                   {(file.size / 1024 / 1024).toFixed(2)} MB (maks {maxSizeMB}MB)
                 </p>
               </div>
@@ -203,7 +205,7 @@ function FileInput({
             <button
               type="button"
               onClick={handlePick}
-              className="px-4 py-2 text-sm border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-lg transition-colors"
+              className="bg-[#0256c4] text-white px-6 py-2 text-sm rounded-lg hover:bg-[#0145a3] transition-colors font-medium disabled:opacity-60"
             >
               Ganti File
             </button>
@@ -232,11 +234,13 @@ function FileInput({
 
       {/* 2) FILE DARI SERVER */}
       {!hasLocalFile && hasRemoteUrl && (
-        <div className="border border-gray-300 rounded-lg p-4 bg-white">
+        <div className="border border-gray-300 rounded-lg p-4 bg-white dark:bg-[#002d6a]">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <p className="text-sm font-medium text-gray-900">{fileName}</p>
-              <p className="text-xs text-gray-500">
+              <p className="text-sm font-medium text-gray-900 dark:text-[#f5fefd]">
+                {fileName}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-300">
                 Sumber: Server (maks {maxSizeMB}MB bila ganti)
               </p>
             </div>
@@ -244,7 +248,7 @@ function FileInput({
               <button
                 type="button"
                 onClick={handlePick}
-                className="px-4 py-2 text-sm border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-lg transition-colors"
+                className="bg-[#0256c4] text-white px-6 py-2 text-sm rounded-lg hover:bg-[#0145a3] transition-colors font-medium disabled:opacity-60"
               >
                 Ganti File
               </button>
@@ -284,7 +288,7 @@ function FileInput({
       {/* 3) BELUM ADA FILE */}
       {!hasLocalFile && !hasRemoteUrl && (
         <div
-          className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#0256c4] transition-colors cursor-pointer bg-white"
+          className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#0256c4] transition-colors cursor-pointer bg-white dark:bg-[#002d6a]"
           onClick={handlePick}
         >
           <input
@@ -308,7 +312,9 @@ function FileInput({
                 d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
               />
             </svg>
-            <p className="text-sm text-gray-600 mb-1">Klik untuk upload file</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">
+              Klik untuk upload file
+            </p>
             <p className="text-xs text-gray-400">
               {accept.toUpperCase()} (Maks {maxSizeMB}MB)
             </p>

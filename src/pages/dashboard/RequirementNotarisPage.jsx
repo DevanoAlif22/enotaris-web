@@ -74,10 +74,10 @@ export default function RequirementNotarisPage() {
 
   return (
     <div className="p-4 sm:p-6">
-      <div className="bg-white rounded-2xl shadow-sm">
+      <div className="bg-white dark:bg-[#002d6a] rounded-2xl shadow-sm">
         {/* Header */}
         <div className="p-6">
-          <h1 className="text-2xl font-semibold text-gray-800">
+          <h1 className="text-2xl font-semibold text-gray-800 dark:text-[#f5fefd]">
             Pendirian PT Otak Kanan
           </h1>
           <div className="h-px bg-gray-200 mt-4" />
@@ -98,7 +98,7 @@ export default function RequirementNotarisPage() {
           <div
             role="tablist"
             aria-label="Halaman Pendirian"
-            className="grid grid-cols-2 gap-0 overflow-hidden border border-gray-200"
+            className="grid grid-cols-2 gap-0 overflow-hidden"
           >
             <button
               role="tab"
@@ -132,16 +132,18 @@ export default function RequirementNotarisPage() {
           {/* === TAB: PROFIL PENGHADAP === */}
           {activeTab === "profil" && (
             <div role="tabpanel" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 dark:text-[#f5fefd]">
                 <InputField
-                  label="Nama Lengkap"
+                  label={
+                    <span className="dark:text-[#f5fefd]">Nama Lengkap</span>
+                  }
                   name="namaLengkap"
                   value={profile.namaLengkap}
                   onChange={handleProfileInput}
                   required={true}
                 />
                 <InputField
-                  label="Email"
+                  label={<span className="dark:text-[#f5fefd]">Email</span>}
                   type="email"
                   name="email"
                   value={profile.email}
@@ -150,9 +152,9 @@ export default function RequirementNotarisPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 dark:text-[#f5fefd]">
                 <InputField
-                  label="Telepon"
+                  label={<span className="dark:text-[#f5fefd]">Telepon</span>}
                   type="tel"
                   name="telepon"
                   value={profile.telepon}
@@ -160,7 +162,9 @@ export default function RequirementNotarisPage() {
                   placeholder="Masukkan nomor telepon"
                 />
                 <SelectInput
-                  labelTitle="Jenis Kelamin"
+                  labelTitle={
+                    <span className="dark:text-[#f5fefd]">Jenis Kelamin</span>
+                  }
                   placeholder="Pilih jenis kelamin"
                   options={jenisKelaminOptions}
                   defaultValue={profile.jenisKelamin}
@@ -169,16 +173,16 @@ export default function RequirementNotarisPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 dark:text-[#f5fefd]">
                 <InputField
-                  label="Alamat"
+                  label={<span className="dark:text-[#f5fefd]">Alamat</span>}
                   name="alamat"
                   value={profile.alamat}
                   onChange={handleProfileInput}
                   placeholder="Masukkan alamat lengkap"
                 />
                 <InputField
-                  label="Role"
+                  label={<span className="dark:text-[#f5fefd]">Role</span>}
                   name="role"
                   value={profile.role}
                   onChange={handleProfileInput}
@@ -186,9 +190,9 @@ export default function RequirementNotarisPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 dark:text-[#f5fefd]">
                 <InputField
-                  label="NIK"
+                  label={<span className="dark:text-[#f5fefd]">NIK</span>}
                   name="nik"
                   value={profile.nik}
                   onChange={handleProfileInput}
@@ -196,7 +200,7 @@ export default function RequirementNotarisPage() {
                   required={true}
                 />
                 <InputField
-                  label="NPWP"
+                  label={<span className="dark:text-[#f5fefd]">NPWP</span>}
                   name="npwp"
                   value={profile.npwp}
                   onChange={handleProfileInput}
@@ -206,15 +210,17 @@ export default function RequirementNotarisPage() {
 
               <div className="flex items-center justify-center">
                 <div className="flex-grow h-px border-t border-dashed border-gray-300" />
-                <h3 className="px-4 text-sm font-semibold text-gray-700">
+                <h3 className="px-4 text-lg font-medium text-gray-800 dark:text-[#f5fefd]">
                   Dokumen Pendukung
                 </h3>
                 <div className="flex-grow h-px border-t border-dashed border-gray-300" />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 dark:text-[#f5fefd]">
                 <FileInput
-                  labelTitle="File KTP"
+                  labelTitle={
+                    <span className="dark:text-[#f5fefd]">File KTP</span>
+                  }
                   required={true}
                   accept=".jpg,.jpeg,.png"
                   maxSizeMB={2}
@@ -224,7 +230,11 @@ export default function RequirementNotarisPage() {
                   updateType="fileKtp"
                 />
                 <FileInput
-                  labelTitle="File Kartu Keluarga"
+                  labelTitle={
+                    <span className="dark:text-[#f5fefd]">
+                      File Kartu Keluarga
+                    </span>
+                  }
                   required={true}
                   accept=".jpg,.jpeg,.png"
                   maxSizeMB={2}
@@ -235,9 +245,11 @@ export default function RequirementNotarisPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 dark:text-[#f5fefd]">
                 <FileInput
-                  labelTitle="File NPWP"
+                  labelTitle={
+                    <span className="dark:text-[#f5fefd]">File NPWP</span>
+                  }
                   accept=".jpg,.jpeg,.png"
                   maxSizeMB={2}
                   defaultFile={profile.fileNpwp.file}
@@ -246,7 +258,11 @@ export default function RequirementNotarisPage() {
                   updateType="fileNpwp"
                 />
                 <FileInput
-                  labelTitle="File KTP Notaris"
+                  labelTitle={
+                    <span className="dark:text-[#f5fefd]">
+                      File KTP Notaris
+                    </span>
+                  }
                   required={true}
                   accept=".jpg,.jpeg,.png"
                   maxSizeMB={2}
@@ -271,7 +287,7 @@ export default function RequirementNotarisPage() {
           {/* === TAB: ISIAN DOKUMEN === */}
           {activeTab === "isian" && (
             <div role="tabpanel">
-              <div className="text-sm text-gray-700 mb-6">
+              <div className="text-sm text-gray-700 dark:text-[#f5fefd] mb-6">
                 Upload dokumen-dokumen berikut untuk melengkapi verifikasi
                 aktivitas Anda. File yang diperbolehkan: PDF, JPG, JPEG, PNG
                 (maksimal 2MB per file). Dokumen akan tersimpan otomatis setelah
@@ -283,9 +299,9 @@ export default function RequirementNotarisPage() {
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 dark:text-[#f5fefd]">
                 <ExtraFieldCard
-                  title="NPWP"
+                  title={<span className="dark:text-[#f5fefd]">NPWP</span>}
                   status="Menunggu"
                   type="file"
                   value={form.npwp_file}
@@ -294,7 +310,7 @@ export default function RequirementNotarisPage() {
                 />
 
                 <ExtraFieldCard
-                  title="Paspor"
+                  title={<span className="dark:text-[#f5fefd]">Paspor</span>}
                   status="Menunggu"
                   type="file"
                   value={form.paspor_file}
@@ -303,7 +319,7 @@ export default function RequirementNotarisPage() {
                 />
 
                 <ExtraFieldCard
-                  title="NIK"
+                  title={<span className="dark:text-[#f5fefd]">NIK</span>}
                   status="Menunggu"
                   type="text"
                   value={form.nik_text}

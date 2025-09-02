@@ -225,10 +225,10 @@ const ProfilePage = () => {
     <div className="p-4 sm:p-6 relative">
       <LoadingOverlay show={loading || savingProfile || savingIdentity} />
 
-      <div className="bg-white rounded-lg p-6 shadow-sm">
+      <div className="bg-white dark:bg-[#002d6a] rounded-lg p-6 shadow-sm">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-gray-800 mb-3">
+          <h1 className="text-2xl font-semibold text-gray-800 dark:text-[#f5fefd] mb-3">
             Pengaturan Profil
           </h1>
           <div className="w-full h-px bg-gray-200" />
@@ -276,16 +276,19 @@ const ProfilePage = () => {
               <div />
             </div> */}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 dark:text-[#f5fefd]">
               <InputField
-                label="Nama Lengkap"
+                label={
+                  <span className="dark:text-[#f5fefd]">Nama Lengkap</span>
+                }
                 name="namaLengkap"
                 value={formData.namaLengkap}
                 onChange={handleInputChange}
                 required={true}
               />
+
               <InputField
-                label="Email"
+                label={<span className="dark:text-[#f5fefd]">Email</span>}
                 type="email"
                 name="email"
                 value={formData.email}
@@ -294,9 +297,9 @@ const ProfilePage = () => {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 dark:text-[#f5fefd]">
               <InputField
-                label="Telepon"
+                label={<span className="dark:text-[#f5fefd]">Telepon</span>}
                 type="tel"
                 name="telepon"
                 value={formData.telepon}
@@ -304,7 +307,9 @@ const ProfilePage = () => {
                 placeholder="Masukkan nomor telepon"
               />
               <SelectInput
-                labelTitle="Jenis Kelamin"
+                labelTitle={
+                  <span className="dark:text-[#f5fefd]">Jenis Kelamin</span>
+                }
                 placeholder="Pilih jenis kelamin"
                 options={jenisKelaminOptions}
                 defaultValue={formData.jenisKelamin}
@@ -313,16 +318,16 @@ const ProfilePage = () => {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 dark:text-[#f5fefd]">
               <InputField
-                label="Alamat"
+                label={<span className="dark:text-[#f5fefd]">Alamat</span>}
                 name="alamat"
                 value={formData.alamat}
                 onChange={handleInputChange}
                 placeholder="Masukkan alamat lengkap"
               />
               <InputField
-                label="Role"
+                label={<span className="dark:text-[#f5fefd]">Role</span>}
                 name="role"
                 value={formData.roleLabel}
                 onChange={() => {}}
@@ -348,7 +353,9 @@ const ProfilePage = () => {
             {/* Status Verifikasi */}
             <div className="mb-6">
               <div className="flex items-center gap-3">
-                <span className="text-gray-600">Status Verifikasi</span>
+                <span className="text-gray-600 dark:text-[#f5fefd]">
+                  Status Verifikasi :
+                </span>
                 <span
                   className={`px-3 py-1 text-sm rounded-full font-medium ${verifBadge.cls}`}
                 >
@@ -362,9 +369,9 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 dark:text-[#f5fefd]">
               <InputField
-                label="NIK"
+                label={<span className="dark:text-[#f5fefd]">NIK</span>}
                 name="nik"
                 value={formData.nik}
                 onChange={handleInputChange}
@@ -372,7 +379,7 @@ const ProfilePage = () => {
                 required={true}
               />
               <InputField
-                label="NPWP"
+                label={<span className="dark:text-[#f5fefd]">NPWP</span>}
                 name="npwp"
                 value={formData.npwp}
                 onChange={handleInputChange}
@@ -380,9 +387,13 @@ const ProfilePage = () => {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 dark:text-[#f5fefd]">
               <InputField
-                label="KTP Notaris (opsional/kusus notaris wajib)"
+                label={
+                  <span className="dark:text-[#f5fefd]">
+                    NIK KTP Notaris (opsional/kusus notaris wajib)
+                  </span>
+                }
                 name="ktpNotaris"
                 value={formData.ktpNotaris}
                 onChange={handleInputChange}
@@ -395,7 +406,7 @@ const ProfilePage = () => {
             <div className="mt-8">
               <div className="flex items-center justify-center mb-6">
                 <div className="flex-grow h-px border-t border-dashed border-gray-400"></div>
-                <h3 className="px-4 text-lg font-medium text-gray-800">
+                <h3 className="px-4 text-lg font-medium text-gray-800 dark:text-[#f5fefd]">
                   Dokumen Pendukung
                 </h3>
                 <div className="flex-grow h-px border-t border-dashed border-gray-400"></div>
@@ -403,7 +414,9 @@ const ProfilePage = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FileInput
-                  labelTitle="File KTP"
+                  labelTitle={
+                    <span className="dark:text-[#f5fefd]">File KTP</span>
+                  }
                   required={true}
                   accept=".jpg,.jpeg,.png,.pdf"
                   maxSizeMB={2}
@@ -413,7 +426,11 @@ const ProfilePage = () => {
                   updateType="fileKtp"
                 />
                 <FileInput
-                  labelTitle="File Kartu Keluarga"
+                  labelTitle={
+                    <span className="dark:text-[#f5fefd]">
+                      File Kartu Keluarga
+                    </span>
+                  }
                   required={true}
                   accept=".jpg,.jpeg,.png,.pdf"
                   maxSizeMB={2}
@@ -426,7 +443,11 @@ const ProfilePage = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                 <FileInput
-                  labelTitle="Tanda Tangan (PNG)"
+                  labelTitle={
+                    <span className="dark:text-[#f5fefd]">
+                      Tanda Tangan (PNG)
+                    </span>
+                  }
                   accept=".png"
                   required={true}
                   maxSizeMB={1}
@@ -436,7 +457,11 @@ const ProfilePage = () => {
                   updateType="fileSign"
                 />
                 <FileInput
-                  labelTitle="Foto Formal (opsional)"
+                  labelTitle={
+                    <span className="dark:text-[#f5fefd]">
+                      Foto Formal (opsional)
+                    </span>
+                  }
                   accept=".jpg,.jpeg,.png"
                   maxSizeMB={2}
                   defaultFile={formData.filePhoto.file}
@@ -448,7 +473,11 @@ const ProfilePage = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                 <FileInput
-                  labelTitle="File NPWP (opsional)"
+                  labelTitle={
+                    <span className="dark:text-[#f5fefd]">
+                      File NPWP (opsional)
+                    </span>
+                  }
                   accept=".jpg,.jpeg,.png,.pdf"
                   maxSizeMB={2}
                   defaultFile={formData.fileNpwp.file}
@@ -457,7 +486,11 @@ const ProfilePage = () => {
                   updateType="fileNpwp"
                 />
                 <FileInput
-                  labelTitle="File KTP Notaris"
+                  labelTitle={
+                    <span className="dark:text-[#f5fefd]">
+                      File KTP Notaris
+                    </span>
+                  }
                   accept=".jpg,.jpeg,.png,.pdf"
                   maxSizeMB={2}
                   required={formData.roleLabel === "Notaris"}

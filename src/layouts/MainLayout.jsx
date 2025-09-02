@@ -36,12 +36,12 @@ export default function MainLayout() {
           onToggleTheme={() => setTheme(theme === "dark" ? "light" : "dark")}
         />
         <main className="flex flex-col min-h-screen">
-          {/* konten utama isi penuh */}
+          {/* konten utama */}
           <div className="flex-1 overflow-auto">
             <Outlet />
           </div>
 
-          {/* footer selalu di bawah */}
+          {/* footer */}
           <Footer />
         </main>
       </div>
