@@ -24,7 +24,9 @@ export default function InputField({
         onChange={onChange}
         disabled={disabled}
         className={`w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none ${
-          disabled ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""
+          disabled
+            ? "bg-gray-100 dark:bg-gray-300 text-gray-500 cursor-not-allowed"
+            : ""
         }`}
       />
     </div>

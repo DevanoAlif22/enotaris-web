@@ -48,14 +48,16 @@ export default function ExtraFieldCard({
       </div>
 
       {/* Empty hint */}
-      <p className="text-gray-600 mb-4">
+      <p className="text-gray-600 dark:text-[#f5fefd] mb-4">
         {isEmpty ? "Belum ada nilai/file." : "Sudah ada nilai/file."}
       </p>
 
       {/* Input area boxed */}
       {type === "file" ? (
         <div>
-          <div className="text-gray-700 mb-2 font-medium">Unggah File</div>
+          <div className="text-gray-700 dark:text-gray-300 text-sm mb-2 font-medium">
+            Unggah File
+          </div>
           <FileInput
             labelTitle={null}
             accept={accept}
@@ -67,13 +69,15 @@ export default function ExtraFieldCard({
             updateType={updateKey}
             // biarkan FileInput-mu men-set { updateType, value }
           />
-          <div className="text-xs text-gray-500 mt-2">
+          <div className="text-xs text-gray-500 dark:text-gray-300 mt-2">
             .PDF,.JPG,.JPEG,.PNG (Maks {maxSizeMB}MB)
           </div>
         </div>
       ) : (
         <div>
-          <div className="text-gray-700 mb-2 font-medium">Nilai (Teks)</div>
+          <div className="text-gray-700 dark:text-gray-300 text-sm mb-2 font-medium">
+            Nilai (Teks)
+          </div>
           <InputField
             label={null}
             name={textName || updateKey}

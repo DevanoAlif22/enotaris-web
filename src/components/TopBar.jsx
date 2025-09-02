@@ -122,7 +122,7 @@ export default function TopBar({
                 </Link>
                 <div className="border-t border-gray-100 my-1"></div>
                 <button
-                  className="flex items-center gap-3 w-full text-left px-4 py-3 text-gray-700 hover:bg-[#0256c4] hover:text-white hover:rounded-md duration-100 ease-in"
+                  className="flex items-center gap-3 w-full text-left px-4 py-3 text-gray-700 dark:text-[#f5fefd] hover:bg-[#0256c4] hover:text-white hover:rounded-md duration-100 ease-in"
                   onClick={handleLogout}
                 >
                   <ArrowRightOnRectangleIcon className="w-5 h-5" />

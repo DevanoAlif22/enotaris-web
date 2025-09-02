@@ -179,7 +179,7 @@ export default function RegisterPage() {
           </form>
 
           <p className="mt-2 text-center text-sm text-gray-600">
-            Sudah punya akun?
+            Sudah punya akun?{" "}
             <Link
               className="text-blue-600 font-medium hover:underline"
               to="/login"
