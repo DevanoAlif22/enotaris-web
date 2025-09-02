@@ -1,81 +1,51 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import MagnifyingGlassIcon from "@heroicons/react/24/outline/MagnifyingGlassIcon";
 import StatusBadge from "../../utils/StatusBadge";
 import ActionButton from "../../components/ActionButton";
 import FileLink from "../../utils/FileLink";
+import { verificationService } from "../../services/verificationService";
+import { showError, showSuccess } from "../../utils/toastConfig";
 
 // modal2
 import VerificationDetailModal from "../../components/verification/VerficationDetailModal";
 import VerificationDecisionModal from "../../components/verification/VerificationDecisionModal";
 
+const TAB_MAP = [
+  { label: "Menunggu", type: "pending" },
+  { label: "Disetujui", type: "approved" },
+  { label: "Ditolak", type: "rejected" },
+  { label: "Semua", type: "all" },
+];
+
+const mapStatusToBadge = (s) => {
+  const v = (s || "").toLowerCase();
+  if (v === "approved" || v === "disetujui") return "Disetujui";
+  if (v === "rejected" || v === "ditolak") return "Ditolak";
+  return "Menunggu";
+};
+
 export default function VerificationUserPage() {
-  // mock data; ganti ke API
-  const [rows, setRows] = useState([
-    {
-      id: 1,
-      name: "yasmin",
-      email: "yasmin@gmail.com",
-      nik: "12345678910",
-      npwp: "12345678910",
-      ktp_url: "#",
-      kk_url: "#",
-      ttd_url: "#",
-      foto_url: "",
-      status: "Menunggu",
-      updated_at: "2025-08-24T09:38:00.000Z",
-    },
-    {
-      id: 2,
-      name: "devano",
-      email: "devano@gmail.com",
-      nik: "12345678910",
-      npwp: "12345678910",
-      ktp_url: "#",
-      kk_url: "#",
-      ttd_url: "#",
-      foto_url: "#",
-      status: "Menunggu",
-      updated_at: "2025-08-25T09:59:00.000Z",
-    },
-  ]);
+  // state server data
+  const [rows, setRows] = useState([]);
+  const [meta, setMeta] = useState({
+    current_page: 1,
+    per_page: 10,
+    total: 0,
+    last_page: 1,
+    from: 0,
+    to: 0,
+  });
 
-  // filter tabs
-  const tabs = ["Menunggu", "Disetujui", "Ditolak", "Semua"];
-  const [activeTab, setActiveTab] = useState("Menunggu");
-
-  // search & pagination
+  // UI state
+  const [activeTab, setActiveTab] = useState(TAB_MAP[0]); // default Menunggu
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const perPage = 10;
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    let list = rows;
-    if (activeTab !== "Semua") {
-      list = list.filter(
-        (r) => r.status.toLowerCase() === activeTab.toLowerCase()
-      );
-    }
-    if (q) {
-      list = list.filter(
-        (r) =>
-          r.name.toLowerCase().includes(q) || r.email.toLowerCase().includes(q)
-      );
-    }
-    return list;
-  }, [rows, activeTab, query]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
-  const paged = useMemo(() => {
-    const start = (page - 1) * perPage;
-    return filtered.slice(start, start + perPage);
-  }, [filtered, page]);
-
-  useEffect(() => setPage(1), [activeTab, query]);
+  const [loading, setLoading] = useState(false);
 
   // modals
-  const [detail, setDetail] = useState({ open: false, item: null });
+  const [detail, setDetail] = useState({ open: false, userId: null });
   const [verifyModal, setVerifyModal] = useState({
     open: false,
     action: null, // 'approve' | 'reject'
@@ -83,46 +53,130 @@ export default function VerificationUserPage() {
     loading: false,
   });
 
+  // debounced search
+  const debRef = useRef(null);
+  const onChangeSearch = (e) => {
+    const v = e.target.value;
+    setQuery(v);
+    if (debRef.current) clearTimeout(debRef.current);
+    debRef.current = setTimeout(() => {
+      setPage(1);
+      fetchRows(1, perPage, activeTab.type, v);
+    }, 400);
+  };
+
+  const fetchRows = async (
+    pg = page,
+    pp = perPage,
+    type = activeTab.type,
+    search = query
+  ) => {
+    try {
+      setLoading(true);
+      const res = await verificationService.list(type, {
+        page: pg,
+        per_page: pp,
+        search,
+      });
+
+      // Map data BE → FE rows
+      const mapped = (res?.data || []).map((d) => ({
+        id: d.user_id,
+        name: d.user_name,
+        email: d.user_email,
+        nik: d.ktp,
+        npwp: d.npwp,
+        ktp_url: d.file_ktp,
+        kk_url: d.file_kk,
+        npwp_url: d.file_npwp,
+        ktp_notaris_url: d.file_ktp_notaris,
+        ttd_url: d.file_sign,
+        foto_url: d.file_photo,
+        status: mapStatusToBadge(d.verification_status),
+        updated_at: d.updated_at,
+      }));
+
+      setRows(mapped);
+      setMeta(res?.meta ?? {});
+    } catch (e) {
+      showError(e.message || "Gagal mengambil data verifikasi.");
+      setRows([]);
+      setMeta({
+        current_page: 1,
+        per_page: perPage,
+        total: 0,
+        last_page: 1,
+        from: 0,
+        to: 0,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRows(page, perPage, activeTab.type, query);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, activeTab]);
+
+  useEffect(() => setPage(1), [activeTab]);
+
+  const totalPages = meta?.last_page || 1;
+
   const fmtDate = (iso) =>
-    new Date(iso).toLocaleString("id-ID", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    iso
+      ? new Date(iso).toLocaleString("id-ID", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "-";
 
   const askApprove = (item) =>
     setVerifyModal({ open: true, action: "approve", item, loading: false });
   const askReject = (item) =>
     setVerifyModal({ open: true, action: "reject", item, loading: false });
 
-  // handler submit dari modal verifikasi
-  const doVerify = async ({ action }) => {
+  // submit dari modal verifikasi (dapat notes)
+  // ganti handler-mu
+  const doVerify = async (payload) => {
+    const { action } = payload;
+    const note = (payload.notes ?? payload.reason ?? "").trim(); // ← ambil salah satu
+    const item = verifyModal.item;
+    const status_verification = action === "approve" ? "approved" : "rejected";
+
     try {
       setVerifyModal((s) => ({ ...s, loading: true }));
-      // TODO: await api.post(`/verifications/${verifyModal.item.id}/${action}`)
-      setRows((prev) =>
-        prev.map((r) =>
-          r.id === verifyModal.item.id
-            ? {
-                ...r,
-                status: action === "approve" ? "Disetujui" : "Ditolak",
-                updated_at: new Date().toISOString(),
-              }
-            : r
-        )
+      await verificationService.verifyIdentity({
+        id: item.id,
+        status_verification,
+        // hanya kirim kalau ada isinya (biar nggak ke-null-kan di BE kalau kosong)
+        notes_verification: note || undefined,
+      });
+
+      showSuccess(
+        `Status pengguna "${item.name}" diubah ke ${
+          action === "approve" ? "Disetujui" : "Ditolak"
+        }.`
       );
       setVerifyModal({ open: false, action: null, item: null, loading: false });
+      fetchRows(page, perPage, activeTab.type, query);
     } catch (e) {
       setVerifyModal((s) => ({ ...s, loading: false }));
-      alert("Gagal memproses. Coba lagi." + e.message);
+      showError(e.message || "Gagal memproses verifikasi.");
     }
   };
 
   return (
     <div className="p-4 md:p-6">
-      <div className="bg-white dark:bg-[#002d6a] rounded-2xl shadow-sm p-5 md:p-8">
+      <div className="bg-white dark:bg-[#002d6a] rounded-2xl shadow-sm p-5 md:p-8 relative">
+        {loading && (
+          <div className="absolute inset-0 bg-white/50 dark:bg-black/30 backdrop-blur-sm rounded-2xl flex items-center justify-center text-sm">
+            Memuat...
+          </div>
+        )}
         {/* Header */}
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-2xl font-semibold dark:text-[#f5fefd]">
@@ -132,11 +186,11 @@ export default function VerificationUserPage() {
           <div className="flex items-center gap-2">
             {/* Tabs */}
             <div className="flex rounded-lg border dark:border-[#f5fefd] overflow-hidden">
-              {tabs.map((t) => {
-                const active = activeTab === t;
+              {TAB_MAP.map((t) => {
+                const active = activeTab.type === t.type;
                 return (
                   <button
-                    key={t}
+                    key={t.type}
                     onClick={() => setActiveTab(t)}
                     className={
                       "px-3 py-2 text-sm font-semibold " +
@@ -145,7 +199,7 @@ export default function VerificationUserPage() {
                         : "bg-[#f5fefd] text-gray-800")
                     }
                   >
-                    {t}
+                    {t.label}
                   </button>
                 );
               })}
@@ -154,8 +208,8 @@ export default function VerificationUserPage() {
             {/* Search */}
             <div className="relative w-72">
               <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                defaultValue={query}
+                onChange={onChangeSearch}
                 placeholder="Cari nama atau email..."
                 className="dark:text-[#f5fefd] w-full h-11 pl-4 pr-10 rounded-lg border outline-none focus:ring-2 focus:ring-[#0256c4]/40"
               />
@@ -163,11 +217,8 @@ export default function VerificationUserPage() {
             </div>
           </div>
         </div>
-
         {/* Divider */}
         <div className="mt-4 h-px bg-gray-200 dark:bg-white/10" />
-
-        {/* Table (full bleed) */}
         <div className="text-center mt-3 -mx-5 overflow-x-auto">
           <table className="w-full min-w-max">
             <thead>
@@ -196,7 +247,7 @@ export default function VerificationUserPage() {
               </tr>
             </thead>
             <tbody>
-              {paged.map((r, idx) => (
+              {rows.map((r, idx) => (
                 <tr
                   key={r.id}
                   className={`border-t border-gray-200/80 ${
@@ -225,27 +276,31 @@ export default function VerificationUserPage() {
                     <div className="flex items-center gap-2">
                       <ActionButton
                         variant="info"
-                        onClick={() => setDetail({ open: true, item: r })}
+                        onClick={() => setDetail({ open: true, userId: r.id })}
                       >
                         Detail
                       </ActionButton>
-                      <ActionButton
-                        variant="success"
-                        onClick={() => askApprove(r)}
-                      >
-                        Setujui
-                      </ActionButton>
-                      <ActionButton
-                        variant="danger"
-                        onClick={() => askReject(r)}
-                      >
-                        Tolak
-                      </ActionButton>
+                      {r.status === "Menunggu" && (
+                        <>
+                          <ActionButton
+                            variant="success"
+                            onClick={() => askApprove(r)}
+                          >
+                            Setujui
+                          </ActionButton>
+                          <ActionButton
+                            variant="danger"
+                            onClick={() => askReject(r)}
+                          >
+                            Tolak
+                          </ActionButton>
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>
               ))}
-              {paged.length === 0 && (
+              {rows.length === 0 && !loading && (
                 <tr>
                   <td
                     colSpan={11}
@@ -258,28 +313,26 @@ export default function VerificationUserPage() {
             </tbody>
           </table>
         </div>
-
-        {/* Footer: pagination */}
         <div className="mt-6 flex items-center justify-between text-sm text-gray-600">
           <div className="dark:text-[#f5fefd]">
             <p>
-              Menampilkan {paged.length} – dari {filtered.length}
+              Menampilkan {meta.from || 0}–{meta.to || 0} dari {meta.total || 0}
             </p>
           </div>
           <div className="flex items-center gap-2">
             <button
-              className="px-3 py-2 rounded-lg bg-gray-100"
-              disabled={page === 1}
+              className="px-3 py-2 rounded-lg bg-gray-100 disabled:opacity-50"
+              disabled={(meta.current_page || 1) <= 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
             >
               «
             </button>
             <div className="px-4 py-2 rounded-lg bg-gray-100 font-semibold">
-              Hal {page} / {totalPages}
+              Hal {meta.current_page || page} / {totalPages}
             </div>
             <button
-              className="px-3 py-2 rounded-lg bg-gray-100"
-              disabled={page === totalPages}
+              className="px-3 py-2 rounded-lg bg-gray-100 disabled:opacity-50"
+              disabled={(meta.current_page || 1) >= totalPages}
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             >
               »
@@ -291,8 +344,8 @@ export default function VerificationUserPage() {
       {/* Modals */}
       <VerificationDetailModal
         open={detail.open}
-        onClose={() => setDetail({ open: false, item: null })}
-        item={detail.item}
+        onClose={() => setDetail({ open: false, userId: null })}
+        userId={detail.userId}
       />
 
       <VerificationDecisionModal
