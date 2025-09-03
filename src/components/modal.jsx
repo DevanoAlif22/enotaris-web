@@ -37,7 +37,7 @@ export default function Modal({
       <div
         role="dialog"
         aria-modal="true"
-        className={`relative z-[1001] w-full ${sizes[size]} bg-white dark:bg-[#0f1220] rounded-2xl shadow-lg animate-zoomIn pointer-events-auto overflow-hidden flex flex-col`}
+        className={`relative z-[1001] w-full ${sizes[size]} bg-white dark:bg-[#002d6a] rounded-2xl shadow-lg animate-zoomIn pointer-events-auto overflow-hidden flex flex-col`}
         style={{ maxHeight }} // <-- tinggi maksimal modal
       >
         {/* header (tetap terlihat) */}

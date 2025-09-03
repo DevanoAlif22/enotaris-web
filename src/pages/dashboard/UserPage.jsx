@@ -105,24 +105,26 @@ export default function UserPage() {
 
   return (
     <div className="p-4 md:p-6">
-      <div className="bg-white dark:bg-[#0f1220] rounded-2xl shadow-sm p-5 md:p-8 relative">
+      <div className="bg-white dark:bg-[#002d6a] rounded-2xl shadow-sm p-5 md:p-8 relative">
         {loading && (
-          <div className="absolute inset-0 bg-white/50 dark:bg-black/30 backdrop-blur-sm rounded-2xl flex items-center justify-center text-sm">
+          <div className="absolute inset-0 dark:text-[#f5fefd] bg-white/50 dark:bg-black/30 backdrop-blur-sm rounded-2xl flex items-center justify-center text-sm">
             Memuat...
           </div>
         )}
 
         {/* Header */}
         <div className="flex items-center justify-between gap-3">
-          <h1 className="text-2xl font-semibold">Daftar Pengguna</h1>
+          <h1 className="text-2xl font-semibold dark:text-[#f5fefd]">
+            Daftar Pengguna
+          </h1>
           <div className="relative w-full max-w-xl">
             <input
               defaultValue={query}
               onChange={onChangeSearch}
               placeholder="Cari nama, email, role, status..."
-              className="w-full h-11 pl-4 pr-10 rounded-lg border outline-none focus:ring-2 focus:ring-[#0256c4]/40"
+              className="w-full h-11 pl-4 pr-10 rounded-lg border outline-none focus:ring-2 focus:ring-[#0256c4]/40 dark:text-[#f5fefd]"
             />
-            <MagnifyingGlassIcon className="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-500" />
+            <MagnifyingGlassIcon className="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-[#f5fefd]" />
           </div>
         </div>
 
@@ -133,7 +135,7 @@ export default function UserPage() {
         <div className="mt-3 overflow-x-auto">
           <table className="w-full min-w-max border-collapse border-b border-gray-200/80">
             <thead>
-              <tr className="text-left text-gray-500 border-b border-gray-200/80">
+              <tr className="text-gray-500 border-b border-gray-200/80 dark:text-[#f5fefd] text-center">
                 <th className="py-3 px-4 font-semibold whitespace-nowrap">
                   Nama
                 </th>
@@ -161,7 +163,7 @@ export default function UserPage() {
               {rows.map((u, idx) => (
                 <tr
                   key={u.id}
-                  className={`border-b border-gray-200/80 ${
+                  className={`border-b border-gray-200/80 text-center ${
                     idx === 0 ? "border-t-0" : ""
                   }`}
                 >
@@ -173,7 +175,7 @@ export default function UserPage() {
                       </div>
                     </div>
                   </td>
-                  <td className="py-4 px-4 align-middle whitespace-nowrap text-[#6b7280]">
+                  <td className="py-4 px-4 align-middle whitespace-nowrap text-[#6b7280] dark:text-gray-400">
                     {u.email || "-"}
                   </td>
                   <td className="py-4 px-4 align-middle whitespace-nowrap text-[#0e1528] dark:text-white">
@@ -238,9 +240,11 @@ export default function UserPage() {
 
         {/* Footer: pagination (server-side) */}
         <div className="mt-6 flex items-center justify-between text-sm text-gray-600">
-          <p>
-            Menampilkan {meta.from || 0}–{meta.to || 0} dari {totalCount}
-          </p>
+          <div className="dark:text-[#f5fefd]">
+            <p>
+              Menampilkan {meta.from || 0}–{meta.to || 0} dari {totalCount}
+            </p>
+          </div>
           <div className="flex items-center gap-2">
             <button
               className="px-3 py-2 rounded-lg bg-gray-100 disabled:opacity-50"
