@@ -72,10 +72,10 @@ export default function DeedExtraFieldsModal({
       <div className="space-y-5">
         {/* Akta (read-only) */}
         <div>
-          <div className="text-sm font-semibold text-gray-500 dark:text-[#f5fefd] mb-2">
+          <div className="text-sm text-gray-500 dark:text-[#f5fefd] mb-2">
             Akta
           </div>
-          <div className="px-4 py-3 rounded-xl bg-[#f5fefd] text-gray-800">
+          <div className="px-4 py-3 rounded-xl font-semibold bg-[#f5fefd] dark:bg-[#01043c] dark:text-[#f5fefd] text-gray-800">
             {deed?.name || "-"}
           </div>
         </div>
@@ -83,7 +83,7 @@ export default function DeedExtraFieldsModal({
         {/* Nama */}
         <div className="dark:text-[#f5fefd]">
           <InputField
-            label="Nama Data"
+            label={<span className="dark:text-[#f5fefd]">Nama Data</span>}
             type="text"
             name="name"
             placeholder="Contoh: Surat Kuasa Penghadap 1"
@@ -95,7 +95,11 @@ export default function DeedExtraFieldsModal({
 
         {/* Jenis Input */}
         <CheckCardGroup
-          labelTitle="Jenis Input"
+          labelTitle={
+            <span className="dark:text-[#f5fefd] font-medium ">
+              Jenis Input
+            </span>
+          }
           containerStyle="space-y-2"
           options={[
             {
@@ -111,11 +115,13 @@ export default function DeedExtraFieldsModal({
             },
             {
               value: "file",
-              name: "File",
+              name: <span className="dark:text-[#f5fefd]">File</span>,
               icon: (
                 <FolderArrowDownIcon
                   className={`h-5 w-5 ${
-                    inputType === "file" ? "text-blue-600" : "text-gray-400"
+                    inputType === "file"
+                      ? "text-blue-600"
+                      : "text-gray-400 dark:text-[#f5fefd]"
                   }`}
                 />
               ),
