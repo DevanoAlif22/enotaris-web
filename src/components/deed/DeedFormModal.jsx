@@ -5,7 +5,6 @@ import Modal from "../Modal";
 import InputField from "../../components/input/InputField";
 import TextAreaField from "../../components/input/TextAreaField";
 
-/* Overlay simpel; hapus kalau kamu sudah punya komponen sendiri */
 function LoadingOverlay({ show, text = "Memproses..." }) {
   if (!show) return null;
   return (
@@ -46,7 +45,6 @@ export default function DeedFormModal({
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // pastikan total_client number & dalam rentang 1..10 (sesuai validasi BE kamu)
     if (name === "total_client") {
       const n = Number(value);
       setForm((f) => ({
@@ -63,7 +61,6 @@ export default function DeedFormModal({
     const name = form.name.trim();
     if (!name) return alert("Nama wajib diisi");
 
-    // jaga-jaga: clamp nilai agar sesuai validasi server (1..10)
     const total = Math.max(1, Math.min(10, Number(form.total_client) || 1));
 
     try {
@@ -76,7 +73,6 @@ export default function DeedFormModal({
       });
       onClose();
     } catch (err) {
-      // biarkan modal tetap terbuka jika terjadi error
       console.error(err);
     } finally {
       setIsSubmitting(false);
@@ -87,21 +83,27 @@ export default function DeedFormModal({
     <Modal
       open={open}
       onClose={isSubmitting ? () => {} : onClose}
-      title={isEdit ? "Edit Akta" : "Tambah Akta"}
+      title={
+        isEdit ? (
+          <span className="text-xl dark:text-[#f5fefd]">Edit Akta</span>
+        ) : (
+          <span className="text-xl dark:text-[#f5fefd]">Tambah Akta</span>
+        )
+      }
       size="md"
       actions={
         <>
           <button
             onClick={onClose}
             disabled={isSubmitting}
-            className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-white/10 disabled:opacity-60"
+            className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-200 dark:hover:bg-gray-300 transition-colors disabled:opacity-60"
           >
             Batal
           </button>
           <button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="px-4 py-2 rounded-lg bg-[#0256c4] text-white font-semibold disabled:opacity-60"
+            className="px-4 py-2 rounded-lg bg-[#0256c4] hover:bg-[#0649a0] transition-colors text-white font-semibold disabled:opacity-60"
           >
             {isEdit
               ? isSubmitting
@@ -117,10 +119,10 @@ export default function DeedFormModal({
       <div className="relative">
         <LoadingOverlay show={isSubmitting} />
 
-        <div className="space-y-4">
+        <div className="space-y-4 dark:text-[#f5fefd]">
           <div>
             <InputField
-              label="Nama Akta"
+              label={<span className="dark:text-[#f5fefd]">Nama Akta</span>}
               type="text"
               name="name"
               value={form.name}
@@ -132,7 +134,9 @@ export default function DeedFormModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Deskripsi</label>
+            <label className="block text-sm font-medium mb-1 dark:text-[#f5fefd]">
+              Deskripsi
+            </label>
             <TextAreaField
               name="description"
               value={form.description}
@@ -147,7 +151,9 @@ export default function DeedFormModal({
           <div>
             <InputField
               type="number"
-              label="Jumlah Penghadap"
+              label={
+                <span className="dark:text-[#f5fefd]">Jumlah Penghadap</span>
+              }
               name="total_client"
               value={form.total_client}
               onChange={handleChange}
@@ -157,7 +163,7 @@ export default function DeedFormModal({
               min={1}
               max={10}
             />
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
               Minimal 1, maksimal 10 (mengikuti validasi server).
             </p>
           </div>

@@ -36,7 +36,6 @@ export default function DeedPage() {
     loading: false,
   });
 
-  
   // debounced search
   const debRef = useRef(null);
   const onChangeSearch = (e) => {
@@ -114,7 +113,6 @@ export default function DeedPage() {
       showError(firstErr || e.message || "Gagal menghapus persyaratan.");
     }
   };
-
 
   const fetchRows = async (pg = page, pp = perPage, search = query) => {
     try {
@@ -273,7 +271,7 @@ export default function DeedPage() {
     <div className="p-4 md:p-6">
       <div className="bg-white dark:bg-[#002d6a] rounded-2xl shadow-sm p-5 md:p-6 relative">
         {loading && (
-          <div className="absolute inset-0 bg-white/50 dark:bg-black/30 backdrop-blur-sm rounded-2xl flex items-center justify-center text-sm">
+          <div className="absolute inset-0 dark:text-[#f5fefd] bg-white/50 dark:bg-black/30 backdrop-blur-sm rounded-2xl flex items-center justify-center text-sm">
             Memuat...
           </div>
         )}
@@ -308,7 +306,7 @@ export default function DeedPage() {
 
         {/* Table */}
         <div className="mt-3 overflow-x-auto">
-          <table className="min-w-max">
+          <table className="w-full min-w-max">
             <thead>
               <tr className="text-center text-gray-500 border-b border-gray-200/80 dark:text-[#f5fefd]">
                 <th className="py-3 px-4 font-semibold whitespace-nowrap">
@@ -459,7 +457,6 @@ export default function DeedPage() {
                 id: modal.payload.id,
                 name: modal.payload.name,
                 description: modal.payload.description,
-                // form kamu mungkin pakai "penghadap_count"; BE butuh "total_client"
                 penghadap_count: modal.payload.penghadap_count,
                 total_client: modal.payload.penghadap_count,
               }
