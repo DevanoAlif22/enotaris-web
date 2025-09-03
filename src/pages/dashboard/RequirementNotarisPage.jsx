@@ -1,347 +1,515 @@
+// app/notary/RequirementNotarisPage.jsx
 "use client";
-
-import { useState } from "react";
-import ExtraFieldCard from "../../components/input/ExtraFieldCard";
+import { useEffect, useMemo, useState, useCallback } from "react";
+import { useParams } from "react-router-dom";
 import SearchSelect from "../../components/input/SearchSelect";
-import FileInput from "../../components/input/FileInput";
-import SelectInput from "../../components/input/SelectInput";
+import StatusBadge from "../../utils/StatusBadge";
+import ExtraFieldCard from "../../components/input/ExtraFieldCard";
+import LoadingOverlay from "../../components/common/LoadingOverlay";
 import InputField from "../../components/input/InputField";
+import SelectInput from "../../components/input/SelectInput";
+import ReadOnlyFileBox from "../../components/input/ReadOnlyFileBox";
+
+import { documentRequirementNotarisService } from "../../services/documentRequirementNotarisService";
+import { activityService } from "../../services/activityService";
+import { userService } from "../../services/userService";
+import { showError } from "../../utils/toastConfig";
+
+const jenisKelaminOptions = [
+  { value: "male", label: "Laki-laki" },
+  { value: "female", label: "Perempuan" },
+  { value: "lainnya", label: "Lainnya" },
+];
 
 export default function RequirementNotarisPage() {
-  const [activeTab, setActiveTab] = useState("profil"); // 'profil' | 'isian'
+  const params = useParams();
+  const activityId = params?.activityId;
 
-  // ====== STATE: PROFIL PENGHADAP ======
-  const [profile, setProfile] = useState({
-    namaLengkap: "adam",
-    email: "adam@gmail.com",
+  const [activeTab, setActiveTab] = useState("profil");
+
+  const [loadingActivity, setLoadingActivity] = useState(false);
+  const [loadingDocs, setLoadingDocs] = useState(false);
+  const [loadingProfile, setLoadingProfile] = useState(false);
+
+  const [activity, setActivity] = useState(null);
+  const [clients, setClients] = useState([]);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+
+  const [docs, setDocs] = useState([]);
+
+  // ---- Profil (read-only)
+  const [profileForm, setProfileForm] = useState({
+    namaLengkap: "",
+    email: "",
     telepon: "",
     alamat: "",
     jenisKelamin: "",
-    role: "Penghadap",
+    roleLabel: "",
+    statusVerification: "",
+    notesVerification: "",
+  });
+
+  // ---- Identitas (read-only)
+  const [identityView, setIdentityView] = useState({
     nik: "",
     npwp: "",
-    fileKtp: { file: null, previewUrl: "" },
-    fileKartuKeluarga: { file: null, previewUrl: "" },
-    fileNpwp: { file: null, previewUrl: "" },
-    fileKtpNotaris: { file: null, previewUrl: "" },
+    ktpNotaris: "",
+    fileKtp: "",
+    fileKk: "",
+    fileNpwp: "",
+    fileKtpNotaris: "",
+    fileSign: "",
+    filePhoto: "",
   });
 
-  const handleProfileInput = (e) => {
-    const { name, value } = e.target;
-    setProfile((p) => ({ ...p, [name]: value }));
-  };
-  const handleProfileSelect = ({ updateType, value }) => {
-    setProfile((p) => ({ ...p, [updateType]: value }));
-  };
-  const handleProfileFile = ({ updateType, value }) => {
-    setProfile((p) => ({ ...p, [updateType]: value }));
-  };
-  const jenisKelaminOptions = [
-    { value: "L", label: "Laki-laki" },
-    { value: "P", label: "Perempuan" },
-  ];
-  const onUpdateProfile = () => {
-    console.log("Update Profile:", profile);
-    alert("Profil diperbarui (mock)");
-  };
+  const deedName = activity?.deed?.name || "-";
+  const title = activity?.name || "Isian Dokumen";
 
-  // ====== STATE: ISIAN DOKUMEN / REQUIREMENT ======
-  const [form, setForm] = useState({
-    nik_text: "",
-    user: "",
-    npwp_file: { file: null, previewUrl: "" },
-    paspor_file: { file: null, previewUrl: "" },
-  });
+  // ===== FETCHERS =====
+  const fetchActivity = useCallback(async () => {
+    if (!activityId) return;
+    try {
+      setLoadingActivity(true);
+      const res = await activityService.detail(activityId);
+      const a = res?.data || null;
+      setActivity(a);
 
-  const users = [
-    { value: "Devano Alif", label: "Devano Alif" },
-    { value: "Kia Yasmin", label: "Kia Yasmin" },
-  ];
+      const cl = (Array.isArray(a?.clients) ? a.clients : []).map((c) => ({
+        value: c.id,
+        label: c.name ? `${c.name} (${c.email})` : c.email || `#${c.id}`,
+        id: c.id,
+        name: c.name,
+        email: c.email,
+      }));
+      setClients(cl);
+      if (cl.length && !selectedUserId) setSelectedUserId(cl[0].value);
+    } catch (e) {
+      showError(e.message || "Gagal memuat aktivitas.");
+    } finally {
+      setLoadingActivity(false);
+    }
+  }, [activityId, selectedUserId]);
 
-  const handleText = (e) => {
-    const { name, value } = e.target;
-    setForm((f) => ({ ...f, [name]: value }));
-  };
+  const fetchDocs = useCallback(
+    async (uid) => {
+      if (!activityId || !uid) return;
+      try {
+        setLoadingDocs(true);
+        const res = await documentRequirementNotarisService.getForNotaryUser(
+          activityId,
+          uid
+        );
+        const items = Array.isArray(res?.data) ? res.data : [];
+        setDocs(items);
+      } catch (e) {
+        showError(e.message || "Gagal memuat dokumen persyaratan.");
+        setDocs([]);
+      } finally {
+        setLoadingDocs(false);
+      }
+    },
+    [activityId]
+  );
 
-  const handleFile = ({ updateType, value }) => {
-    setForm((f) => ({ ...f, [updateType]: value }));
-  };
+  const fetchUserProfile = useCallback(async (uid) => {
+    if (!uid) return;
+    try {
+      setLoadingProfile(true);
+      // EXPECTED: { data: { user, identity } }
+      const resp = await userService.getProfileById(uid);
+      const u = resp?.data?.user || {};
+      const idn = resp?.data?.identity || {};
+      const roleLabel = u.role_id === 3 ? "Notaris" : "Penghadap";
 
-  const onSave = () => {
-    console.log("submit requirement", form);
-    alert("Disimpan (mock)");
-  };
+      setProfileForm({
+        namaLengkap: u.name || "",
+        email: u.email || "",
+        telepon: u.telepon || "",
+        alamat: u.address || "",
+        jenisKelamin: u.gender || "",
+        roleLabel,
+        statusVerification: u.status_verification || "",
+        notesVerification: u.notes_verification || "",
+      });
+
+      setIdentityView({
+        nik: idn.ktp || "",
+        npwp: idn.npwp || "",
+        ktpNotaris: idn.ktp_notaris || "",
+        fileKtp: idn.file_ktp || "",
+        fileKk: idn.file_kk || "",
+        fileNpwp: idn.file_npwp || "",
+        fileKtpNotaris: idn.file_ktp_notaris || "",
+        fileSign: idn.file_sign || "",
+        filePhoto: idn.file_photo || "",
+      });
+    } catch (e) {
+      showError(e.message || "Gagal memuat profil pengguna.");
+      setProfileForm({
+        namaLengkap: "",
+        email: "",
+        telepon: "",
+        alamat: "",
+        jenisKelamin: "",
+        roleLabel: "",
+        statusVerification: "",
+        notesVerification: "",
+      });
+      setIdentityView({
+        nik: "",
+        npwp: "",
+        ktpNotaris: "",
+        fileKtp: "",
+        fileKk: "",
+        fileNpwp: "",
+        fileKtpNotaris: "",
+        fileSign: "",
+        filePhoto: "",
+      });
+    } finally {
+      setLoadingProfile(false);
+    }
+  }, []);
+
+  // initial
+  useEffect(() => {
+    fetchActivity();
+  }, [fetchActivity]);
+
+  // when client changes
+  useEffect(() => {
+    if (!selectedUserId) return;
+    fetchDocs(selectedUserId);
+    fetchUserProfile(selectedUserId);
+  }, [selectedUserId, fetchDocs, fetchUserProfile]);
+
+  // ===== HANDLERS =====
+  const onUpload = useCallback(
+    (reqId) => async (file) => {
+      try {
+        await documentRequirementNotarisService.update(reqId, {
+          file,
+          user_id: selectedUserId,
+          activity_notaris_id: activityId,
+        });
+        if (selectedUserId) await fetchDocs(selectedUserId);
+      } catch (e) {
+        showError(e.message || "Gagal mengunggah file.");
+      }
+    },
+    [selectedUserId, activityId, fetchDocs]
+  );
+
+  const onTextSave = useCallback(
+    (reqId) => async (text) => {
+      try {
+        await documentRequirementNotarisService.update(reqId, {
+          value: text,
+          user_id: selectedUserId,
+          activity_notaris_id: activityId,
+        });
+        if (selectedUserId) await fetchDocs(selectedUserId);
+      } catch (e) {
+        showError(e.message || "Gagal menyimpan teks.");
+      }
+    },
+    [selectedUserId, activityId, fetchDocs]
+  );
+
+  const userOptions = useMemo(() => clients, [clients]);
+  const showLoading = loadingActivity || loadingDocs || loadingProfile;
+
+  const verifBadge = (() => {
+    const s = (profileForm.statusVerification || "").toLowerCase();
+    if (["approved", "verified", "success"].includes(s))
+      return { text: "Terverifikasi", cls: "bg-green-100 text-green-800" };
+    if (s === "rejected")
+      return { text: "Ditolak", cls: "bg-red-100 text-red-800" };
+    if (s === "pending")
+      return { text: "Menunggu", cls: "bg-yellow-100 text-yellow-800" };
+    return { text: "Belum diverifikasi", cls: "bg-gray-100 text-gray-700" };
+  })();
 
   return (
-    <div className="p-4 sm:p-6">
-      <div className="bg-white dark:bg-[#002d6a] rounded-2xl shadow-sm">
+    <div className="p-4 sm:p-6 relative">
+      <LoadingOverlay show={showLoading} />
+
+      <div className="bg-white dark:bg-[#002d6a] rounded-lg p-6 shadow-sm">
         {/* Header */}
-        <div className="p-6">
-          <h1 className="text-2xl font-semibold text-gray-800 dark:text-[#f5fefd]">
-            Pendirian PT Otak Kanan
+        <div className="mb-6">
+          <h1 className="text-2xl font-semibold text-gray-800 dark:text-[#f5fefd] mb-1">
+            {title}
           </h1>
-          <div className="h-px bg-gray-200 mt-4" />
+          <div className="text-sm text-gray-600">Akta: {deedName}</div>
         </div>
 
-        <div className="px-6">
+        {/* Picker Penghadap */}
+        <div className="w-full mb-6">
           <SearchSelect
-            placeholder="Pilih penghadap..."
-            options={users}
-            value={form.user}
-            onChange={(v) => setForm((f) => ({ ...f, user: v }))}
+            label="Pilih Penghadap"
+            placeholder="Pilih klien…"
+            options={userOptions}
+            value={selectedUserId}
+            onChange={setSelectedUserId}
             required
           />
         </div>
 
-        {/* TAB BAR */}
-        <div className="px-6">
-          <div
-            role="tablist"
-            aria-label="Halaman Pendirian"
-            className="grid grid-cols-2 gap-0 overflow-hidden"
+        {/* Tabs */}
+        <div className="flex mb-6">
+          <button
+            onClick={() => setActiveTab("profil")}
+            className={`px-4 py-2 text-sm font-medium transition-colors w-1/2 ${
+              activeTab === "profil"
+                ? "bg-[#0256c4] text-white"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}
+            style={{ marginRight: "1px" }}
           >
-            <button
-              role="tab"
-              aria-selected={activeTab === "profil"}
-              onClick={() => setActiveTab("profil")}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${
-                activeTab === "profil"
-                  ? "bg-[#0256c4] text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              Profil Penghadap
-            </button>
-            <button
-              role="tab"
-              aria-selected={activeTab === "isian"}
-              onClick={() => setActiveTab("isian")}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${
-                activeTab === "isian"
-                  ? "bg-[#0256c4] text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              Isian Dokumen
-            </button>
-          </div>
+            Profil Pengguna
+          </button>
+          <button
+            onClick={() => setActiveTab("dokumen")}
+            className={`px-4 py-2 text-sm font-medium transition-colors w-1/2 ${
+              activeTab === "dokumen"
+                ? "bg-[#0256c4] text-white"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}
+          >
+            Dokumen Persyaratan
+          </button>
         </div>
 
-        {/* TAB PANELS */}
-        <div className="p-6">
-          {/* === TAB: PROFIL PENGHADAP === */}
-          {activeTab === "profil" && (
-            <div role="tabpanel" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 dark:text-[#f5fefd]">
-                <InputField
-                  label={
-                    <span className="dark:text-[#f5fefd]">Nama Lengkap</span>
-                  }
-                  name="namaLengkap"
-                  value={profile.namaLengkap}
-                  onChange={handleProfileInput}
-                  required={true}
-                />
-                <InputField
-                  label={<span className="dark:text-[#f5fefd]">Email</span>}
-                  type="email"
-                  name="email"
-                  value={profile.email}
-                  onChange={handleProfileInput}
-                  disabled={true}
-                />
-              </div>
+        {/* ===== PROFIL (READ-ONLY) ===== */}
+        {activeTab === "profil" && (
+          <div className="space-y-6">
+            {/* Status Verifikasi */}
+            <div className="flex items-center gap-3">
+              <span className="text-gray-600 dark:text-[#f5fefd]">
+                Status Verifikasi :
+              </span>
+              <span
+                className={`px-3 py-1 text-sm rounded-full font-medium ${verifBadge.cls}`}
+              >
+                {verifBadge.text}
+              </span>
+              {profileForm.notesVerification ? (
+                <span className="text-sm text-gray-500">
+                  ({profileForm.notesVerification})
+                </span>
+              ) : null}
+            </div>
+            {/* data user */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 dark:text-[#f5fefd]">
+              <InputField
+                label={
+                  <span className="dark:text-[#f5fefd]">Nama Lengkap</span>
+                }
+                name="namaLengkap"
+                value={profileForm.namaLengkap}
+                onChange={() => {}}
+                disabled
+              />
+              <InputField
+                label={<span className="dark:text-[#f5fefd]">Email</span>}
+                type="email"
+                name="email"
+                value={profileForm.email}
+                onChange={() => {}}
+                disabled
+              />
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 dark:text-[#f5fefd]">
-                <InputField
-                  label={<span className="dark:text-[#f5fefd]">Telepon</span>}
-                  type="tel"
-                  name="telepon"
-                  value={profile.telepon}
-                  onChange={handleProfileInput}
-                  placeholder="Masukkan nomor telepon"
-                />
-                <SelectInput
-                  labelTitle={
-                    <span className="dark:text-[#f5fefd]">Jenis Kelamin</span>
-                  }
-                  placeholder="Pilih jenis kelamin"
-                  options={jenisKelaminOptions}
-                  defaultValue={profile.jenisKelamin}
-                  updateFormValue={handleProfileSelect}
-                  updateType="jenisKelamin"
-                />
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 dark:text-[#f5fefd]">
+              <InputField
+                label={<span className="dark:text-[#f5fefd]">Telepon</span>}
+                type="tel"
+                name="telepon"
+                value={profileForm.telepon}
+                onChange={() => {}}
+                disabled
+              />
+              <SelectInput
+                labelTitle={
+                  <span className="dark:text-[#f5fefd]">Jenis Kelamin</span>
+                }
+                placeholder="Pilih jenis kelamin"
+                options={jenisKelaminOptions}
+                defaultValue={profileForm.jenisKelamin}
+                updateFormValue={() => {}}
+                updateType="jenisKelamin"
+                disabled
+              />
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 dark:text-[#f5fefd]">
-                <InputField
-                  label={<span className="dark:text-[#f5fefd]">Alamat</span>}
-                  name="alamat"
-                  value={profile.alamat}
-                  onChange={handleProfileInput}
-                  placeholder="Masukkan alamat lengkap"
-                />
-                <InputField
-                  label={<span className="dark:text-[#f5fefd]">Role</span>}
-                  name="role"
-                  value={profile.role}
-                  onChange={handleProfileInput}
-                  disabled={true}
-                />
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 dark:text-[#f5fefd]">
+              <InputField
+                label={<span className="dark:text-[#f5fefd]">Alamat</span>}
+                name="alamat"
+                value={profileForm.alamat}
+                onChange={() => {}}
+                disabled
+              />
+              <InputField
+                label={<span className="dark:text-[#f5fefd]">Role</span>}
+                name="role"
+                value={profileForm.roleLabel}
+                onChange={() => {}}
+                disabled
+              />
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 dark:text-[#f5fefd]">
-                <InputField
-                  label={<span className="dark:text-[#f5fefd]">NIK</span>}
-                  name="nik"
-                  value={profile.nik}
-                  onChange={handleProfileInput}
-                  placeholder="Masukkan NIK"
-                  required={true}
-                />
-                <InputField
-                  label={<span className="dark:text-[#f5fefd]">NPWP</span>}
-                  name="npwp"
-                  value={profile.npwp}
-                  onChange={handleProfileInput}
-                  placeholder="Masukkan NPWP"
-                />
-              </div>
-
-              <div className="flex items-center justify-center">
-                <div className="flex-grow h-px border-t border-dashed border-gray-300" />
+            <div className="mt-8">
+              <div className="flex items-center justify-center mb-6">
+                <div className="flex-grow h-px border-t border-dashed border-gray-400"></div>
                 <h3 className="px-4 text-lg font-medium text-gray-800 dark:text-[#f5fefd]">
-                  Dokumen Pendukung
+                  Dokumen Identitas
                 </h3>
-                <div className="flex-grow h-px border-t border-dashed border-gray-300" />
+                <div className="flex-grow h-px border-t border-dashed border-gray-400"></div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 dark:text-[#f5fefd]">
-                <FileInput
+              {/* Baris 1 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <ReadOnlyFileBox
                   labelTitle={
                     <span className="dark:text-[#f5fefd]">File KTP</span>
                   }
-                  required={true}
-                  accept=".jpg,.jpeg,.png"
-                  maxSizeMB={2}
-                  defaultFile={profile.fileKtp.file}
-                  defaultPreviewUrl={profile.fileKtp.previewUrl}
-                  updateFormValue={handleProfileFile}
-                  updateType="fileKtp"
+                  previewUrl={identityView.fileKtp}
+                  required
                 />
-                <FileInput
+                <ReadOnlyFileBox
                   labelTitle={
                     <span className="dark:text-[#f5fefd]">
                       File Kartu Keluarga
                     </span>
                   }
-                  required={true}
-                  accept=".jpg,.jpeg,.png"
-                  maxSizeMB={2}
-                  defaultFile={profile.fileKartuKeluarga.file}
-                  defaultPreviewUrl={profile.fileKartuKeluarga.previewUrl}
-                  updateFormValue={handleProfileFile}
-                  updateType="fileKartuKeluarga"
+                  previewUrl={identityView.fileKk}
+                  required
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 dark:text-[#f5fefd]">
-                <FileInput
-                  labelTitle={
-                    <span className="dark:text-[#f5fefd]">File NPWP</span>
-                  }
-                  accept=".jpg,.jpeg,.png"
-                  maxSizeMB={2}
-                  defaultFile={profile.fileNpwp.file}
-                  defaultPreviewUrl={profile.fileNpwp.previewUrl}
-                  updateFormValue={handleProfileFile}
-                  updateType="fileNpwp"
-                />
-                <FileInput
+              {/* Baris 2 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <ReadOnlyFileBox
                   labelTitle={
                     <span className="dark:text-[#f5fefd]">
-                      File KTP Notaris
+                      Tanda Tangan (PNG)
                     </span>
                   }
-                  required={true}
-                  accept=".jpg,.jpeg,.png"
-                  maxSizeMB={2}
-                  defaultFile={profile.fileKtpNotaris.file}
-                  defaultPreviewUrl={profile.fileKtpNotaris.previewUrl}
-                  updateFormValue={handleProfileFile}
-                  updateType="fileKtpNotaris"
+                  previewUrl={identityView.fileSign}
+                  hint="PNG, maks 1MB"
+                  required
+                />
+                <ReadOnlyFileBox
+                  labelTitle={
+                    <span className="dark:text-[#f5fefd]">
+                      Foto Formal (opsional)
+                    </span>
+                  }
+                  previewUrl={identityView.filePhoto}
+                  hint="JPG/PNG, maks 2MB"
                 />
               </div>
 
-              <div className="flex justify-end pt-2">
-                <button
-                  onClick={onUpdateProfile}
-                  className="bg-[#0256c4] text-white px-6 py-2 rounded-lg hover:opacity-90 font-medium"
-                >
-                  Update Profil
-                </button>
+              {/* Baris 3 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <ReadOnlyFileBox
+                  labelTitle={
+                    <span className="dark:text-[#f5fefd]">
+                      File NPWP (opsional)
+                    </span>
+                  }
+                  previewUrl={identityView.fileNpwp}
+                />
+                {profileForm.roleLabel === "Notaris" && (
+                  <ReadOnlyFileBox
+                    labelTitle={
+                      <span className="dark:text-[#f5fefd]">
+                        File KTP Notaris
+                      </span>
+                    }
+                    previewUrl={identityView.fileKtpNotaris}
+                    required
+                  />
+                )}
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* === TAB: ISIAN DOKUMEN === */}
-          {activeTab === "isian" && (
-            <div role="tabpanel">
-              <div className="text-sm text-gray-700 dark:text-[#f5fefd] mb-6">
-                Upload dokumen-dokumen berikut untuk melengkapi verifikasi
-                aktivitas Anda. File yang diperbolehkan: PDF, JPG, JPEG, PNG
-                (maksimal 2MB per file). Dokumen akan tersimpan otomatis setelah
-                diupload.
-                <br />
-                <span className="text-xs opacity-70 mt-2 block mb-4">
-                  ※ Teks akan otomatis tersimpan 5 detik setelah Anda berhenti
-                  mengetik
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 dark:text-[#f5fefd]">
-                <ExtraFieldCard
-                  title={<span className="dark:text-[#f5fefd]">NPWP</span>}
-                  status="Menunggu"
-                  type="file"
-                  value={form.npwp_file}
-                  onFileChange={handleFile}
-                  updateKey="npwp_file"
-                />
-
-                <ExtraFieldCard
-                  title={<span className="dark:text-[#f5fefd]">Paspor</span>}
-                  status="Menunggu"
-                  type="file"
-                  value={form.paspor_file}
-                  onFileChange={handleFile}
-                  updateKey="paspor_file"
-                />
-
-                <ExtraFieldCard
-                  title={<span className="dark:text-[#f5fefd]">NIK</span>}
-                  status="Menunggu"
-                  type="text"
-                  value={form.nik_text}
-                  onTextChange={handleText}
-                  updateKey="nik_text"
-                  textName="nik_text"
-                  textPlaceholder="Isi teks dokumen…"
-                />
-              </div>
-
-              <div className="flex justify-end mt-8">
-                <button
-                  onClick={onSave}
-                  className="px-6 py-2 rounded-lg bg-[#0256c4] text-white font-semibold hover:opacity-90"
-                >
-                  Simpan
-                </button>
-              </div>
+        {/* ===== DOKUMEN (upload) ===== */}
+        {activeTab === "dokumen" && (
+          <>
+            <div className="text-sm text-gray-700 dark:text-[#f5fefd] mb-6">
+              Upload dokumen-dokumen berikut untuk melengkapi verifikasi
+              aktivitas Anda. File yang diperbolehkan: PDF, JPG, JPEG, PNG
+              (maksimal 2MB per file). Dokumen akan tersimpan otomatis setelah
+              diupload.
+              <br />
+              <span className="text-xs opacity-70 mt-2 block mb-4">
+                ※ Teks akan otomatis tersimpan 5 detik setelah Anda berhenti
+                mengetik
+              </span>
             </div>
-          )}
-        </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {docs.map((d) => (
+                <div key={d.id} className="relative">
+                  <ExtraFieldCard
+                    reqId={d.id}
+                    title={d.requirement_name}
+                    status={
+                      d.status_approval === "approved"
+                        ? "Disetujui"
+                        : d.status_approval === "rejected"
+                        ? "Ditolak"
+                        : "Menunggu"
+                    }
+                    type={d.is_file_snapshot ? "file" : "text"}
+                    textValue={d.value || ""}
+                    onTextChange={() => {}}
+                    onTextSave={onTextSave(d.id)}
+                    fileValue={{ file: null, previewUrl: d.file || "" }}
+                    onFileChange={() => {}}
+                    onFileSave={onUpload(d.id)}
+                  />
+                </div>
+              ))}
+
+              {!docs.length && !loadingDocs && (
+                <div className="text-sm text-gray-500">
+                  Tidak ada persyaratan untuk pengguna ini.
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
+    </div>
+  );
+}
+
+/* ---- Komponen kecil untuk preview dokumen (read-only) ---- */
+function DocThumb({ label, url }) {
+  const isEmpty = !url;
+  return (
+    <div className="border rounded-lg p-3">
+      <div className="text-xs text-gray-500 mb-2">{label}</div>
+      {isEmpty ? (
+        <div className="w-full h-28 bg-gray-50 border rounded flex items-center justify-center text-gray-400">
+          Tidak ada file
+        </div>
+      ) : (
+        <a
+          href={url}
+          target="_blank"
+          rel="noreferrer"
+          className="block w-full h-28 bg-gray-50 border rounded overflow-hidden"
+          title="Lihat dokumen"
+        >
+          <img src={url} alt={label} className="w-full h-full object-contain" />
+        </a>
+      )}
     </div>
   );
 }

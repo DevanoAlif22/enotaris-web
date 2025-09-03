@@ -1,50 +1,137 @@
 "use client";
+import { useEffect, useMemo, useRef, useState } from "react";
 import InputField from "../../components/input/InputField";
 import FileInput from "../../components/input/FileInput";
 import StatusBadge from "../../utils/StatusBadge";
-
-function StatusPill({ children = "Menunggu" }) {
-  return (
-    <span className="px-3 py-1 rounded-full text-sm bg-yellow-100 text-yellow-800">
-      {children}
-    </span>
-  );
-}
-
-/**
- * ExtraFieldCard
- * type: "file" | "text"
- * value:
- *   - type "file": { file: File|null, previewUrl?: string } (seperti FileInput-mu)
- *   - type "text": string
- * onFileChange: ({ updateType, value }) => void      // forward ke FileInput
- * onTextChange: (e) => void                          // forward ke InputField
- * updateKey: string                                  // key untuk FileInput (updateType)
- */
 export default function ExtraFieldCard({
   title,
   status = "Menunggu",
   type = "file",
-  value,
-  onFileChange,
+  reqId,
+
+  // Text props
+  textValue = "",
   onTextChange,
-  updateKey,
-  textName,
+  onTextSave,
   textPlaceholder = "Isi teks dokumen...",
-  accept = ".pdf,.jpg,.jpeg,.png",
+
+  // File props
+  fileValue = { file: null, previewUrl: "" },
+  onFileChange,
+  onFileSave,
+  accept = ".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx",
   maxSizeMB = 2,
 }) {
+  const [saving, setSaving] = useState(false);
+  const [savedTick, setSavedTick] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  // untuk debounce text
+  const debRef = useRef(null);
+  const lastSentRef = useRef("");
+
+  // State lokal untuk text input
+  const [localTextValue, setLocalTextValue] = useState(textValue);
+
+  // Sync dengan props textValue
+  useEffect(() => {
+    setLocalTextValue(textValue);
+  }, [textValue]);
+
   const isEmpty =
     type === "file"
-      ? !value?.file && !value?.previewUrl
-      : !String(value || "").trim();
+      ? !fileValue?.file && !fileValue?.previewUrl
+      : !String(localTextValue || "").trim();
+
+  const showSaved = () => {
+    setSavedTick(true);
+    setTimeout(() => setSavedTick(false), 1200);
+  };
+
+  // ===== AUTOSAVE TEXT (debounce) =====
+  useEffect(() => {
+    if (type !== "text") return;
+    if (!onTextSave) return;
+
+    // localTextValue berubah → debounce
+    if (debRef.current) clearTimeout(debRef.current);
+    debRef.current = setTimeout(async () => {
+      const text = String(localTextValue ?? "");
+      if (text === lastSentRef.current) return;
+
+      try {
+        setSaving(true);
+        setErrorMsg("");
+        await onTextSave(text);
+        lastSentRef.current = text;
+        showSaved();
+      } catch (err) {
+        setErrorMsg(err?.message || "Gagal menyimpan.");
+      } finally {
+        setSaving(false);
+      }
+    }, 800);
+
+    return () => {
+      if (debRef.current) clearTimeout(debRef.current);
+    };
+  }, [type, localTextValue, onTextSave]);
+
+  // Handler untuk text input
+  const handleTextInputChange = (e) => {
+    const newValue = e.target.value;
+    setLocalTextValue(newValue);
+    setErrorMsg("");
+    onTextChange?.(newValue);
+  };
+
+  // ===== AUTOSAVE FILE (langsung ketika pilih) =====
+  const handleFileChange = async (payload) => {
+    // payload dari FileInput: { updateType, value }
+    // value = { file, previewUrl }
+    onFileChange?.(payload.value);
+
+    const file = payload?.value?.file;
+    if (!file || !onFileSave) return;
+
+    try {
+      setSaving(true);
+      setErrorMsg("");
+      await onFileSave(file);
+      showSaved();
+    } catch (err) {
+      setErrorMsg(err?.message || "Gagal mengunggah file.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Badge warna status
+  const badgeLabel = useMemo(() => {
+    const v = (status || "").toLowerCase();
+    if (v === "disetujui" || v === "approved") return "Disetujui";
+    if (v === "ditolak" || v === "rejected") return "Ditolak";
+    return "Menunggu";
+  }, [status]);
 
   return (
-    <div className="border border-gray-300 rounded-2xl p-5">
+    <div className="relative border border-gray-300 rounded-2xl p-5">
+      {/* overlay saving */}
+      {saving && (
+        <div className="absolute inset-0 rounded-2xl bg-white/60 flex items-center justify-center text-sm z-10">
+          Menyimpan…
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <h3 className="text-lg font-semibold">{title}</h3>
-        <StatusBadge status={status}></StatusBadge>
+        <div className="flex items-center gap-3">
+          {savedTick && (
+            <span className="text-green-600 text-sm">Tersimpan ✓</span>
+          )}
+          <StatusBadge status={badgeLabel} />
+        </div>
       </div>
 
       {/* Empty hint */}
@@ -52,7 +139,7 @@ export default function ExtraFieldCard({
         {isEmpty ? "Belum ada nilai/file." : "Sudah ada nilai/file."}
       </p>
 
-      {/* Input area boxed */}
+      {/* Input area */}
       {type === "file" ? (
         <div>
           <div className="text-gray-700 dark:text-gray-300 text-sm mb-2 font-medium">
@@ -62,15 +149,13 @@ export default function ExtraFieldCard({
             labelTitle={null}
             accept={accept}
             maxSizeMB={maxSizeMB}
-            // default value dari state
-            defaultFile={value?.file || null}
-            defaultPreviewUrl={value?.previewUrl || ""}
-            updateFormValue={onFileChange}
-            updateType={updateKey}
-            // biarkan FileInput-mu men-set { updateType, value }
+            defaultFile={fileValue?.file || null}
+            defaultPreviewUrl={fileValue?.previewUrl || ""}
+            updateFormValue={handleFileChange}
+            updateType={`file_${reqId}`}
           />
           <div className="text-xs text-gray-500 dark:text-gray-300 mt-2">
-            .PDF,.JPG,.JPEG,.PNG (Maks {maxSizeMB}MB)
+            PDF, JPG, JPEG, PNG, WEBP, DOC, DOCX (Maks {maxSizeMB}MB)
           </div>
         </div>
       ) : (
@@ -80,12 +165,16 @@ export default function ExtraFieldCard({
           </div>
           <InputField
             label={null}
-            name={textName || updateKey}
-            value={value || ""}
-            onChange={onTextChange}
+            name={`text_${reqId}`}
+            value={localTextValue}
+            onChange={handleTextInputChange}
             placeholder={textPlaceholder}
           />
         </div>
+      )}
+
+      {!!errorMsg && (
+        <div className="mt-3 text-xs text-red-600">{errorMsg}</div>
       )}
     </div>
   );

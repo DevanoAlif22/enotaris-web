@@ -79,11 +79,13 @@ export default function VerificationUserPage() {
         search,
       });
 
+      console.log(res.data);
       // Map data BE → FE rows
       const mapped = (res?.data || []).map((d) => ({
         id: d.user_id,
         name: d.user_name,
         email: d.user_email,
+        role: d.role,
         nik: d.ktp,
         npwp: d.npwp,
         ktp_url: d.file_ktp,
@@ -229,11 +231,14 @@ export default function VerificationUserPage() {
                 <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
                   Email
                 </th>
-                <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
+                {/* <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
                   NIK
-                </th>
-                <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
+                </th> */}
+                {/* <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
                   KTP
+                </th> */}
+                <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
+                  Role
                 </th>
                 <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
                   Status
@@ -261,10 +266,11 @@ export default function VerificationUserPage() {
                     {r.email}
                   </td>
                   <td className="py-4 px-5 dark:text-[#f5fefd] whitespace-nowrap">
-                    {r.nik || "-"}
-                  </td>
-                  <td className="py-4 px-5 whitespace-nowrap">
-                    <FileLink url={r.ktp_url} />
+                    {r.role === 2
+                      ? "Penghadap"
+                      : r.role === 3
+                      ? "Notaris"
+                      : "-"}
                   </td>
                   <td className="py-4 px-5 whitespace-nowrap">
                     <StatusBadge status={r.status} />
@@ -362,6 +368,8 @@ export default function VerificationUserPage() {
         itemName={verifyModal.item?.name}
         loading={verifyModal.loading}
         onConfirm={doVerify}
+        requireReason="reject" // ⬅️ hanya reject yang wajib ada alasan
+        showReasonField="reject" // ⬅️ hanya reject yang tampilkan textarea
       />
     </div>
   );
