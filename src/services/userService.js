@@ -17,6 +17,11 @@ export const userService = {
     }
   },
 
+  async getProfileById(userId) {
+    const { data } = await api.get(`/user/profile/${userId}`);
+    return data; // { user, identity }
+  },
+
   async updateProfile({ name, gender, telepon, address, file_avatar }) {
     try {
       const fd = new FormData();
