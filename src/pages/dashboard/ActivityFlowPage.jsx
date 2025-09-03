@@ -1,5 +1,7 @@
+// app/project-flow/ActivityFlowPage.jsx
 "use client";
-import { useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
+import { useParams } from "react-router-dom";
 import {
   CheckCircleIcon as CheckCircleSolid,
   ChevronDownIcon,
@@ -10,10 +12,14 @@ import {
   DocumentTextIcon,
   UserGroupIcon,
 } from "@heroicons/react/24/outline";
+
 import renderStepContent from "../../components/projectflow/RenderStepContent";
 import getStatusIcon from "../../components/projectflow/GetStatusIcon";
 import ScheduleModal from "../../components/activitynotaris/ScheduleModal";
 import ScheduleViewModal from "../../components/activitynotarisclient/ScheduleViewModal";
+import { activityService } from "../../services/activityService";
+import { userService } from "../../services/userService";
+import { showError } from "../../utils/toastConfig";
 
 const STEPS = [
   { id: "invite", title: "Undang Penghadap", icon: UserGroupIcon },
@@ -25,114 +31,210 @@ const STEPS = [
   { id: "print", title: "Cetak Akta", icon: DocumentTextIcon },
 ];
 
-export default function ActivityFlowPage() {
-  const activity = {
-    code: "ACT-D0QVPNNI",
-    notaris: "Pak Wahyu Prasetyo",
-    deed_type: "Pendirian PT",
-    name: "Pendirian PT Otak Kanan",
-    party1: "devano",
-    party2: "yasmin",
-    overallStatus: "Menunggu",
-    schedule: "2025-08-29T11:44:00.000Z",
-  };
+// Normalisasi status BE -> FE {pending|todo|done|reject}
+const normalize = (v) => {
+  const s = String(v || "").toLowerCase();
+  if (s === "done") return "done";
+  if (s === "todo" || s === "progress") return "todo";
+  if (s === "reject" || s === "rejected") return "reject";
+  return "pending";
+};
 
+const mapTrackToStepStatus = (track) => ({
+  invite: normalize(track?.status_invite),
+  respond: normalize(track?.status_respond),
+  docs: normalize(track?.status_docs),
+  draft: normalize(track?.status_draft),
+  schedule: normalize(track?.status_schedule),
+  sign: normalize(track?.status_sign),
+  print: normalize(track?.status_print),
+});
+
+export default function ActivityFlowPage() {
+  const { activityId } = useParams();
+
+  // server data
+  const [me, setMe] = useState(null);
+  const isNotary = (me?.role_id || 0) === 3;
+  const isClient = (me?.role_id || 0) === 2;
+
+  const [, setLoading] = useState(false);
+  const [activity, setActivity] = useState(null);
   const [stepStatus, setStepStatus] = useState({
-    invite: "done",
-    respond: "done",
-    docs: "done",
-    draft: "done",
-    schedule: "done",
-    sign: "done",
-    print: "done",
+    invite: "pending",
+    respond: "pending",
+    docs: "pending",
+    draft: "pending",
+    schedule: "pending",
+    sign: "pending",
+    print: "pending",
   });
+
+  // expanded default
   const [expandedStep, setExpandedStep] = useState("respond");
 
-  const progress = Math.round(
-    (Object.values(stepStatus).filter((s) => s === "done").length /
-      STEPS.length) *
-      100
-  );
+  // modal
+  const [schedule, setSchedule] = useState({ open: false, row: null });
+  const [scheduleView, setScheduleView] = useState({ open: false, row: null });
+
+  // ===== fetchers =====
+  const fetchMe = useCallback(async () => {
+    try {
+      const res = await userService.getProfile();
+      const u = res?.user || res?.data?.user || res?.data || {};
+      setMe(u);
+    } catch (e) {
+      showError(e.message || "Gagal memuat data pengguna.");
+    }
+  }, []);
+
+  const fetchActivity = useCallback(async () => {
+    if (!activityId) return;
+    try {
+      setLoading(true);
+      const res = await activityService.detail(activityId);
+      const a = res?.data || null;
+      setActivity(a);
+      setStepStatus(mapTrackToStepStatus(a?.track || {}));
+    } catch (e) {
+      showError(e.message || "Gagal memuat detail aktivitas.");
+    } finally {
+      setLoading(false);
+    }
+  }, [activityId]);
+
+  useEffect(() => {
+    (async () => {
+      await fetchMe();
+    })();
+  }, [fetchMe]);
+
+  useEffect(() => {
+    fetchActivity();
+  }, [fetchActivity]);
+
+  // ===== computed =====
+  const progress = useMemo(() => {
+    const total = STEPS.length;
+    const done = Object.values(stepStatus).filter((s) => s === "done").length;
+    return Math.round((done / total) * 100);
+  }, [stepStatus]);
 
   const toggleStep = (stepId) => {
-    const status = stepStatus[stepId];
-    if (status === "todo") return;
+    if (stepStatus[stepId] === "pending") return; // pending = terkunci
     setExpandedStep(expandedStep === stepId ? null : stepId);
   };
 
-  const markDone = (id) => setStepStatus((st) => ({ ...st, [id]: "done" }));
+  // guard: penghadap tidak boleh mark done
+  const markDone = (id) => {
+    if (isClient) return;
+    setStepStatus((st) => ({ ...st, [id]: "done" }));
+  };
 
-  const getStatusColor = (status) => {
+  const badgeClass = (status) => {
     switch (status) {
       case "done":
         return "text-green-700 bg-green-50 border-green-200";
-      case "progress":
+      case "todo":
         return "text-blue-700 bg-blue-50 border-blue-200";
-      case "blocked":
-        return "text-amber-700 bg-amber-50 border-amber-200";
+      case "reject":
+        return "text-red-700 bg-red-50 border-red-200";
       default:
-        return "text-gray-500 bg-gray-100 border-gray-300";
+        return "text-gray-600 bg-gray-100 border-gray-300"; // pending
     }
   };
 
-  const getStatusLabel = (status) => {
+  const statusLabel = (status) => {
     switch (status) {
       case "done":
         return "Selesai";
-      case "progress":
-        return "Berlangsung";
-      case "blocked":
-        return "Tertahan";
+      case "todo":
+        return "Sedang Dikerjakan";
+      case "reject":
+        return "Ditolak";
       default:
-        return "Belum";
+        return "Terkunci";
     }
   };
 
-  const getStepBackgroundClass = (status, isExpanded) => {
-    if (status === "todo") return "bg-gray-50 border-gray-200";
+  const containerClass = (status, isExpanded) => {
     if (status === "done")
       return isExpanded
         ? "bg-green-50 border-green-200"
         : "bg-white border-green-200";
-    if (status === "progress")
+    if (status === "todo")
       return isExpanded
         ? "bg-blue-50 border-blue-200"
         : "bg-white border-blue-200";
-    return "bg-white border-gray-200";
+    if (status === "reject")
+      return isExpanded
+        ? "bg-red-50 border-red-200"
+        : "bg-white border-red-200";
+    return "bg-gray-50 border-gray-200";
   };
 
-  const getStepHeaderClass = (status, isExpanded) => {
-    const baseClass =
+  const headerClass = (status, isExpanded) => {
+    const base =
       "w-full px-6 py-4 flex items-center justify-between transition-colors";
-    if (status === "todo") return `${baseClass} cursor-not-allowed opacity-60`;
+    if (status === "pending") return `${base} cursor-not-allowed opacity-60`;
 
-    const hoverClass =
+    const hover =
       status === "done"
         ? "hover:bg-green-50"
-        : status === "progress"
+        : status === "todo"
         ? "hover:bg-blue-50"
-        : "hover:bg-gray-50";
-
-    const expandedClass = isExpanded
-      ? status === "done"
+        : "hover:bg-red-50";
+    const expanded =
+      isExpanded &&
+      (status === "done"
         ? "bg-green-50"
-        : status === "progress"
+        : status === "todo"
         ? "bg-blue-50"
-        : "bg-gray-50"
-      : "";
+        : "bg-red-50");
 
-    return `${baseClass} cursor-pointer ${hoverClass} ${expandedClass}`;
+    return `${base} cursor-pointer ${hover} ${expanded || ""}`;
   };
 
-  // ====== MODAL SCHEDULE STATE & HANDLER ======
-  const [schedule, setSchedule] = useState({ open: false, row: null });
+  // ===== header parties (DINAMIS) =====
+  const partyList = useMemo(
+    () => (Array.isArray(activity?.clients) ? activity.clients : []),
+    [activity?.clients]
+  );
+
+  // schedule modal controls (role-aware)
   const openScheduleModal = (row = activity) => {
+    if (!isNotary) return;
     setSchedule({ open: true, row });
   };
-
-  const [scheduleView, setScheduleView] = useState({ open: false, row: null });
   const openScheduleViewModal = (row = activity) =>
     setScheduleView({ open: true, row });
+
+  // izin/flags untuk konten step
+  const stepPermissions = useMemo(() => {
+    return {
+      isNotary,
+      isClient,
+      docs: {
+        canSelectAnyParty: isNotary,
+        currentUserId: me?.id || null,
+      },
+      draft: {
+        readOnly: isClient,
+      },
+      schedule: {
+        canEdit: isNotary,
+      },
+      canMarkDone: isNotary,
+    };
+  }, [isNotary, isClient, me?.id]);
+
+  const header = {
+    code: activity?.tracking_code || "-",
+    notaris: activity?.notaris?.name || "-",
+    deed_type: activity?.deed?.name || "-",
+    name: activity?.name || "-",
+    schedule: activity?.schedules?.[0]?.datetime || null,
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -142,17 +244,15 @@ export default function ActivityFlowPage() {
           <div className="flex items-start justify-between mb-4">
             <div>
               <h1 className="text-2xl font-semibold text-gray-900">
-                {activity.name}
+                {header.name}
               </h1>
               <p className="text-sm text-gray-900 mt-1">
-                Notaris : {activity.notaris}
+                Notaris : {header.notaris}
               </p>
               <p className="text-sm text-gray-500 mt-1">
-                Jenis Akta : {activity.deed_type}
+                Jenis Akta : {header.deed_type}
               </p>
-              <p className="text-sm text-gray-500 mt-1">
-                Kode : {activity.code}
-              </p>
+              <p className="text-sm text-gray-500 mt-1">Kode : {header.code}</p>
             </div>
             <div className="text-right">
               <div className="text-sm text-gray-500">Progress</div>
@@ -171,23 +271,29 @@ export default function ActivityFlowPage() {
           </div>
 
           <p className="text-sm text-gray-800 mt-1 mb-3">Penghadap :</p>
-          <div className="flex gap-4">
-            <div className="w-full flex items-center gap-3 p-3 bg-[#edf4ff] text-[#0256c4] rounded-lg">
-              <UserGroupIcon className="w-5 h-5 text-gray-400" />
-              <div>
-                <div className="text-sm font-medium">{activity.party1}</div>
-                <div className="text-xs text-gray-500">Penghadap 1</div>
-              </div>
-            </div>
-            <div className="w-full flex items-center gap-3 p-3 bg-[#edf4ff] text-[#0256c4] rounded-lg">
-              <UserGroupIcon className="w-5 h-5 text-gray-400" />
-              <div>
-                <div className="text-sm font-medium">
-                  {activity.party2 || "-"}
+
+          {/* DINAMIS: grid responsif 1/2/3 kolom tergantung lebar layar */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {partyList.length > 0 ? (
+              partyList.map((c, idx) => (
+                <div
+                  key={c.id}
+                  className="w-full flex items-center gap-3 p-3 bg-[#edf4ff] text-[#0256c4] rounded-lg"
+                >
+                  <UserGroupIcon className="w-5 h-5 text-gray-400" />
+                  <div>
+                    <div className="text-sm font-medium">
+                      {c.name || c.email || `Penghadap ${idx + 1}`}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      Penghadap {idx + 1}
+                    </div>
+                  </div>
                 </div>
-                <div className="text-xs text-gray-500">Penghadap 2</div>
-              </div>
-            </div>
+              ))
+            ) : (
+              <div className="text-sm text-gray-500">Belum ada penghadap.</div>
+            )}
           </div>
         </div>
 
@@ -197,12 +303,11 @@ export default function ActivityFlowPage() {
             const status = stepStatus[step.id];
             const isExpanded = expandedStep === step.id;
             const Icon = step.icon;
-            const isDisabled = status === "todo";
 
             return (
               <div
                 key={step.id}
-                className={`rounded-lg border overflow-hidden ${getStepBackgroundClass(
+                className={`rounded-lg border overflow-hidden ${containerClass(
                   status,
                   isExpanded
                 )}`}
@@ -210,51 +315,35 @@ export default function ActivityFlowPage() {
                 {/* Step Header */}
                 <button
                   onClick={() => toggleStep(step.id)}
-                  disabled={isDisabled}
-                  className={getStepHeaderClass(status, isExpanded)}
+                  className={headerClass(status, isExpanded)}
+                  disabled={status === "pending"}
                 >
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-3">
                       {getStatusIcon(status)}
-                      <div
-                        className={`text-sm font-mono w-4 ${
-                          isDisabled ? "text-gray-400" : "text-gray-500"
-                        }`}
-                      >
+                      <div className="text-sm font-mono w-4 text-gray-500">
                         {index + 1}.
                       </div>
                     </div>
-                    <Icon
-                      className={`w-5 h-5 ${
-                        isDisabled ? "text-gray-300" : "text-gray-400"
-                      }`}
-                    />
+                    <Icon className="w-5 h-5 text-gray-400" />
                     <div className="text-left">
-                      <div
-                        className={`font-medium ${
-                          isDisabled ? "text-gray-400" : "text-gray-900"
-                        }`}
-                      >
+                      <div className="font-medium text-gray-900">
                         {step.title}
                       </div>
-                      <div
-                        className={`text-sm ${
-                          isDisabled ? "text-gray-400" : "text-gray-500"
-                        }`}
-                      >
+                      <div className="text-sm text-gray-500">
                         {getStepDescription(step.id)}
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(
+                      className={`px-2 py-1 rounded-full text-xs font-medium border ${badgeClass(
                         status
                       )}`}
                     >
-                      {getStatusLabel(status)}
+                      {statusLabel(status)}
                     </span>
-                    {!isDisabled &&
+                    {status !== "pending" &&
                       (isExpanded ? (
                         <ChevronDownIcon className="w-5 h-5 text-gray-400" />
                       ) : (
@@ -264,21 +353,32 @@ export default function ActivityFlowPage() {
                 </button>
 
                 {/* Step Content */}
-                {isExpanded && !isDisabled && (
+                {isExpanded && status !== "pending" && (
                   <div
                     className={`px-6 pb-6 border-t ${
                       status === "done"
                         ? "border-green-100"
-                        : status === "progress"
+                        : status === "todo"
                         ? "border-blue-100"
-                        : "border-gray-100"
+                        : "border-red-100"
                     }`}
                   >
                     <div className="pt-4">
                       {renderStepContent(step.id, status, {
-                        markDone,
-                        onSchedule: () => openScheduleModal(activity),
-                        onViewSchedule: () => openScheduleViewModal(activity),
+                        // data umum
+                        activity,
+                        deed: activity?.deed,
+                        clients: activity?.clients || [],
+                        track: activity?.track,
+                        // izin global
+                        permissions: stepPermissions,
+                        // actions
+                        markDone, // no-op kalau penghadap
+                        onSchedule: () => openScheduleModal(activity), // notaris only
+                        onViewSchedule: () => openScheduleViewModal(activity), // client can view
+                        // context tambahan
+                        currentUserId: me?.id || null,
+                        activityId,
                       })}
                     </div>
                   </div>
@@ -289,18 +389,22 @@ export default function ActivityFlowPage() {
         </div>
       </div>
 
-      {/* ====== Schedule Modal ====== */}
+      {/* Schedule Modals */}
       <ScheduleModal
         open={schedule.open}
         onClose={() => setSchedule({ open: false, row: null })}
         activity={{
-          code: schedule.row?.code ?? activity.code,
-          deed_type: schedule.row?.deed_type ?? activity.deed_type,
-          party1: schedule.row?.party1 ?? activity.party1,
-          party2: schedule.row?.party2 ?? activity.party2,
+          code: schedule.row?.tracking_code ?? header.code,
+          deed_type: header.deed_type,
+          parties: (activity?.clients || []).map(
+            (c, i) => c.name || c.email || `Penghadap ${i + 1}`
+          ),
         }}
         initial={{
-          datetime: schedule.row?.schedule ?? activity.schedule,
+          datetime:
+            schedule.row?.schedules?.[0]?.datetime ??
+            activity?.schedules?.[0]?.datetime ??
+            header.schedule,
           place: schedule.row?.place ?? "",
           note: schedule.row?.note ?? "",
         }}

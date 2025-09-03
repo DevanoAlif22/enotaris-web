@@ -43,9 +43,15 @@ function App() {
             <Route path="/about" element={<AboutPage />} />
             <Route path="/app/deed" element={<DeedPage />} />
             <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/requirement" element={<RequirementPage />} />
+            <Route
+              path="/app/requirement/:activityId"
+              element={<RequirementPage />}
+            />
             <Route path="/app/user" element={<UserPage />} />
-            <Route path="/app/project-flow" element={<ActivityFlowPage />} />
+            <Route
+              path="/app/project-flow/:activityId"
+              element={<ActivityFlowPage />}
+            />
             <Route
               path="/app/verification-user"
               element={<VerificationUserPage />}
@@ -61,7 +67,7 @@ function App() {
         <Route element={<ProtectedRoute allow={[3]} />}>
           <Route element={<MainLayout />}>
             <Route
-              path="/requirement-notaris"
+              path="/app/requirement-notaris/:activityId"
               element={<RequirementNotarisPage />}
             />
             <Route

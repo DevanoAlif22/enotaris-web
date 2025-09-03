@@ -157,9 +157,9 @@ export default function DeedFormModal({
               min={1}
               max={10}
             />
-            <p className="mt-1 text-xs text-gray-500">
+            {/* <p className="mt-1 text-xs text-gray-500">
               Minimal 1, maksimal 10 (mengikuti validasi server).
-            </p>
+            </p> */}
           </div>
         </div>
       </div>

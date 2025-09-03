@@ -36,7 +36,6 @@ export default function DeedPage() {
     loading: false,
   });
 
-  
   // debounced search
   const debRef = useRef(null);
   const onChangeSearch = (e) => {
@@ -114,7 +113,6 @@ export default function DeedPage() {
       showError(firstErr || e.message || "Gagal menghapus persyaratan.");
     }
   };
-
 
   const fetchRows = async (pg = page, pp = perPage, search = query) => {
     try {
@@ -308,7 +306,7 @@ export default function DeedPage() {
 
         {/* Table */}
         <div className="mt-3 overflow-x-auto">
-          <table className="min-w-max">
+          <table className="w-full min-w-max">
             <thead>
               <tr className="text-center text-gray-500 border-b border-gray-200/80 dark:text-[#f5fefd]">
                 <th className="py-3 px-4 font-semibold whitespace-nowrap">
