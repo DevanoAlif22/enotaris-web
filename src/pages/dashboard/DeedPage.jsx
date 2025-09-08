@@ -52,7 +52,6 @@ export default function DeedPage() {
     id: d.id,
     name: d.name,
     description: d.description,
-    penghadap_count: d.total_client,
     extra_fields: Array.isArray(d.requirements)
       ? d.requirements.map((r) => r.name)
       : [],
@@ -186,7 +185,6 @@ export default function DeedPage() {
       const body = {
         name: payload.name,
         description: payload.description,
-        total_client: payload.total_client ?? payload.penghadap_count, // jaga-jaga
       };
 
       if (payload.id) {
@@ -316,9 +314,6 @@ export default function DeedPage() {
                   Deskripsi
                 </th>
                 <th className="py-3 px-4 font-semibold whitespace-nowrap">
-                  Jumlah Penghadap
-                </th>
-                <th className="py-3 px-4 font-semibold whitespace-nowrap">
                   Data Tambahan
                 </th>
                 <th className="py-3 px-4 font-semibold whitespace-nowrap">
@@ -344,9 +339,6 @@ export default function DeedPage() {
                     {row.description?.length > 40
                       ? row.description.slice(0, 30) + "…"
                       : row.description}
-                  </td>
-                  <td className="py-4 px-4 align-top whitespace-nowrap text-center dark:text-[#f5fefd]">
-                    {row.penghadap_count}
                   </td>
                   <td className="py-4 px-4 align-top whitespace-nowrap text-center dark:text-[#f5fefd]">
                     {row.extra_fields?.length ? (
@@ -457,9 +449,6 @@ export default function DeedPage() {
                 id: modal.payload.id,
                 name: modal.payload.name,
                 description: modal.payload.description,
-                // form kamu mungkin pakai "penghadap_count"; BE butuh "total_client"
-                penghadap_count: modal.payload.penghadap_count,
-                total_client: modal.payload.penghadap_count,
               }
             : null
         }

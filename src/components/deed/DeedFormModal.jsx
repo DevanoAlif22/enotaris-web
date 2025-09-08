@@ -26,7 +26,6 @@ export default function DeedFormModal({
   const [form, setForm] = useState({
     name: "",
     description: "",
-    total_client: 1, // FE -> BE
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,25 +35,11 @@ export default function DeedFormModal({
     setForm({
       name: initialData?.name ?? "",
       description: initialData?.description ?? "",
-      total_client:
-        typeof initialData?.total_client === "number"
-          ? initialData.total_client
-          : 1,
     });
   }, [open, initialData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    // pastikan total_client number & dalam rentang 1..10 (sesuai validasi BE kamu)
-    if (name === "total_client") {
-      const n = Number(value);
-      setForm((f) => ({
-        ...f,
-        total_client: Number.isFinite(n) ? n : 1,
-      }));
-      return;
-    }
 
     setForm((f) => ({ ...f, [name]: value }));
   };
@@ -63,16 +48,12 @@ export default function DeedFormModal({
     const name = form.name.trim();
     if (!name) return alert("Nama wajib diisi");
 
-    // jaga-jaga: clamp nilai agar sesuai validasi server (1..10)
-    const total = Math.max(1, Math.min(10, Number(form.total_client) || 1));
-
     try {
       setIsSubmitting(true);
       await onSubmit({
         ...(initialData?.id ? { id: initialData.id } : {}),
         name,
         description: form.description?.trim() ?? "",
-        total_client: total,
       });
       onClose();
     } catch (err) {
@@ -142,24 +123,6 @@ export default function DeedFormModal({
               placeholder="Deskripsi singkat akta…"
               disabled={isSubmitting}
             />
-          </div>
-
-          <div>
-            <InputField
-              type="number"
-              label="Jumlah Penghadap"
-              name="total_client"
-              value={form.total_client}
-              onChange={handleChange}
-              required
-              disabled={isSubmitting}
-              // bantu UX biar sesuai validasi backend
-              min={1}
-              max={10}
-            />
-            {/* <p className="mt-1 text-xs text-gray-500">
-              Minimal 1, maksimal 10 (mengikuti validasi server).
-            </p> */}
           </div>
         </div>
       </div>

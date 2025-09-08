@@ -4,10 +4,10 @@
   text-align: center;
 }
 
-[data-theme="dark"] .App {
+/* [data-theme="dark"] .App {
   background-color: #0f172a;
   color: #f1f5f9;
-}
+} */
 
 .App-logo {
   height: 40vmin;
@@ -31,9 +31,9 @@
   color: white;
 }
 
-[data-theme="dark"] .App-header {
+/* [data-theme="dark"] .App-header {
   background-color: #1e293b;
-}
+} */
 
 .App-link {
   color: #61dafb;
@@ -43,39 +43,39 @@
   background: linear-gradient(135deg, #0256c4 0%, #0377ff 50%, #00aaff 100%);
 }
 
-[data-theme="dark"] .bg-gradient {
+/* [data-theme="dark"] .bg-gradient {
   background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
-}
+} */
 
 .bg-detail {
   background-color: #edf4ff;
   color: #0256c4;
 }
 
-[data-theme="dark"] .bg-detail {
+/* [data-theme="dark"] .bg-detail {
   background-color: #1e3a8a;
   color: #93c5fd;
-}
+} */
 
 .bg-delete {
   background-color: #ffeded;
   color: #c40202;
 }
 
-[data-theme="dark"] .bg-delete {
+/* [data-theme="dark"] .bg-delete {
   background-color: #7f1d1d;
   color: #fca5a5;
-}
+} */
 
 .bg-add {
   background-color: #efffed;
   color: #0fc402;
 }
 
-[data-theme="dark"] .bg-add {
+/* [data-theme="dark"] .bg-add {
   background-color: #14532d;
   color: #86efac;
-}
+} */
 
 @keyframes App-logo-spin {
   from {
