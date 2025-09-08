@@ -100,13 +100,11 @@ export default function HomePage() {
   const handleRefresh = () => {
     // Logic untuk refresh data
     console.log("Refreshing data...");
-    // Anda bisa menambahkan logic untuk reload data di sini
   };
 
   const handleShare = () => {
     // Logic untuk share
     console.log("Sharing data...");
-    // Anda bisa menambahkan logic untuk share di sini
   };
 
   const handleMore = () => {

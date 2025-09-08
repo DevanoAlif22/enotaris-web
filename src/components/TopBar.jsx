@@ -52,9 +52,9 @@ export default function TopBar({
         <div className="flex items-center gap-3">
           <button
             onClick={onToggleSidebar}
-            className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
+            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#01043c] "
           >
-            <Bars3Icon className="w-6 h-6 text-gray-800" />
+            <Bars3Icon className="w-6 h-6 text-gray-800 dark:text-[#f5fefd]" />
           </button>
           <h1 className="text-2xl font-bold text-gray-800 dark:text-[#f5fefd]">
             {pageTitle}
