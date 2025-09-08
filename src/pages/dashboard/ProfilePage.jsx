@@ -59,6 +59,9 @@ const ProfilePage = () => {
           email: u.email || "",
           telepon: u.telepon || "",
           alamat: u.address || "",
+          kota: u.city || "",
+          provinsi: u.province || "",
+          kode_pos: u.postal_code || "",
           jenisKelamin: u.gender || "", // male|female|lainnya (sesuai BE)
           roleLabel,
           fileAvatar: { file: null, previewUrl: u.file_avatar || "" },
@@ -126,6 +129,9 @@ const ProfilePage = () => {
   // validasi profil
   const validateProfile = () => {
     if (!formData.namaLengkap.trim()) return "Nama wajib diisi.";
+    if (!formData.alamat.trim()) return "Alamat wajib diisi.";
+    if (!formData.provinsi.trim()) return "Provinsi wajib diisi.";
+    if (!formData.kota.trim()) return "Kota wajib diisi.";
     if (!formData.email.trim()) return "Email wajib diisi.";
     if (!/\S+@\S+\.\S+/.test(formData.email))
       return "Format email tidak valid.";
@@ -176,6 +182,9 @@ const ProfilePage = () => {
         gender: formData.jenisKelamin || undefined,
         telepon: formData.telepon || undefined,
         address: formData.alamat || undefined,
+        province: formData.provinsi || undefined,
+        city: formData.city || undefined,
+        postal_code: formData.kode_pos || undefined,
         file_avatar: formData.fileAvatar?.file || undefined,
       });
       showSuccess("Profil berhasil diperbarui.");
@@ -325,6 +334,30 @@ const ProfilePage = () => {
                 value={formData.alamat}
                 onChange={handleInputChange}
                 placeholder="Masukkan alamat lengkap"
+                required={true}
+              />
+              <InputField
+                label={<span className="dark:text-[#f5fefd]">Provinsi</span>}
+                name="provinsi"
+                value={formData.provinsi}
+                onChange={handleInputChange}
+                placeholder="Masukkan provinsi"
+                required={true}
+              />
+              <InputField
+                label={<span className="dark:text-[#f5fefd]">Kota</span>}
+                name="kota"
+                value={formData.kota}
+                onChange={handleInputChange}
+                placeholder="Masukkan kota"
+                required={true}
+              />
+              <InputField
+                label={<span className="dark:text-[#f5fefd]">Kode Pos</span>}
+                name="kode_pos"
+                value={formData.kode_pos}
+                onChange={handleInputChange}
+                placeholder="Masukkan kode pos"
               />
               <InputField
                 label={<span className="dark:text-[#f5fefd]">Role</span>}

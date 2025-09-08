@@ -19,7 +19,8 @@ import ScheduleModal from "../../components/activitynotaris/ScheduleModal";
 import ScheduleViewModal from "../../components/activitynotarisclient/ScheduleViewModal";
 import { activityService } from "../../services/activityService";
 import { userService } from "../../services/userService";
-import { showError } from "../../utils/toastConfig";
+import { showError, showSuccess } from "../../utils/toastConfig";
+import LoadingOverlay from "../../components/common/LoadingOverlay";
 
 const STEPS = [
   { id: "invite", title: "Undang Penghadap", icon: UserGroupIcon },
@@ -53,12 +54,12 @@ const mapTrackToStepStatus = (track) => ({
 export default function ActivityFlowPage() {
   const { activityId } = useParams();
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
   // server data
   const [me, setMe] = useState(null);
   const isNotary = (me?.role_id || 0) === 3;
   const isClient = (me?.role_id || 0) === 2;
 
-  const [, setLoading] = useState(false);
   const [activity, setActivity] = useState(null);
   const [stepStatus, setStepStatus] = useState({
     invite: "pending",
@@ -91,7 +92,7 @@ export default function ActivityFlowPage() {
   const fetchActivity = useCallback(async () => {
     if (!activityId) return;
     try {
-      setLoading(true);
+      setIsSubmitting(true);
       const res = await activityService.detail(activityId);
       const a = res?.data || null;
       setActivity(a);
@@ -99,7 +100,7 @@ export default function ActivityFlowPage() {
     } catch (e) {
       showError(e.message || "Gagal memuat detail aktivitas.");
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   }, [activityId]);
 
@@ -130,6 +131,21 @@ export default function ActivityFlowPage() {
     if (isClient) return;
     setStepStatus((st) => ({ ...st, [id]: "done" }));
   };
+
+  const onMarkDocsDone = useCallback(async () => {
+    try {
+      setIsSubmitting(true);
+      await activityService.markDocsDone(activityId);
+      showSuccess("Step dokumen berhasil ditandai selesai.");
+      // perbarui UI lokal dan/atau refetch detail
+      setStepStatus((st) => ({ ...st, docs: "done" }));
+      fetchActivity(); // opsional kalau mau sinkron lagi ke BE
+    } catch (e) {
+      showError(e.message || "Gagal menandai selesai dokumen.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [activityId, fetchActivity]);
 
   const badgeClass = (status) => {
     switch (status) {
@@ -238,6 +254,7 @@ export default function ActivityFlowPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <LoadingOverlay show={isSubmitting} />
       <div className="mx-auto p-6">
         {/* Header */}
         <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
@@ -374,6 +391,7 @@ export default function ActivityFlowPage() {
                         permissions: stepPermissions,
                         // actions
                         markDone, // no-op kalau penghadap
+                        onMarkDocsDone,
                         onSchedule: () => openScheduleModal(activity), // notaris only
                         onViewSchedule: () => openScheduleViewModal(activity), // client can view
                         // context tambahan

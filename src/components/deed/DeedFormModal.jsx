@@ -25,7 +25,6 @@ export default function DeedFormModal({
   const [form, setForm] = useState({
     name: "",
     description: "",
-    total_client: 1, // FE -> BE
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,24 +34,11 @@ export default function DeedFormModal({
     setForm({
       name: initialData?.name ?? "",
       description: initialData?.description ?? "",
-      total_client:
-        typeof initialData?.total_client === "number"
-          ? initialData.total_client
-          : 1,
     });
   }, [open, initialData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    if (name === "total_client") {
-      const n = Number(value);
-      setForm((f) => ({
-        ...f,
-        total_client: Number.isFinite(n) ? n : 1,
-      }));
-      return;
-    }
 
     setForm((f) => ({ ...f, [name]: value }));
   };
@@ -61,15 +47,12 @@ export default function DeedFormModal({
     const name = form.name.trim();
     if (!name) return alert("Nama wajib diisi");
 
-    const total = Math.max(1, Math.min(10, Number(form.total_client) || 1));
-
     try {
       setIsSubmitting(true);
       await onSubmit({
         ...(initialData?.id ? { id: initialData.id } : {}),
         name,
         description: form.description?.trim() ?? "",
-        total_client: total,
       });
       onClose();
     } catch (err) {
@@ -145,23 +128,6 @@ export default function DeedFormModal({
               className="w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-[#0256c4]/40 outline-none"
               placeholder="Deskripsi singkat akta…"
               disabled={isSubmitting}
-            />
-          </div>
-
-          <div>
-            <InputField
-              type="number"
-              label={
-                <span className="dark:text-[#f5fefd]">Jumlah Penghadap</span>
-              }
-              name="total_client"
-              value={form.total_client}
-              onChange={handleChange}
-              required
-              disabled={isSubmitting}
-              // bantu UX biar sesuai validasi backend
-              min={1}
-              max={10}
             />
           </div>
         </div>
