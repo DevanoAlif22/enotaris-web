@@ -46,13 +46,13 @@ export default function DeedDetailModal({
     <Modal
       open={open}
       onClose={onClose}
-      title="Detail Akta"
+      title={<span className="text-xl dark:text-[#f5fefd]">Detail Akta</span>}
       titleAlign="center"
       size="lg"
       actions={
         <button
           onClick={onClose}
-          className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-white/10"
+          className="px-4 py-2 rounded-lg dark:text-gray-600 bg-gray-100 dark:bg-[#f5fefd]"
         >
           Tutup
         </button>
@@ -61,8 +61,12 @@ export default function DeedDetailModal({
       <div className="space-y-4">
         {/* Nama */}
         <div>
-          <div className="text-sm text-gray-500 mb-1">Nama</div>
-          <div className="text-2xl font-bold">{data.name}</div>
+          <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
+            Nama
+          </div>
+          <div className="text-2xl font-bold dark:text-[#f5fefd]">
+            {data.name}
+          </div>
         </div>
 
         {/* 2 kartu: Jumlah Penghadap & Dibuat */}
@@ -76,14 +80,20 @@ export default function DeedDetailModal({
         </div>
 
         {/* Deskripsi */}
-        <div className="bg-gray-100 rounded-xl p-4">
-          <div className="text-sm text-gray-500 mb-1">Deskripsi</div>
-          <div className="text-lg font-semibold">{data.description || "-"}</div>
+        <div className="bg-gray-100 rounded-xl p-4 dark:bg-[#01043c]">
+          <div className="text-sm text-gray-500 mb-1 dark:text-gray-400">
+            Deskripsi
+          </div>
+          <div className="text-lg dark:text-[#f5fefd]">
+            {data.description || "-"}
+          </div>
         </div>
 
         {/* Dokumen Tambahan */}
-        <div className="bg-gray-100 rounded-xl p-4">
-          <div className="text-sm text-gray-500 mb-2">Dokumen Tambahan</div>
+        <div className="bg-gray-100 rounded-xl p-4 dark:bg-[#01043c]">
+          <div className="text-sm text-gray-500 mb-2 dark:text-gray-400">
+            Dokumen Tambahan
+          </div>
           {data.extra_requirements?.length ? (
             <div className="flex flex-wrap gap-2">
               {data.extra_requirements.map((req) => (

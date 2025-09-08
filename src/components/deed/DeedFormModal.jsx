@@ -5,7 +5,6 @@ import Modal from "../Modal";
 import InputField from "../../components/input/InputField";
 import TextAreaField from "../../components/input/TextAreaField";
 
-/* Overlay simpel; hapus kalau kamu sudah punya komponen sendiri */
 function LoadingOverlay({ show, text = "Memproses..." }) {
   if (!show) return null;
   return (
@@ -57,7 +56,6 @@ export default function DeedFormModal({
       });
       onClose();
     } catch (err) {
-      // biarkan modal tetap terbuka jika terjadi error
       console.error(err);
     } finally {
       setIsSubmitting(false);
@@ -68,21 +66,27 @@ export default function DeedFormModal({
     <Modal
       open={open}
       onClose={isSubmitting ? () => {} : onClose}
-      title={isEdit ? "Edit Akta" : "Tambah Akta"}
+      title={
+        isEdit ? (
+          <span className="text-xl dark:text-[#f5fefd]">Edit Akta</span>
+        ) : (
+          <span className="text-xl dark:text-[#f5fefd]">Tambah Akta</span>
+        )
+      }
       size="md"
       actions={
         <>
           <button
             onClick={onClose}
             disabled={isSubmitting}
-            className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-white/10 disabled:opacity-60"
+            className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-200 dark:hover:bg-gray-300 transition-colors disabled:opacity-60"
           >
             Batal
           </button>
           <button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="px-4 py-2 rounded-lg bg-[#0256c4] text-white font-semibold disabled:opacity-60"
+            className="px-4 py-2 rounded-lg bg-[#0256c4] hover:bg-[#0649a0] transition-colors text-white font-semibold disabled:opacity-60"
           >
             {isEdit
               ? isSubmitting
@@ -98,10 +102,10 @@ export default function DeedFormModal({
       <div className="relative">
         <LoadingOverlay show={isSubmitting} />
 
-        <div className="space-y-4">
+        <div className="space-y-4 dark:text-[#f5fefd]">
           <div>
             <InputField
-              label="Nama Akta"
+              label={<span className="dark:text-[#f5fefd]">Nama Akta</span>}
               type="text"
               name="name"
               value={form.name}
@@ -113,7 +117,9 @@ export default function DeedFormModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Deskripsi</label>
+            <label className="block text-sm font-medium mb-1 dark:text-[#f5fefd]">
+              Deskripsi
+            </label>
             <TextAreaField
               name="description"
               value={form.description}

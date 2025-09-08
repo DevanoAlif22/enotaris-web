@@ -101,13 +101,13 @@ function UserDetailModal({ open, onClose, user, userId }) {
     <Modal
       open={open}
       onClose={onClose}
-      title="Detail Pengguna"
+      title={<span className="dark:text-[#f5fefd]">Detail Pengguna</span>}
       titleAlign="center"
       size="lg"
       actions={
         <button
           onClick={onClose}
-          className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-white/10"
+          className="px-4 py-2 h-11 rounded-lg font-semibold bg-[#0256c4] text-white hover:opacity-90 transition-colors"
         >
           Tutup
         </button>
@@ -123,18 +123,28 @@ function UserDetailModal({ open, onClose, user, userId }) {
           <div className="flex items-center gap-3">
             <Avatar name={detail.name} src={avatarUrl} />
             <div>
-              <div className="text-sm text-gray-500">Nama</div>
-              <div className="text-2xl font-bold">{detail.name}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-300">
+                Nama
+              </div>
+              <div className="text-2xl font-bold dark:text-[#f5fefd]">
+                {detail.name}
+              </div>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-gray-100 rounded-xl p-4">
-              <div className="text-sm text-gray-500 mb-1">Email</div>
-              <div className="text-lg font-semibold">{detail.email || "-"}</div>
+            <div className="bg-gray-100 rounded-xl p-4 dark:bg-[#01043c]">
+              <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                Email
+              </div>
+              <div className="text-lg text-[#002d6a] dark:text-[#f5fefd]">
+                {detail.email || "-"}
+              </div>
             </div>
-            <div className="bg-gray-100 rounded-xl p-4">
-              <div className="text-sm text-gray-500 mb-1">Jenis Kelamin</div>
-              <div className="text-lg font-semibold">
+            <div className="bg-gray-100 rounded-xl p-4 dark:bg-[#01043c]">
+              <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                Jenis Kelamin
+              </div>
+              <div className="text-lg dark:text-[#f5fefd]">
                 {detail.gender === "male"
                   ? "Laki-laki"
                   : detail.gender === "female"
@@ -142,14 +152,20 @@ function UserDetailModal({ open, onClose, user, userId }) {
                   : detail.gender || "-"}
               </div>
             </div>
-            <div className="bg-gray-100 rounded-xl p-4">
-              <div className="text-sm text-gray-500 mb-1">Role</div>
-              <div className="text-lg font-semibold">{roleLabel}</div>
+            <div className="bg-gray-100 rounded-xl p-4 dark:bg-[#01043c]">
+              <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                Role
+              </div>
+              <div className="text-lg font-semibold dark:text-[#f5fefd]">
+                {roleLabel}
+              </div>
             </div>
-            <div className="bg-gray-100 rounded-xl p-4">
+            <div className="bg-gray-100 rounded-xl p-4 dark:bg-[#01043c]">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm text-gray-500 mb-1">Status</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                    Status
+                  </div>
                   <StatusBadge status={statusLabel} />
                 </div>
                 {detail.notes_verification ? (
@@ -161,87 +177,121 @@ function UserDetailModal({ open, onClose, user, userId }) {
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-gray-100 rounded-xl p-4">
-              <div className="text-sm text-gray-500 mb-1">Telepon</div>
-              <div className="text-lg font-semibold">
+            <div className="bg-gray-100 rounded-xl p-4 dark:bg-[#01043c]">
+              <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                Telepon
+              </div>
+              <div className="text-lg dark:text-[#f5fefd]">
                 {detail.telepon || "-"}
               </div>
             </div>
-            <div className="bg-gray-100 rounded-xl p-4">
-              <div className="text-sm text-gray-500 mb-1">Alamat</div>
-              <div className="text-lg font-semibold">
+            <div className="bg-gray-100 rounded-xl p-4 dark:bg-[#01043c]">
+              <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                Alamat
+              </div>
+              <div className="text-lg dark:text-[#f5fefd]">
                 {detail.address || "-"}
               </div>
             </div>
           </div>
           {/* Tanggal dibuat */}
-          <div className="bg-gray-100 rounded-xl p-4">
-            <div className="text-sm text-gray-500 mb-1">Bergabung Sejak</div>
-            <div className="text-lg font-semibold">
+          <div className="bg-gray-100 rounded-xl p-4 dark:bg-[#01043c]">
+            <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+              Bergabung Sejak
+            </div>
+            <div className="text-lg font-semibold dark:text-[#f5fefd]">
               {fmtDate(detail.created_at || detail.joined_at)}
             </div>
           </div>
           {/* Section: Identitas (jika tersedia dari BE detail) */}
           <div className="flex items-center justify-center">
             <div className="flex-grow h-px border-t border-dashed border-gray-400"></div>
-            <h3 className="px-4 text-lg font-medium text-gray-800">
+            <h3 className="px-4 text-lg font-medium text-gray-800 dark:text-[#f5fefd]">
               Identitas
             </h3>
             <div className="flex-grow h-px border-t border-dashed border-gray-400"></div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-gray-100 rounded-xl p-4">
-              <div className="text-sm text-gray-500 mb-1">NIK</div>
-              <div className="text-lg font-semibold">{idn?.ktp || "-"}</div>
+            <div className="bg-gray-100 rounded-xl p-4 dark:bg-[#01043c]">
+              <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                NIK
+              </div>
+              <div className="text-lg font-semibold dark:text-[#f5fefd]">
+                {idn?.ktp || "-"}
+              </div>
             </div>
-            <div className="bg-gray-100 rounded-xl p-4">
-              <div className="text-sm text-gray-500 mb-1">NPWP</div>
-              <div className="text-lg font-semibold">{idn?.npwp || "-"}</div>
+            <div className="bg-gray-100 rounded-xl p-4 dark:bg-[#01043c]">
+              <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                NPWP
+              </div>
+              <div className="text-lg font-semibold dark:text-[#f5fefd]">
+                {idn?.npwp || "-"}
+              </div>
             </div>
-            <div className="bg-gray-100 rounded-xl p-4">
-              <div className="text-sm text-gray-500 mb-1">KTP Notaris</div>
-              <div className="text-lg font-semibold">
+            <div className="bg-gray-100 rounded-xl p-4 dark:bg-[#01043c]">
+              <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                KTP Notaris
+              </div>
+              <div className="text-lg font-semibold dark:text-[#f5fefd]">
                 {idn?.ktp_notaris || "-"}
               </div>
             </div>
-            <div className="bg-gray-100 rounded-xl p-4">
-              <div className="text-sm text-gray-500 mb-1">Updated</div>
-              <div className="text-lg font-semibold">
+            <div className="bg-gray-100 rounded-xl p-4 dark:bg-[#01043c]">
+              <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                Updated
+              </div>
+              <div className="text-lg font-semibold dark:text-[#f5fefd]">
                 {fmtDateTime(idn?.updated_at)}
               </div>
             </div>
           </div>
           {/* File-file pendukung */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-gray-100 rounded-xl p-4">
-              <div className="text-sm text-gray-500 mb-1">File KTP</div>
-              <div className="text-lg font-semibold">{link(idn?.file_ktp)}</div>
+            <div className="bg-gray-100 rounded-xl p-4 dark:bg-[#01043c]">
+              <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                File KTP
+              </div>
+              <div className="text-lg font-semibold dark:text-[#f5fefd]">
+                {link(idn?.file_ktp)}
+              </div>
             </div>
-            <div className="bg-gray-100 rounded-xl p-4">
-              <div className="text-sm text-gray-500 mb-1">File KK</div>
-              <div className="text-lg font-semibold">{link(idn?.file_kk)}</div>
+            <div className="bg-gray-100 rounded-xl p-4  dark:bg-[#01043c]">
+              <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                File KK
+              </div>
+              <div className="text-lg font-semibold dark:text-[#f5fefd]">
+                {link(idn?.file_kk)}
+              </div>
             </div>
-            <div className="bg-gray-100 rounded-xl p-4">
-              <div className="text-sm text-gray-500 mb-1">File NPWP</div>
-              <div className="text-lg font-semibold">
+            <div className="bg-gray-100 rounded-xl p-4 dark:bg-[#01043c]">
+              <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                File NPWP
+              </div>
+              <div className="text-lg font-semibold dark:text-[#f5fefd]">
                 {link(idn?.file_npwp)}
               </div>
             </div>
-            <div className="bg-gray-100 rounded-xl p-4">
-              <div className="text-sm text-gray-500 mb-1">File KTP Notaris</div>
-              <div className="text-lg font-semibold">
+            <div className="bg-gray-100 rounded-xl p-4 dark:bg-[#01043c]">
+              <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                File KTP Notaris
+              </div>
+              <div className="text-lg font-semibold dark:text-[#f5fefd]">
                 {link(idn?.file_ktp_notaris)}
               </div>
             </div>
-            <div className="bg-gray-100 rounded-xl p-4">
-              <div className="text-sm text-gray-500 mb-1">Tanda Tangan</div>
-              <div className="text-lg font-semibold">
+            <div className="bg-gray-100 rounded-xl p-4 dark:bg-[#01043c]">
+              <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                Tanda Tangan
+              </div>
+              <div className="text-lg font-semibold dark:text-[#f5fefd]">
                 {link(idn?.file_sign)}
               </div>
             </div>
-            <div className="bg-gray-100 rounded-xl p-4">
-              <div className="text-sm text-gray-500 mb-1">Foto Formal</div>
-              <div className="text-lg font-semibold">
+            <div className="bg-gray-100 rounded-xl p-4 dark:bg-[#01043c]">
+              <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                Foto Formal
+              </div>
+              <div className="text-lg font-semibold dark:text-[#f5fefd]">
                 {link(idn?.file_photo)}
               </div>
             </div>

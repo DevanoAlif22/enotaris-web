@@ -215,21 +215,27 @@ export default function ActivityFormModal({
     <Modal
       open={open}
       onClose={isSubmitting ? () => {} : onClose}
-      title={isEdit ? "Edit Aktivitas" : "Tambah Aktivitas"}
+      title={
+        isEdit ? (
+          <span className="text-xl dark:text-[#f5fefd]">Edit Akta</span>
+        ) : (
+          <span className="text-xl dark:text-[#f5fefd]">Tambah Akta</span>
+        )
+      }
       size="lg"
       actions={
         <>
           <button
             onClick={onClose}
             disabled={isSubmitting}
-            className="px-4 py-2 rounded-lg bg-gray-100 disabled:opacity-60"
+            className="px-4 py-2 rounded-lg dark:text-gray-600 bg-gray-100 dark:bg-[#f5fefd]"
           >
             Tutup
           </button>
           <button
             onClick={handleSave}
             disabled={isSubmitting || isInitializing}
-            className="px-4 py-2 rounded-lg bg-[#0256c4] text-white font-semibold disabled:opacity-60"
+            className="px-4 py-2 rounded-lg bg-[#0256c4] hover:bg-[#0649a0] transition-colors text-white font-semibold disabled:opacity-60"
           >
             {isSubmitting ? "Menyimpan…" : "Simpan"}
           </button>
@@ -243,7 +249,7 @@ export default function ActivityFormModal({
         <div className="grid grid-cols-1 gap-5">
           {/* Nama Aktivitas */}
           <InputField
-            label="Nama Aktivitas"
+            label={<span className="dark:text-[#f5fefd]">Nama Aktivitas</span>}
             type="text"
             name="name"
             value={name}
@@ -254,7 +260,7 @@ export default function ActivityFormModal({
 
           {/* Jenis Akta */}
           <SearchSelect
-            label="Jenis Akta"
+            label={<span className="dark:text-[#f5fefd]">Jenis Akta</span>}
             placeholder={loadingDeed ? "Memuat..." : "Pilih jenis akta..."}
             options={deedOptions.map((o) => ({
               value: o.value,
@@ -269,7 +275,7 @@ export default function ActivityFormModal({
           {/* Dynamic Party Fields */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-700 font-medium">Penghadap</div>
+              <div className="text-sm text-gray-70 font-medium">Penghadap</div>
               <button
                 type="button"
                 onClick={addPartyField}

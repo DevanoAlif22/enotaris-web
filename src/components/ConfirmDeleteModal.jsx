@@ -18,7 +18,7 @@ export default function ConfirmDeleteModal({
   onClose,
   onConfirm,
   itemName = "",
-  title = "Konfirmasi Hapus",
+  title = <span className="dark:text-[#f5fefd]">Konfirmasi Hapus</span>,
   confirmLabel = "Hapus",
   loading = false,
 }) {
@@ -29,9 +29,14 @@ export default function ConfirmDeleteModal({
     if (open) cancelRef.current?.focus();
   }, [open]);
 
-  const message = itemName
-    ? `Yakin ingin menghapus "${itemName}" ini?`
-    : "Yakin ingin menghapus item ini?";
+  const message = itemName ? (
+    <span className="dark:text-[#f5fefd]">
+      Yakin ingin menghapus "<span className="font-semibold">{itemName}</span>"
+      ini?
+    </span>
+  ) : (
+    <span className="dark:text-[#f5fefd]">Yakin ingin menghapus item ini?</span>
+  );
 
   return (
     <Modal
@@ -45,14 +50,14 @@ export default function ConfirmDeleteModal({
             ref={cancelRef}
             onClick={onClose}
             disabled={loading}
-            className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-white/10 disabled:opacity-60"
+            className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-200 dark:hover:bg-gray-300 transition-colors disabled:opacity-60"
           >
             Batal
           </button>
           <button
             onClick={onConfirm}
             disabled={loading}
-            className="px-4 py-2 rounded-lg bg-red-600 text-white font-semibold disabled:opacity-60"
+            className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 transition-colors text-white font-semibold disabled:opacity-60"
           >
             {loading ? "Menghapus…" : confirmLabel}
           </button>
