@@ -46,7 +46,7 @@ const Avatar = ({ name = "", src = "" }) => {
 
 const InfoCard = ({ label, children, className = "" }) => (
   <div className={`bg-gray-100 rounded-xl p-4 ${className}`}>
-    <div className="text-sm text-gray-500 mb-1">{label}</div>
+    <div className="text-sm text-gray-400 mb-1">{label}</div>
     <div className="text-lg font-semibold">{children ?? "-"}</div>
   </div>
 );
@@ -136,11 +136,14 @@ export default function VerificationDetailModal({ open, onClose, userId }) {
     <Modal
       open={open}
       onClose={onClose}
-      title="Detail Verifikasi"
+      title={<span className="dark:text-[#f5fefd]">Detail Verifikasi</span>}
       titleAlign="center"
       size="lg"
       actions={
-        <button onClick={onClose} className="px-4 py-2 rounded-lg bg-gray-100">
+        <button
+          onClick={onClose}
+          className="px-4 py-2 h-11 rounded-lg font-semibold bg-[#0256c4] text-white hover:opacity-90 transition-colors"
+        >
           Tutup
         </button>
       }
@@ -156,80 +159,170 @@ export default function VerificationDetailModal({ open, onClose, userId }) {
       {!loading && !errMsg && detail && (
         <div className="space-y-5">
           {/* Header */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 ">
             <Avatar name={detail.name} src={detail.avatar_url} />
             <div>
-              <div className="text-2xl font-bold">{detail.name || "-"}</div>
-              <div className="text-gray-600">{detail.email || "-"}</div>
-              <div className="text-sm text-gray-400">
-                ID: {detail.id ?? "-"}
+              <div className="text-2xl font-bold text-gray-500 dark:text-[#f5fefd]">
+                {detail.name || "-"}
               </div>
+              <div className="text-gray-600 dark:text-gray-400">
+                {detail.email || "-"}
+              </div>
+              {/* <div className="text-sm text-gray-400">
+                ID: {detail.id ?? "-"}
+              </div> */}
             </div>
           </div>
           {/* Status Verifikasi */}
-          <div className="bg-gray-100 rounded-xl p-4">
+          <div className="bg-gray-100 rounded-xl p-4 dark:bg-[#01043c]">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <div className="text-sm text-gray-500 mb-1">
+                <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
                   Status Verifikasi
                 </div>
                 <StatusBadge status={detail.status} />
               </div>
               {detail.notes ? (
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-gray-500 dark:text-gray-400">
                   Catatan: {detail.notes}
                 </div>
               ) : null}
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <InfoCard label="Telepon">{phone}</InfoCard>
-            <InfoCard label="Jenis Kelamin">
-              {gender === "male"
-                ? "Perempuan"
-                : gender === 3
-                ? "Laki-laki"
-                : gender || "-"}
+            <InfoCard
+              label="Telepon"
+              className="dark:bg-[#01043c] dark:text-gray-400"
+            >
+              <div className="font-light text-lg text-[#002d6a] dark:text-[#f5fefd]">
+                {phone}
+              </div>
             </InfoCard>
-            <InfoCard label="Role">
-              {detail.role === 2
-                ? "Penghadap"
-                : detail.role === 3
-                ? "Notaris"
-                : detail.role || "-"}
+            <InfoCard
+              label="Jenis Kelamin"
+              className="dark:bg-[#01043c] dark:text-gray-400"
+            >
+              <div className="font-light dark:text-[#f5fefd]">
+                {detail.gender === "male"
+                  ? "Laki-laki"
+                  : detail.gender === "female"
+                  ? "Perempuan"
+                  : detail.gender || "-"}
+              </div>
             </InfoCard>
-            <InfoCard label="Bergabung Sejak">{fmtDate(joinedAt)}</InfoCard>
+            <InfoCard
+              label="Role"
+              className="dark:bg-[#01043c] dark:text-gray-400"
+            >
+              <div className="text-lg dark:text-[#f5fefd] font-semibold">
+                {detail.role === 2
+                  ? "Penghadap"
+                  : detail.role === 3
+                  ? "Notaris"
+                  : detail.role || "-"}
+              </div>
+            </InfoCard>
+            <InfoCard
+              label="Bergabung Sejak"
+              className="dark:bg-[#01043c] dark:text-gray-400"
+            >
+              <div className="text-lg dark:text-[#f5fefd]">
+                {fmtDate(joinedAt)}
+              </div>
+            </InfoCard>
           </div>
-          <InfoCard label="Alamat" className="col-span-1 md:col-span-2">
-            {address}
+          <InfoCard
+            label="Alamat"
+            className="col-span-1 md:col-span-2 dark:bg-[#01043c] dark:text-gray-400"
+          >
+            <div className="font-light dark:text-[#f5fefd]">{address}</div>
           </InfoCard>
           {/* Identitas */}
-          <h3 className="text-xl font-bold mt-2">Identitas</h3>
+          <h3 className="text-xl font-bold mt-2 dark:text-[#f5fefd]">
+            Identitas
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <InfoCard label="NIK">{detail.nik || "-"}</InfoCard>
-            <InfoCard label="NPWP">{detail.npwp || "-"}</InfoCard>
-
-            <InfoCard label="KTP Notaris">{detail.ktp_notaris || "-"}</InfoCard>
-            <InfoCard label="File KTP">
-              <FileLink url={detail.ktp_url} />
+            <InfoCard
+              label="NIK"
+              className="dark:bg-[#01043c] dark:text-gray-300"
+            >
+              <div className="text-lg dark:text-[#f5fefd]">
+                {detail.nik || "-"}
+              </div>
+            </InfoCard>
+            <InfoCard
+              label="NPWP"
+              className="dark:bg-[#01043c] dark:text-gray-400"
+            >
+              <div className="text-lg dark:text-[#f5fefd]">
+                {detail.npwp || "-"}
+              </div>
             </InfoCard>
 
-            <InfoCard label="File KK">
-              <FileLink url={detail.kk_url} />
+            <InfoCard
+              label="KTP Notaris"
+              className="dark:bg-[#01043c] dark:text-gray-400"
+            >
+              <div className="text-lg dark:text-[#f5fefd]">
+                {detail.ktp_notaris || "-"}
+              </div>
             </InfoCard>
-            <InfoCard label="File NPWP">
-              <FileLink url={detail.npwp_file_url} />
+            <InfoCard
+              label="File KTP"
+              className="dark:bg-[#01043c] dark:text-gray-400"
+            >
+              <div className="text-lg dark:text-[#f5fefd]">
+                {detail.ktp_url ? <FileLink url={detail.ktp_url} /> : "-"}
+              </div>
             </InfoCard>
 
-            <InfoCard label="File KTP Notaris">
-              <FileLink url={detail.ktp_notaris_url} />
+            <InfoCard
+              label="File KK"
+              className="dark:bg-[#01043c] dark:text-gray-400"
+            >
+              <div className="text-lg dark:text-[#f5fefd]">
+                {detail.kk_url ? <FileLink url={detail.kk_url} /> : "-"}
+              </div>
             </InfoCard>
-            <InfoCard label="File Tanda Tangan">
+            <InfoCard
+              label="File NPWP"
+              className="dark:bg-[#01043c] dark:text-gray-400"
+            >
+              <div className="text-lg dark:text-[#f5fefd]">
+                {detail.npwp_file_url ? (
+                  <FileLink url={detail.npwp_file_url} />
+                ) : (
+                  "-"
+                )}
+              </div>
+            </InfoCard>
+
+            <InfoCard
+              label="File KTP Notaris"
+              className="dark:bg-[#01043c] dark:text-gray-400"
+            >
+              <div className="text-lg dark:text-[#f5fefd]">
+                {detail.ktp_notaris_url ? (
+                  <FileLink url={detail.ktp_notaris_url} />
+                ) : (
+                  "-"
+                )}
+              </div>
+            </InfoCard>
+            <InfoCard
+              label="File Tanda Tangan"
+              className="dark:bg-[#01043c] dark:text-gray-400"
+            >
               <FileLink url={detail.ttd_url} />
             </InfoCard>
 
-            <InfoCard label="Foto Formal" className="md:col-span-2">
-              <FileLink url={detail.foto_url} />
+            <InfoCard
+              label="Foto Formal"
+              className="md:col-span-2 dark:bg-[#01043c]"
+            >
+              <div className="text-lg dark:text-[#f5fefd]">
+                {detail.foto_url ? <FileLink url={detail.foto_url} /> : "-"}
+              </div>
             </InfoCard>
           </div>
         </div>

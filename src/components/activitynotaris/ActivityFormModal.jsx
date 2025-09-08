@@ -246,7 +246,7 @@ export default function ActivityFormModal({
         <LoadingOverlay show={isSubmitting} />
         {isInitializing && <LoadingOverlay show={true} text="Memuat data..." />}
 
-        <div className="grid grid-cols-1 gap-5">
+        <div className="grid grid-cols-1 gap-5 dark:text-[#f5fefd]">
           {/* Nama Aktivitas */}
           <InputField
             label={<span className="dark:text-[#f5fefd]">Nama Aktivitas</span>}
