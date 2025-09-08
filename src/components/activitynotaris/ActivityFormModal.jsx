@@ -256,7 +256,7 @@ export default function ActivityFormModal({
         {/* Loading overlay for initialization */}
         {isInitializing && <LoadingOverlay show={true} text="Memuat data..." />}
 
-        <div className="grid grid-cols-1 gap-5">
+        <div className="grid grid-cols-1 gap-5 dark:text-[#f5fefd]">
           {/* Nama Aktivitas */}
           <InputField
             label={<span className="dark:text-[#f5fefd]">Nama Aktivitas</span>}
@@ -269,18 +269,20 @@ export default function ActivityFormModal({
           />
 
           {/* Jenis Akta */}
-          <SearchSelect
-            label={<span className="dark:text-[#f5fefd]">Jenis Akta</span>}
-            placeholder={loadingDeed ? "Memuat..." : "Pilih jenis akta..."}
-            options={deedOptions.map((o) => ({
-              value: o.value,
-              label: `${o.label} (butuh ${o.total_client} penghadap)`,
-            }))}
-            value={deedId}
-            onChange={setDeedId}
-            disabled={loadingDeed || isSubmitting || isInitializing}
-            required
-          />
+          <div className="text-sm dark:text-gray-600">
+            <SearchSelect
+              label={<span className="dark:text-[#f5fefd]">Jenis Akta</span>}
+              placeholder={loadingDeed ? "Memuat..." : "Pilih jenis akta..."}
+              options={deedOptions.map((o) => ({
+                value: o.value,
+                label: `${o.label} (butuh ${o.total_client} penghadap)`,
+              }))}
+              value={deedId}
+              onChange={setDeedId}
+              disabled={loadingDeed || isSubmitting || isInitializing}
+              required
+            />
+          </div>
 
           {/* Info jumlah penghadap */}
           {deedId ? (
@@ -291,18 +293,24 @@ export default function ActivityFormModal({
 
           {/* Dynamic Party Fields */}
           {Array.from({ length: requiredParties || 0 }).map((_, idx) => (
-            <SearchSelect
-              key={idx}
-              label={`Penghadap ${idx + 1}`}
-              placeholder={
-                loadingClients ? "Memuat klien..." : "Pilih klien..."
-              }
-              options={optionsForIndex(idx)}
-              value={partyValues[idx] ?? null} // string|null
-              onChange={(v) => handlePartyChange(idx, v)}
-              disabled={loadingClients || isSubmitting || isInitializing}
-              required
-            />
+            <div className="text-sm dark:text-gray-600">
+              <SearchSelect
+                key={idx}
+                label={
+                  <span className="dark:text-[#f5fefd]">
+                    Penghadap {idx + 1}
+                  </span>
+                }
+                placeholder={
+                  loadingClients ? "Memuat klien..." : "Pilih klien..."
+                }
+                options={optionsForIndex(idx)}
+                value={partyValues[idx] ?? null} // string|null
+                onChange={(v) => handlePartyChange(idx, v)}
+                disabled={loadingClients || isSubmitting || isInitializing}
+                required
+              />
+            </div>
           ))}
         </div>
       </div>

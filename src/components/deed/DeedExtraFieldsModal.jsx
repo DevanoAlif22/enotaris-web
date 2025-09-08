@@ -96,15 +96,23 @@ export default function DeedExtraFieldsModal({
         {/* Jenis Input */}
         <CheckCardGroup
           labelTitle={
-            <span className="dark:text-[#f5fefd] font-medium ">
-              Jenis Input
-            </span>
+            <span className="dark:text-[#f5fefd] font-medium">Jenis Input</span>
           }
           containerStyle="space-y-2"
           options={[
             {
               value: "text",
-              name: "Teks",
+              name: (
+                <span
+                  className={`${
+                    inputType === "text"
+                      ? "text-blue-600"
+                      : "text-gray-600 dark:text-[#f5fefd]"
+                  }`}
+                >
+                  Teks
+                </span>
+              ),
               icon: (
                 <DocumentTextIcon
                   className={`h-5 w-5 ${
@@ -115,7 +123,17 @@ export default function DeedExtraFieldsModal({
             },
             {
               value: "file",
-              name: <span className="dark:text-[#f5fefd]">File</span>,
+              name: (
+                <span
+                  className={`${
+                    inputType === "file"
+                      ? "text-blue-600"
+                      : "text-gray-600 dark:text-[#f5fefd]"
+                  }`}
+                >
+                  File
+                </span>
+              ),
               icon: (
                 <FolderArrowDownIcon
                   className={`h-5 w-5 ${
