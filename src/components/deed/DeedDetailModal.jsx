@@ -70,20 +70,10 @@ export default function DeedDetailModal({
         </div>
 
         {/* 2 kartu: Jumlah Penghadap & Dibuat */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-gray-100 rounded-xl p-4 dark:bg-[#01043c]">
-            <div className="text-sm text-gray-500 mb-1 dark:text-gray-400">
-              Jumlah Penghadap
-            </div>
-            <div className="text-xl dark:text-[#f5fefd]">
-              {data.penghadap_count ?? "-"}
-            </div>
-          </div>
-          <div className="bg-gray-100 rounded-xl p-4 dark:bg-[#01043c]">
-            <div className="text-sm text-gray-500 mb-1 dark:text-gray-400">
-              Dibuat
-            </div>
-            <div className="text-xl dark:text-[#f5fefd]">
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+          <div className="bg-gray-100 rounded-xl p-4">
+            <div className="text-sm text-gray-500 mb-1">Dibuat</div>
+            <div className="text-xl font-semibold">
               {fmtDateTime(data.created_at)}
             </div>
           </div>

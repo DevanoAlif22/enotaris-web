@@ -1,48 +1,38 @@
-import { useEffect, useState } from "react";
+// src/layouts/MainLayout.jsx
 import { Outlet } from "react-router-dom";
+import { useState } from "react";
 import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
 import Footer from "../components/Footer";
 
-export default function MainLayout() {
+export default function MainLayout({ onToggleTheme, theme }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const [theme, setTheme] = useState(() => {
-    if (typeof window !== "undefined") {
-      return (
-        localStorage.getItem("theme") ||
-        (window.matchMedia("(prefers-color-scheme: dark)").matches
-          ? "dark"
-          : "light")
-      );
-    }
-    return "light";
-  });
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    localStorage.setItem("theme", theme);
-  }, [theme]);
 
   return (
     <div className="min-h-screen bg-secondary dark:bg-[#01043c] transition-colors duration-300">
-      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar 
+        open={sidebarOpen} 
+        onClose={() => setSidebarOpen(false)} 
+        theme={theme} 
+      />
 
-      {/* area konten geser */}
+      {/* Main content area with sidebar offset */}
       <div className="lg:pl-72 min-h-screen flex flex-col">
+        {/* TopBar with theme props */}
         <TopBar
-          onToggleSidebar={() => setSidebarOpen((v) => !v)}
+          onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
           theme={theme}
-          onToggleTheme={() => setTheme(theme === "dark" ? "light" : "dark")}
+          onToggleTheme={onToggleTheme}
         />
+        
         <main className="flex flex-col min-h-screen">
-          {/* konten utama */}
-          <div className="flex-1 overflow-auto">
+          {/* Main content */}
+          <div className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
             <Outlet />
           </div>
 
-          {/* footer */}
-          <Footer />
+          {/* Footer */}
+          <Footer theme={theme} />
         </main>
       </div>
     </div>

@@ -1,5 +1,5 @@
 // services/notaris/activityService.js
-import api from "./api"; // axios instance kamu
+import api from "./api";
 
 const normErr = (err) => {
   const data = err?.response?.data;
@@ -16,7 +16,7 @@ export const activityService = {
       const { data } = await api.get("/notaris/activity", {
         params: { page, per_page, search, status },
       });
-      return data; // { success, data: [], meta: {...} }
+      return data;
     } catch (e) {
       throw normErr(e);
     }
@@ -25,7 +25,7 @@ export const activityService = {
   async detail(id) {
     try {
       const { data } = await api.get(`/notaris/activity/${id}`);
-      return data; // { success, data: {...} }
+      return data;
     } catch (e) {
       throw normErr(e);
     }
@@ -46,10 +46,7 @@ export const activityService = {
 
   async update(id, payload) {
     try {
-      const { data } = await api.post(
-        `/notaris/activity/update/${id}`,
-        payload
-      );
+      const { data } = await api.post(`/notaris/activity/update/${id}`, payload);
       return data;
     } catch (e) {
       throw normErr(e);
@@ -65,13 +62,22 @@ export const activityService = {
     }
   },
 
-  // dropdown klien terverifikasi (opsional untuk form)
   async listClients(search = "") {
     try {
       const { data } = await api.get("/notaris/activity/user/client", {
         params: { search },
       });
-      return data; // { success, data: [{value,label,name,email,avatar}] }
+      return data;
+    } catch (e) {
+      throw normErr(e);
+    }
+  },
+
+  // ⬇️ Tambahan ini
+  async markDocsDone(id) {
+    try {
+      const { data } = await api.get(`/notaris/activity/mark-done/docs/${id}`);
+      return data; // { success: true, ... }
     } catch (e) {
       throw normErr(e);
     }

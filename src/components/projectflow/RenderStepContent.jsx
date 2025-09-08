@@ -11,6 +11,7 @@ export default function renderStepContent(stepId, status, actions = {}) {
     markDone,
     onSchedule,
     onViewSchedule,
+    onMarkDocsDone,
     permissions = {},
     activity,
     clients = [],
@@ -98,7 +99,7 @@ export default function renderStepContent(stepId, status, actions = {}) {
             })}
           </div>
 
-          {canMarkDone && status !== "reject" && (
+          {/* {canMarkDone && status !== "reject" && (
             <div className="flex gap-3">
               <button className={secondaryButton}>Kirim Pengingat</button>
               <button
@@ -108,7 +109,7 @@ export default function renderStepContent(stepId, status, actions = {}) {
                 Tandai Selesai
               </button>
             </div>
-          )}
+          )} */}
         </div>
       );
 
@@ -117,46 +118,42 @@ export default function renderStepContent(stepId, status, actions = {}) {
         <div className="space-y-4">
           {RejectNotice}
           <div className="space-y-4">
-            {docsPerm.canSelectAnyParty
-              ? clients.map((c, i) => (
-                  <div
-                    key={c.id}
-                    className="p-4 border border-gray-200 rounded-lg"
-                  >
+            {docsPerm.canSelectAnyParty ? (
+              <div className="p-4 border border-gray-200 rounded-lg">
+                <h4 className="font-medium mb-2">
+                  Data & Dokumen Semua Penghadap
+                </h4>
+                <Link
+                  to={`/app/requirement-notaris/${activity?.id}`}
+                  className={secondaryButton}
+                >
+                  Buka Form
+                </Link>
+              </div>
+            ) : (
+              (() => {
+                const me = clients.find((c) => c.id === currentUserId);
+                return (
+                  <div className="p-4 border border-gray-200 rounded-lg">
                     <h4 className="font-medium mb-2">
-                      Data & Dokumen {c.name || `Penghadap ${i + 1}`}
+                      Data & Dokumen {me?.name || "Semua Penghadap"}
                     </h4>
                     <Link
-                      to={`/app/requirement/${activity?.id}?user=${c.id}`}
+                      to={`/app/requirement/${activity?.id}`}
                       className={secondaryButton}
                     >
                       Buka Form
                     </Link>
                   </div>
-                ))
-              : (() => {
-                  const me = clients.find((c) => c.id === currentUserId);
-                  return (
-                    <div className="p-4 border border-gray-200 rounded-lg">
-                      <h4 className="font-medium mb-2">
-                        Data & Dokumen {me?.name || "Semua Penghadap"}
-                      </h4>
-                      <Link
-                        to={`/app/requirement-notaris/${activity?.id}`}
-                        className={secondaryButton}
-                      >
-                        Buka Form
-                      </Link>
-                    </div>
-                  );
-                })()}
+                );
+              })()
+            )}
           </div>
-
-          {canMarkDone && status !== "reject" && (
+          {status === "todo" && (
             <div className="flex gap-3">
               <button
                 className={primaryButton}
-                onClick={() => markDone?.("docs")}
+                onClick={() => onMarkDocsDone?.("docs")}
               >
                 Tandai Selesai
               </button>
