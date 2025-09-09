@@ -1,262 +1,157 @@
-// app/project-flow/ActivityFlowPage.jsx
-"use client";
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
-import {
-  CheckCircleIcon as CheckCircleSolid,
-  ChevronDownIcon,
-  ChevronRightIcon,
-} from "@heroicons/react/24/solid";
 import {
   CalendarDaysIcon,
   DocumentTextIcon,
   UserGroupIcon,
 } from "@heroicons/react/24/outline";
+import {
+  CheckCircleIcon as CheckCircleSolid,
+  PlusIcon,
+} from "@heroicons/react/24/solid";
 
+import { useActivityData } from "../../hooks/useActivityData";
+import { useRequirements } from "../../hooks/useRequirements";
+import { useParties } from "../../hooks/useParties";
+
+import StepItem from "../../components/projectflow/StepItem";
 import renderStepContent from "../../components/projectflow/RenderStepContent";
-import getStatusIcon from "../../components/projectflow/GetStatusIcon";
 import ScheduleModal from "../../components/activitynotaris/ScheduleModal";
 import ScheduleViewModal from "../../components/activitynotarisclient/ScheduleViewModal";
-import { activityService } from "../../services/activityService";
-import { userService } from "../../services/userService";
-import { showError, showSuccess } from "../../utils/toastConfig";
+import AddPartyModal from "../../components/activitynotaris/AddPartyModal";
+import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
+import DeedExtraFieldsModal from "../../components/deed/DeedExtraFieldsModal";
 import LoadingOverlay from "../../components/common/LoadingOverlay";
+import { showSuccess } from "../../utils/toastConfig";
 
 const STEPS = [
-  { id: "invite", title: "Undang Penghadap", icon: UserGroupIcon },
-  { id: "respond", title: "Persetujuan Penghadap", icon: CheckCircleSolid },
-  { id: "docs", title: "Pengisian Data & Dokumen", icon: DocumentTextIcon },
-  { id: "draft", title: "Draft Akta", icon: DocumentTextIcon },
-  { id: "schedule", title: "Penjadwalan Pembacaan", icon: CalendarDaysIcon },
-  { id: "sign", title: "Tanda Tangan", icon: CheckCircleSolid },
-  { id: "print", title: "Cetak Akta", icon: DocumentTextIcon },
+  {
+    id: "invite",
+    title: "Undang Penghadap",
+    icon: UserGroupIcon,
+    description: "Kirim undangan kepada para pihak untuk bergabung.",
+  },
+  {
+    id: "respond",
+    title: "Persetujuan Penghadap",
+    icon: CheckCircleSolid,
+    description: "Pantau persetujuan undangan.",
+  },
+  {
+    id: "docs",
+    title: "Pengisian Data & Dokumen",
+    icon: DocumentTextIcon,
+    description: "Unggah/isi data & kelola persyaratan.",
+  },
+  {
+    id: "draft",
+    title: "Draft Akta",
+    icon: DocumentTextIcon,
+    description: "Susun/unggah draft akta.",
+  },
+  {
+    id: "schedule",
+    title: "Penjadwalan Pembacaan",
+    icon: CalendarDaysIcon,
+    description: "Atur jadwal pembacaan akta.",
+  },
+  {
+    id: "sign",
+    title: "Tanda Tangan",
+    icon: CheckCircleSolid,
+    description: "Proses tanda tangan.",
+  },
+  {
+    id: "print",
+    title: "Cetak Akta",
+    icon: DocumentTextIcon,
+    description: "Finalisasi dan cetak akta.",
+  },
 ];
-
-// Normalisasi status BE -> FE {pending|todo|done|reject}
-const normalize = (v) => {
-  const s = String(v || "").toLowerCase();
-  if (s === "done") return "done";
-  if (s === "todo" || s === "progress") return "todo";
-  if (s === "reject" || s === "rejected") return "reject";
-  return "pending";
-};
-
-const mapTrackToStepStatus = (track) => ({
-  invite: normalize(track?.status_invite),
-  respond: normalize(track?.status_respond),
-  docs: normalize(track?.status_docs),
-  draft: normalize(track?.status_draft),
-  schedule: normalize(track?.status_schedule),
-  sign: normalize(track?.status_sign),
-  print: normalize(track?.status_print),
-});
 
 export default function ActivityFlowPage() {
   const { activityId } = useParams();
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  // server data
-  const [me, setMe] = useState(null);
-  const isNotary = (me?.role_id || 0) === 3;
-  const isClient = (me?.role_id || 0) === 2;
+  // core data/state via hooks
+  const {
+    isSubmitting,
+    isMutating,
+    setIsMutating,
+    me,
+    isNotary,
+    isClient,
+    activity,
+    stepStatus,
+    setStepStatus,
+    partyList,
+    requirementList,
+    progress,
+    stepPermissions,
+    header,
+    fetchActivity,
+  } = useActivityData(activityId);
 
-  const [activity, setActivity] = useState(null);
-  const [stepStatus, setStepStatus] = useState({
-    invite: "pending",
-    respond: "pending",
-    docs: "pending",
-    draft: "pending",
-    schedule: "pending",
-    sign: "pending",
-    print: "pending",
-  });
-
-  // expanded default
   const [expandedStep, setExpandedStep] = useState("respond");
-
-  // modal
   const [schedule, setSchedule] = useState({ open: false, row: null });
   const [scheduleView, setScheduleView] = useState({ open: false, row: null });
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [addReqOpen, setAddReqOpen] = useState(false);
+  const [removeConfirm, setRemoveConfirm] = useState({
+    open: false,
+    user: null,
+    loading: false,
+  });
 
-  // ===== fetchers =====
-  const fetchMe = useCallback(async () => {
+  const { handleExtrasCreate, handleDeleteRequirement } = useRequirements({
+    activity,
+    fetchActivity,
+    setStepStatus,
+    setIsMutating,
+  });
+  const { handleConfirmAdd, doRemove } = useParties({
+    activityId,
+    fetchActivity,
+    setIsMutating,
+    setAddModalOpen,
+    setRemoveConfirm,
+  });
+
+  const toggleStep = (id) =>
+    stepStatus[id] !== "pending" &&
+    setExpandedStep(expandedStep === id ? null : id);
+  const markDone = (id) =>
+    !isClient && setStepStatus((st) => ({ ...st, [id]: "done" }));
+
+  const onMarkDocsDone = async () => {
     try {
-      const res = await userService.getProfile();
-      const u = res?.user || res?.data?.user || res?.data || {};
-      setMe(u);
-    } catch (e) {
-      showError(e.message || "Gagal memuat data pengguna.");
-    }
-  }, []);
-
-  const fetchActivity = useCallback(async () => {
-    if (!activityId) return;
-    try {
-      setIsSubmitting(true);
-      const res = await activityService.detail(activityId);
-      const a = res?.data || null;
-      setActivity(a);
-      setStepStatus(mapTrackToStepStatus(a?.track || {}));
-    } catch (e) {
-      showError(e.message || "Gagal memuat detail aktivitas.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [activityId]);
-
-  useEffect(() => {
-    (async () => {
-      await fetchMe();
-    })();
-  }, [fetchMe]);
-
-  useEffect(() => {
-    fetchActivity();
-  }, [fetchActivity]);
-
-  // ===== computed =====
-  const progress = useMemo(() => {
-    const total = STEPS.length;
-    const done = Object.values(stepStatus).filter((s) => s === "done").length;
-    return Math.round((done / total) * 100);
-  }, [stepStatus]);
-
-  const toggleStep = (stepId) => {
-    if (stepStatus[stepId] === "pending") return; // pending = terkunci
-    setExpandedStep(expandedStep === stepId ? null : stepId);
-  };
-
-  // guard: penghadap tidak boleh mark done
-  const markDone = (id) => {
-    if (isClient) return;
-    setStepStatus((st) => ({ ...st, [id]: "done" }));
-  };
-
-  const onMarkDocsDone = useCallback(async () => {
-    try {
-      setIsSubmitting(true);
-      await activityService.markDocsDone(activityId);
+      setIsMutating(true);
+      await (
+        await import("../../services/activityService")
+      ).activityService.markDocsDone(activityId);
       showSuccess("Step dokumen berhasil ditandai selesai.");
-      // perbarui UI lokal dan/atau refetch detail
       setStepStatus((st) => ({ ...st, docs: "done" }));
-      fetchActivity(); // opsional kalau mau sinkron lagi ke BE
-    } catch (e) {
-      showError(e.message || "Gagal menandai selesai dokumen.");
+      fetchActivity();
     } finally {
-      setIsSubmitting(false);
-    }
-  }, [activityId, fetchActivity]);
-
-  const badgeClass = (status) => {
-    switch (status) {
-      case "done":
-        return "text-green-700 bg-green-50 border-green-200";
-      case "todo":
-        return "text-blue-700 bg-blue-50 border-blue-200";
-      case "reject":
-        return "text-red-700 bg-red-50 border-red-200";
-      default:
-        return "text-gray-600 bg-gray-100 border-gray-300"; // pending
+      setIsMutating(false);
     }
   };
 
-  const statusLabel = (status) => {
-    switch (status) {
-      case "done":
-        return "Selesai";
-      case "todo":
-        return "Sedang Dikerjakan";
-      case "reject":
-        return "Ditolak";
-      default:
-        return "Terkunci";
-    }
-  };
-
-  const containerClass = (status, isExpanded) => {
-    if (status === "done")
-      return isExpanded
-        ? "bg-green-50 border-green-200"
-        : "bg-white border-green-200";
-    if (status === "todo")
-      return isExpanded
-        ? "bg-blue-50 border-blue-200"
-        : "bg-white border-blue-200";
-    if (status === "reject")
-      return isExpanded
-        ? "bg-red-50 border-red-200"
-        : "bg-white border-red-200";
-    return "bg-gray-50 border-gray-200";
-  };
-
-  const headerClass = (status, isExpanded) => {
-    const base =
-      "w-full px-6 py-4 flex items-center justify-between transition-colors";
-    if (status === "pending") return `${base} cursor-not-allowed opacity-60`;
-
-    const hover =
-      status === "done"
-        ? "hover:bg-green-50"
-        : status === "todo"
-        ? "hover:bg-blue-50"
-        : "hover:bg-red-50";
-    const expanded =
-      isExpanded &&
-      (status === "done"
-        ? "bg-green-50"
-        : status === "todo"
-        ? "bg-blue-50"
-        : "bg-red-50");
-
-    return `${base} cursor-pointer ${hover} ${expanded || ""}`;
-  };
-
-  // ===== header parties (DINAMIS) =====
-  const partyList = useMemo(
-    () => (Array.isArray(activity?.clients) ? activity.clients : []),
-    [activity?.clients]
-  );
-
-  // schedule modal controls (role-aware)
-  const openScheduleModal = (row = activity) => {
-    if (!isNotary) return;
-    setSchedule({ open: true, row });
-  };
-  const openScheduleViewModal = (row = activity) =>
-    setScheduleView({ open: true, row });
-
-  // izin/flags untuk konten step
-  const stepPermissions = useMemo(() => {
-    return {
-      isNotary,
-      isClient,
-      docs: {
-        canSelectAnyParty: isNotary,
-        currentUserId: me?.id || null,
-      },
-      draft: {
-        readOnly: isClient,
-      },
-      schedule: {
-        canEdit: isNotary,
-      },
-      canMarkDone: isNotary,
-    };
-  }, [isNotary, isClient, me?.id]);
-
-  const header = {
-    code: activity?.tracking_code || "-",
-    notaris: activity?.notaris?.name || "-",
-    deed_type: activity?.deed?.name || "-",
-    name: activity?.name || "-",
-    schedule: activity?.schedules?.[0]?.datetime || null,
-  };
+  // const addOptions = useMemo(() => {
+  //   const chosen = new Set(partyList.map((u) => String(u.id)));
+  //   const all = Array.isArray(activity?.clients_all)
+  //     ? activity.clients_all
+  //     : []; // opsional: ganti sesuai sumbermu
+  //   return all
+  //     .filter((c) => !chosen.has(String(c.value)))
+  //     .map((c) => ({ value: c.value, label: c.label }));
+  // }, [partyList, activity?.clients_all]);
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <LoadingOverlay show={isSubmitting} />
+      <LoadingOverlay show={isSubmitting || isMutating} />
+
+      {/* Header ringkas */}
       <div className="mx-auto p-6">
-        {/* Header */}
         <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
           <div className="flex items-start justify-between mb-4">
             <div>
@@ -287,25 +182,51 @@ export default function ActivityFlowPage() {
             </div>
           </div>
 
-          <p className="text-sm text-gray-800 mt-1 mb-3">Penghadap :</p>
+          {/* Penghadap */}
+          <div className="flex items-center justify-between gap-3 mt-1 mb-3">
+            <p className="text-sm text-gray-800">Penghadap :</p>
+            {isNotary && (
+              <button
+                type="button"
+                onClick={() => setAddModalOpen(true)}
+                className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                <PlusIcon className="w-4 h-4" /> Tambah
+              </button>
+            )}
+          </div>
 
-          {/* DINAMIS: grid responsif 1/2/3 kolom tergantung lebar layar */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {partyList.length > 0 ? (
-              partyList.map((c, idx) => (
+            {partyList.length ? (
+              partyList.map((c, i) => (
                 <div
                   key={c.id}
-                  className="w-full flex items-center gap-3 p-3 bg-[#edf4ff] text-[#0256c4] rounded-lg"
+                  className="relative w-full flex items-center gap-3 p-3 bg-[#edf4ff] text-[#0256c4] rounded-lg"
                 >
                   <UserGroupIcon className="w-5 h-5 text-gray-400" />
                   <div>
                     <div className="text-sm font-medium">
-                      {c.name || c.email || `Penghadap ${idx + 1}`}
+                      {c.name || c.email || `Penghadap ${i + 1}`}
                     </div>
                     <div className="text-xs text-gray-500">
-                      Penghadap {idx + 1}
+                      Penghadap {i + 1}
                     </div>
                   </div>
+                  {isNotary && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setRemoveConfirm({
+                          open: true,
+                          user: c,
+                          loading: false,
+                        })
+                      }
+                      className="ml-auto text-xs px-2 py-1 rounded bg-red-50 text-red-600 hover:bg-red-100"
+                    >
+                      Hapus
+                    </button>
+                  )}
                 </div>
               ))
             ) : (
@@ -314,100 +235,50 @@ export default function ActivityFlowPage() {
           </div>
         </div>
 
-        {/* Flow Steps */}
+        {/* Steps */}
         <div className="space-y-2">
-          {STEPS.map((step, index) => {
+          {STEPS.map((step, idx) => {
             const status = stepStatus[step.id];
             const isExpanded = expandedStep === step.id;
-            const Icon = step.icon;
-
             return (
-              <div
+              <StepItem
                 key={step.id}
-                className={`rounded-lg border overflow-hidden ${containerClass(
-                  status,
-                  isExpanded
-                )}`}
+                step={step}
+                index={idx}
+                status={status}
+                isExpanded={isExpanded}
+                onToggle={() => toggleStep(step.id)}
+                icon={step.icon}
               >
-                {/* Step Header */}
-                <button
-                  onClick={() => toggleStep(step.id)}
-                  className={headerClass(status, isExpanded)}
-                  disabled={status === "pending"}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-3">
-                      {getStatusIcon(status)}
-                      <div className="text-sm font-mono w-4 text-gray-500">
-                        {index + 1}.
-                      </div>
-                    </div>
-                    <Icon className="w-5 h-5 text-gray-400" />
-                    <div className="text-left">
-                      <div className="font-medium text-gray-900">
-                        {step.title}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {getStepDescription(step.id)}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium border ${badgeClass(
-                        status
-                      )}`}
-                    >
-                      {statusLabel(status)}
-                    </span>
-                    {status !== "pending" &&
-                      (isExpanded ? (
-                        <ChevronDownIcon className="w-5 h-5 text-gray-400" />
-                      ) : (
-                        <ChevronRightIcon className="w-5 h-5 text-gray-400" />
-                      ))}
-                  </div>
-                </button>
-
-                {/* Step Content */}
-                {isExpanded && status !== "pending" && (
-                  <div
-                    className={`px-6 pb-6 border-t ${
-                      status === "done"
-                        ? "border-green-100"
-                        : status === "todo"
-                        ? "border-blue-100"
-                        : "border-red-100"
-                    }`}
-                  >
-                    <div className="pt-4">
-                      {renderStepContent(step.id, status, {
-                        // data umum
-                        activity,
-                        deed: activity?.deed,
-                        clients: activity?.clients || [],
-                        track: activity?.track,
-                        // izin global
-                        permissions: stepPermissions,
-                        // actions
-                        markDone, // no-op kalau penghadap
-                        onMarkDocsDone,
-                        onSchedule: () => openScheduleModal(activity), // notaris only
-                        onViewSchedule: () => openScheduleViewModal(activity), // client can view
-                        // context tambahan
-                        currentUserId: me?.id || null,
-                        activityId,
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
+                {renderStepContent(step.id, status, {
+                  activity,
+                  deed: activity?.deed,
+                  clients: activity?.clients || [],
+                  track: activity?.track,
+                  permissions: stepPermissions,
+                  markDone,
+                  onMarkDocsDone,
+                  onSchedule: () => setSchedule({ open: true, row: activity }),
+                  onViewSchedule: () =>
+                    setScheduleView({ open: true, row: activity }),
+                  currentUserId: me?.id || null,
+                  activityId,
+                  onOpenAddRequirement:
+                    isNotary && activity?.deed?.id
+                      ? () => setAddReqOpen(true)
+                      : undefined,
+                  requirementList,
+                  onDeleteRequirement: isNotary
+                    ? handleDeleteRequirement
+                    : undefined,
+                })}
+              </StepItem>
             );
           })}
         </div>
       </div>
 
-      {/* Schedule Modals */}
+      {/* Modals */}
       <ScheduleModal
         open={schedule.open}
         onClose={() => setSchedule({ open: false, row: null })}
@@ -433,21 +304,45 @@ export default function ActivityFlowPage() {
         onClose={() => setScheduleView({ open: false, row: null })}
         row={scheduleView.row ?? activity}
       />
+
+      {isNotary && (
+        <AddPartyModal
+          open={addModalOpen}
+          onClose={() => setAddModalOpen(false)}
+          options={[]} // isi dengan addOptions kalau sudah siap sumber datanya
+          loading={false}
+          onConfirm={handleConfirmAdd}
+        />
+      )}
+
+      <ConfirmDeleteModal
+        open={removeConfirm.open}
+        onClose={() =>
+          setRemoveConfirm({ open: false, user: null, loading: false })
+        }
+        onConfirm={() => doRemove(removeConfirm.user)}
+        itemName={
+          removeConfirm.user
+            ? removeConfirm.user.name || removeConfirm.user.email
+            : ""
+        }
+        loading={removeConfirm.loading}
+      />
+
+      {isNotary && (
+        <DeedExtraFieldsModal
+          open={addReqOpen}
+          onClose={() => setAddReqOpen(false)}
+          deed={{ id: activity?.deed?.id, name: activity?.deed?.name }}
+          onSubmit={({ name, input_type }) =>
+            handleExtrasCreate({
+              deed_id: activity?.deed?.id,
+              name,
+              input_type,
+            })
+          }
+        />
+      )}
     </div>
   );
-}
-
-function getStepDescription(id) {
-  const descriptions = {
-    invite:
-      "Kirim undangan kepada para pihak untuk bergabung pada aktivitas akta.",
-    respond:
-      "Pantau dan kelola persetujuan undangan dari masing-masing penghadap.",
-    docs: "Unggah dokumen dan isi data yang diperlukan sesuai jenis akta.",
-    draft: "Susun/unggah draft akta untuk direview.",
-    schedule: "Atur jadwal pembacaan akta bersama para pihak.",
-    sign: "Proses tanda tangan para pihak saat jadwal pembacaan.",
-    print: "Finalisasi dan cetak akta untuk arsip.",
-  };
-  return descriptions[id];
 }

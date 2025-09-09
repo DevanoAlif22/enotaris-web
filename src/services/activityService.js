@@ -46,7 +46,10 @@ export const activityService = {
 
   async update(id, payload) {
     try {
-      const { data } = await api.post(`/notaris/activity/update/${id}`, payload);
+      const { data } = await api.post(
+        `/notaris/activity/update/${id}`,
+        payload
+      );
       return data;
     } catch (e) {
       throw normErr(e);
@@ -73,11 +76,36 @@ export const activityService = {
     }
   },
 
-  // ⬇️ Tambahan ini
+  // Tandai step docs selesai
   async markDocsDone(id) {
     try {
       const { data } = await api.get(`/notaris/activity/mark-done/docs/${id}`);
       return data; // { success: true, ... }
+    } catch (e) {
+      throw normErr(e);
+    }
+  },
+
+  // === Tambah/hapus penghadap pada activity ===
+  // GET /notaris/activity/user/add/{userid}/{activityid}
+  async addUser(userId, activityId) {
+    try {
+      const { data } = await api.get(
+        `/notaris/activity/user/add/${userId}/${activityId}`
+      );
+      return data;
+    } catch (e) {
+      throw normErr(e);
+    }
+  },
+
+  // GET /notaris/activity/user/remove/{userid}/{activityid}
+  async removeUser(userId, activityId) {
+    try {
+      const { data } = await api.get(
+        `/notaris/activity/user/remove/${userId}/${activityId}`
+      );
+      return data;
     } catch (e) {
       throw normErr(e);
     }
