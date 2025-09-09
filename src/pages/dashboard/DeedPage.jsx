@@ -175,7 +175,7 @@ export default function DeedPage() {
       setModal({ type: "detail", payload: row });
     }
   };
-  const openExtras = (row) => setModal({ type: "extras", payload: row });
+  // const openExtras = (row) => setModal({ type: "extras", payload: row });
   const closeModal = () => setModal({ type: null, payload: null });
 
   // ===== CRUD Handlers =====
@@ -313,9 +313,9 @@ export default function DeedPage() {
                 <th className="py-3 px-4 font-semibold whitespace-nowrap">
                   Deskripsi
                 </th>
-                <th className="py-3 px-4 font-semibold whitespace-nowrap">
+                {/* <th className="py-3 px-4 font-semibold whitespace-nowrap">
                   Data Tambahan
-                </th>
+                </th> */}
                 <th className="py-3 px-4 font-semibold whitespace-nowrap">
                   Dibuat
                 </th>
@@ -336,11 +336,11 @@ export default function DeedPage() {
                     {row.name}
                   </td>
                   <td className="py-4 px-4 align-top whitespace-nowrap text-[#6b7280] text-center dark:text-[#f5fefd]">
-                    {row.description?.length > 40
-                      ? row.description.slice(0, 30) + "…"
+                    {row.description?.length > 80
+                      ? row.description.slice(0, 60) + "…"
                       : row.description}
                   </td>
-                  <td className="py-4 px-4 align-top whitespace-nowrap text-center dark:text-[#f5fefd]">
+                  {/* <td className="py-4 px-4 align-top whitespace-nowrap text-center dark:text-[#f5fefd]">
                     {row.extra_fields?.length ? (
                       <div className="flex items-center gap-2 justify-center">
                         {row.extra_fields.slice(0, 3).map((t) => (
@@ -358,19 +358,19 @@ export default function DeedPage() {
                         -
                       </span>
                     )}
-                  </td>
+                  </td> */}
 
                   <td className="py-4 px-4 align-top whitespace-nowrap text-[#0e1528] dark:text-white">
                     {fmtDate(row.created_at)}
                   </td>
                   <td className="py-4 px-4 align-top whitespace-nowrap">
                     <div className="flex items-center gap-2">
-                      <ActionButton
+                      {/* <ActionButton
                         variant="success"
                         onClick={() => openExtras(row)}
                       >
                         Tambah Data
-                      </ActionButton>
+                      </ActionButton> */}
                       <ActionButton
                         variant="info"
                         onClick={() => openDetail(row)}
