@@ -4,7 +4,9 @@ import {
   CheckCircleIcon,
   ClockIcon,
   XCircleIcon,
+  PlusIcon,
 } from "@heroicons/react/24/outline";
+import Pill from "../../utils/Pill";
 
 export default function renderStepContent(stepId, status, actions = {}) {
   const {
@@ -12,10 +14,13 @@ export default function renderStepContent(stepId, status, actions = {}) {
     onSchedule,
     onViewSchedule,
     onMarkDocsDone,
+    onOpenAddRequirement, // ⬅️ baru: buka modal tambah persyaratan
     permissions = {},
     activity,
     clients = [],
     currentUserId,
+    requirementList = [],
+    onDeleteRequirement,
   } = actions;
 
   const buttonClass = "px-4 py-2 rounded-lg font-medium transition-colors";
@@ -25,7 +30,6 @@ export default function renderStepContent(stepId, status, actions = {}) {
   const canMarkDone = permissions.canMarkDone ?? true;
   const docsPerm = permissions.docs || { canSelectAnyParty: true };
 
-  // Jika ditolak, tampilkan notice di atas konten
   const RejectNotice =
     status === "reject" ? (
       <div className="p-3 mb-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-start gap-2">
@@ -38,6 +42,97 @@ export default function renderStepContent(stepId, status, actions = {}) {
     ) : null;
 
   switch (stepId) {
+    case "docs":
+      return (
+        <div className="space-y-4">
+          {RejectNotice}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="flex-1 p-4 border border-gray-200 rounded-lg">
+              <h4 className="font-medium mb-2">
+                {docsPerm.canSelectAnyParty
+                  ? "Data & Dokumen Semua Penghadap"
+                  : `Data & Dokumen`}
+              </h4>
+              {docsPerm.canSelectAnyParty ? (
+                <Link
+                  to={`/app/requirement-notaris/${activity?.id}`}
+                  className={secondaryButton}
+                >
+                  Buka Form
+                </Link>
+              ) : (
+                (() => {
+                  const me = clients.find((c) => c.id === currentUserId);
+                  return (
+                    <Link
+                      to={`/app/requirement/${activity?.id}`}
+                      className={secondaryButton}
+                    >
+                      {`Buka Form ${me?.name ? `(${me.name})` : ""}`}
+                    </Link>
+                  );
+                })()
+              )}
+              {/* daftar persyaratan (lengkap & bisa dihapus, khusus notaris) */}
+              {docsPerm.canSelectAnyParty && requirementList.length > 0 && (
+                <div className="mt-4">
+                  <div className="text-sm text-gray-700 mb-2">
+                    Kelola persyaratan:
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {requirementList.map((req) => (
+                      <span
+                        key={req.id}
+                        className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs"
+                        title={req.name}
+                      >
+                        {req.name}
+                        {typeof onDeleteRequirement === "function" && (
+                          <button
+                            onClick={() =>
+                              onDeleteRequirement(req.id, req.name)
+                            }
+                            className="ml-1 text-red-500 hover:text-red-700 font-bold focus:outline-none"
+                            title="Hapus"
+                          >
+                            ×
+                          </button>
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {status === "todo" && (
+            <div className="flex gap-3">
+              <button
+                className={primaryButton}
+                onClick={() => onMarkDocsDone?.("docs")}
+              >
+                Tandai Selesai
+              </button>
+              {/* Tombol Tambah Persyaratan (khusus notaris) */}
+              {docsPerm.canSelectAnyParty &&
+                typeof onOpenAddRequirement === "function" && (
+                  <button
+                    type="button"
+                    onClick={onOpenAddRequirement}
+                    className="inline-flex items-center justify-center gap-2 h-11 px-4 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+                    title="Tambah Persyaratan"
+                  >
+                    <PlusIcon className="w-5 h-5" />
+                    Tambah Persyaratan
+                  </button>
+                )}
+            </div>
+          )}
+        </div>
+      );
+
+    // ——— case lain tetap sama (invite/respond/draft/schedule/sign/print) ———
     case "invite":
       return (
         <div className="space-y-4">
@@ -57,31 +152,27 @@ export default function renderStepContent(stepId, status, actions = {}) {
           {RejectNotice}
           <div className="space-y-3">
             {clients.map((c) => {
-              const status = (c.pivot?.status_approval || "").toLowerCase();
-
+              const s = (c.pivot?.status_approval || "").toLowerCase();
               const boxClass =
-                status === "approved"
+                s === "approved"
                   ? "bg-green-50 border-green-200"
-                  : status === "rejected"
+                  : s === "rejected"
                   ? "bg-red-50 border-red-200"
                   : "bg-amber-50 border-amber-200";
-
               const icon =
-                status === "approved" ? (
+                s === "approved" ? (
                   <CheckCircleIcon className="w-5 h-5 text-green-600" />
-                ) : status === "rejected" ? (
+                ) : s === "rejected" ? (
                   <XCircleIcon className="w-5 h-5 text-red-600" />
                 ) : (
                   <ClockIcon className="w-5 h-5 text-amber-600" />
                 );
-
               const label =
-                status === "approved"
+                s === "approved"
                   ? "Disetujui"
-                  : status === "rejected"
+                  : s === "rejected"
                   ? "Ditolak"
                   : "Menunggu";
-
               return (
                 <div
                   key={c.id}
@@ -98,67 +189,6 @@ export default function renderStepContent(stepId, status, actions = {}) {
               );
             })}
           </div>
-
-          {/* {canMarkDone && status !== "reject" && (
-            <div className="flex gap-3">
-              <button className={secondaryButton}>Kirim Pengingat</button>
-              <button
-                className={primaryButton}
-                onClick={() => markDone?.("respond")}
-              >
-                Tandai Selesai
-              </button>
-            </div>
-          )} */}
-        </div>
-      );
-
-    case "docs":
-      return (
-        <div className="space-y-4">
-          {RejectNotice}
-          <div className="space-y-4">
-            {docsPerm.canSelectAnyParty ? (
-              <div className="p-4 border border-gray-200 rounded-lg">
-                <h4 className="font-medium mb-2">
-                  Data & Dokumen Semua Penghadap
-                </h4>
-                <Link
-                  to={`/app/requirement-notaris/${activity?.id}`}
-                  className={secondaryButton}
-                >
-                  Buka Form
-                </Link>
-              </div>
-            ) : (
-              (() => {
-                const me = clients.find((c) => c.id === currentUserId);
-                return (
-                  <div className="p-4 border border-gray-200 rounded-lg">
-                    <h4 className="font-medium mb-2">
-                      Data & Dokumen {me?.name || "Semua Penghadap"}
-                    </h4>
-                    <Link
-                      to={`/app/requirement/${activity?.id}`}
-                      className={secondaryButton}
-                    >
-                      Buka Form
-                    </Link>
-                  </div>
-                );
-              })()
-            )}
-          </div>
-          {status === "todo" && (
-            <div className="flex gap-3">
-              <button
-                className={primaryButton}
-                onClick={() => onMarkDocsDone?.("docs")}
-              >
-                Tandai Selesai
-              </button>
-            </div>
-          )}
         </div>
       );
 
