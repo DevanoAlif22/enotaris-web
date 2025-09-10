@@ -108,7 +108,7 @@ const ProfilePage = () => {
   const jenisKelaminOptions = [
     { value: "male", label: "Laki-laki" },
     { value: "female", label: "Perempuan" },
-    { value: "lainnya", label: "Lainnya" },
+    // { value: "lainnya", label: "Lainnya" },p
   ];
 
   // badge status
@@ -177,13 +177,14 @@ const ProfilePage = () => {
     if (msg) return showError(msg);
     try {
       setSavingProfile(true);
+      console.log(formData);
       await userService.updateProfile({
         name: formData.namaLengkap,
         gender: formData.jenisKelamin || undefined,
         telepon: formData.telepon || undefined,
         address: formData.alamat || undefined,
         province: formData.provinsi || undefined,
-        city: formData.city || undefined,
+        city: formData.kota || undefined,
         postal_code: formData.kode_pos || undefined,
         file_avatar: formData.fileAvatar?.file || undefined,
       });
@@ -521,7 +522,7 @@ const ProfilePage = () => {
                 <FileInput
                   labelTitle={
                     <span className="dark:text-[#f5fefd]">
-                      File KTP Notaris
+                      File KTP Notaris (hanya untuk notaris)
                     </span>
                   }
                   accept=".jpg,.jpeg,.png,.pdf"

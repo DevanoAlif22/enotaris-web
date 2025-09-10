@@ -1,10 +1,9 @@
+// components/deed/DeedExtraFieldsModal.jsx
 "use client";
 import { useState, useEffect } from "react";
 import Modal from "../Modal";
 import InputField from "../../components/input/InputField";
 import CheckCardGroup from "../../components/input/CheckCardGroup";
-
-// import heroicons
 import {
   DocumentTextIcon,
   FolderArrowDownIcon,
@@ -14,14 +13,14 @@ import {
  * Props:
  * - open: bool
  * - onClose: fn()
- * - onSubmit: fn({ deed_id, name, input_type })
- * - deed: { id, name }
+ * - onSubmit: fn({ name, input_type })  // <— tidak kirim id di sini
+ * - activity: { id, name }
  */
 export default function DeedExtraFieldsModal({
   open,
   onClose,
   onSubmit,
-  deed,
+  activity,
 }) {
   const [fieldName, setFieldName] = useState("");
   const [inputType, setInputType] = useState("text"); // 'text' | 'file'
@@ -31,18 +30,14 @@ export default function DeedExtraFieldsModal({
       setFieldName("");
       setInputType("text");
     }
-  }, [open, deed?.id]);
+  }, [open, activity?.id]);
 
   const handleSave = () => {
     if (!fieldName.trim()) {
       alert("Nama wajib diisi");
       return;
     }
-    onSubmit({
-      deed_id: deed?.id,
-      name: fieldName.trim(),
-      input_type: inputType,
-    });
+    onSubmit({ name: fieldName.trim(), input_type: inputType });
     onClose();
   };
 
@@ -70,13 +65,13 @@ export default function DeedExtraFieldsModal({
       }
     >
       <div className="space-y-5">
-        {/* Akta (read-only) */}
+        {/* Aktivitas (read-only) */}
         <div>
           <div className="text-sm text-gray-500 dark:text-[#f5fefd] mb-2">
-            Akta
+            Aktivitas
           </div>
           <div className="px-4 py-3 rounded-xl font-semibold bg-[#f5fefd] dark:bg-[#01043c] dark:text-[#f5fefd] text-gray-800">
-            {deed?.name || "-"}
+            {activity?.name || "-"}
           </div>
         </div>
 
@@ -137,9 +132,7 @@ export default function DeedExtraFieldsModal({
               icon: (
                 <FolderArrowDownIcon
                   className={`h-5 w-5 ${
-                    inputType === "file"
-                      ? "text-blue-600"
-                      : "text-gray-400 dark:text-[#f5fefd]"
+                    inputType === "file" ? "text-blue-600" : "text-gray-400"
                   }`}
                 />
               ),

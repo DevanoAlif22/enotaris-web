@@ -1,3 +1,4 @@
+// pages/projectflow/ActivityFlowPage.jsx
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import {
@@ -29,7 +30,7 @@ const STEPS = [
     id: "invite",
     title: "Undang Penghadap",
     icon: UserGroupIcon,
-    description: "Kirim undangan kepada para pihak untuk bergabung.",
+    description: "Kirim undangan kepada para pihak.",
   },
   {
     id: "respond",
@@ -41,7 +42,7 @@ const STEPS = [
     id: "docs",
     title: "Pengisian Data & Dokumen",
     icon: DocumentTextIcon,
-    description: "Unggah/isi data & kelola persyaratan.",
+    description: "Unggah/isi data & persyaratan.",
   },
   {
     id: "draft",
@@ -65,14 +66,13 @@ const STEPS = [
     id: "print",
     title: "Cetak Akta",
     icon: DocumentTextIcon,
-    description: "Finalisasi dan cetak akta.",
+    description: "Finalisasi & cetak akta.",
   },
 ];
 
 export default function ActivityFlowPage() {
   const { activityId } = useParams();
 
-  // core data/state via hooks
   const {
     isSubmitting,
     isMutating,
@@ -108,13 +108,18 @@ export default function ActivityFlowPage() {
     setStepStatus,
     setIsMutating,
   });
-  const { handleConfirmAdd, doRemove } = useParties({
-    activityId,
-    fetchActivity,
-    setIsMutating,
-    setAddModalOpen,
-    setRemoveConfirm,
-  });
+
+  const { handleConfirmAdd, doRemove, addOptions, loadingClients } = useParties(
+    {
+      activityId,
+      fetchActivity,
+      setIsMutating,
+      setAddModalOpen,
+      setRemoveConfirm,
+      partyList,
+      addModalOpen,
+    }
+  );
 
   const toggleStep = (id) =>
     stepStatus[id] !== "pending" &&
@@ -125,10 +130,11 @@ export default function ActivityFlowPage() {
   const onMarkDocsDone = async () => {
     try {
       setIsMutating(true);
-      await (
-        await import("../../services/activityService")
-      ).activityService.markDocsDone(activityId);
-      showSuccess("Step dokumen berhasil ditandai selesai.");
+      const { activityService } = await import(
+        "../../services/activityService"
+      );
+      await activityService.markDocsDone(activityId);
+      showSuccess("Step dokumen ditandai selesai.");
       setStepStatus((st) => ({ ...st, docs: "done" }));
       fetchActivity();
     } finally {
@@ -136,21 +142,11 @@ export default function ActivityFlowPage() {
     }
   };
 
-  // const addOptions = useMemo(() => {
-  //   const chosen = new Set(partyList.map((u) => String(u.id)));
-  //   const all = Array.isArray(activity?.clients_all)
-  //     ? activity.clients_all
-  //     : []; // opsional: ganti sesuai sumbermu
-  //   return all
-  //     .filter((c) => !chosen.has(String(c.value)))
-  //     .map((c) => ({ value: c.value, label: c.label }));
-  // }, [partyList, activity?.clients_all]);
-
   return (
     <div className="min-h-screen bg-gray-50">
       <LoadingOverlay show={isSubmitting || isMutating} />
 
-      {/* Header ringkas */}
+      {/* Header */}
       <div className="mx-auto p-6">
         <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
           <div className="flex items-start justify-between mb-4">
@@ -263,10 +259,9 @@ export default function ActivityFlowPage() {
                     setScheduleView({ open: true, row: activity }),
                   currentUserId: me?.id || null,
                   activityId,
-                  onOpenAddRequirement:
-                    isNotary && activity?.deed?.id
-                      ? () => setAddReqOpen(true)
-                      : undefined,
+                  onOpenAddRequirement: isNotary
+                    ? () => setAddReqOpen(true)
+                    : undefined,
                   requirementList,
                   onDeleteRequirement: isNotary
                     ? handleDeleteRequirement
@@ -309,8 +304,8 @@ export default function ActivityFlowPage() {
         <AddPartyModal
           open={addModalOpen}
           onClose={() => setAddModalOpen(false)}
-          options={[]} // isi dengan addOptions kalau sudah siap sumber datanya
-          loading={false}
+          options={addOptions}
+          loading={loadingClients}
           onConfirm={handleConfirmAdd}
         />
       )}
@@ -333,12 +328,12 @@ export default function ActivityFlowPage() {
         <DeedExtraFieldsModal
           open={addReqOpen}
           onClose={() => setAddReqOpen(false)}
-          deed={{ id: activity?.deed?.id, name: activity?.deed?.name }}
+          activity={{ id: activity?.id, name: activity?.name }}
           onSubmit={({ name, input_type }) =>
             handleExtrasCreate({
-              deed_id: activity?.deed?.id,
+              activity_id: activity?.id,
               name,
-              input_type,
+              is_file: input_type === "file",
             })
           }
         />
