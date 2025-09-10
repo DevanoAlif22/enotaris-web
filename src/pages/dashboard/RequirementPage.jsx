@@ -98,17 +98,19 @@ export default function RequirementPage() {
 
   return (
     <div className="p-4 sm:p-6">
-      <div className="relative bg-white rounded-2xl shadow-sm p-6">
+      <div className="relative bg-white dark:bg-[#002d6a] rounded-2xl shadow-sm p-6">
         {loading && (
           <div className="absolute inset-0 rounded-2xl bg-white/60 flex items-center justify-center text-sm">
             Memuat…
           </div>
         )}
 
-        <h1 className="text-2xl font-semibold mb-1">
+        <h1 className="text-2xl font-semibold dark:text-[#f5fefd] mb-1">
           Data Tambahan {deedName ? `- ${deedName}` : ""}
         </h1>
-        <div className="text-sm text-gray-600 mb-4">{title}</div>
+        <div className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+          {title}
+        </div>
 
         <div className="h-px bg-gray-200 mb-6" />
         <div className="text-sm text-gray-700 dark:text-[#f5fefd] mb-6">
@@ -128,7 +130,11 @@ export default function RequirementPage() {
             <ExtraFieldCard
               key={d.id}
               reqId={d.id}
-              title={d.requirement_name}
+              title={
+                <span className="dark:text-[#f5fefd]">
+                  {d.requirement_name}
+                </span>
+              }
               status={
                 d.status_approval === "approved"
                   ? "Disetujui"
@@ -149,6 +155,7 @@ export default function RequirementPage() {
               onFileChange={(fileData) => handleFileUpdate(d.id, fileData)}
               onFileSave={(file) => handleFileSave(d.id, file)}
               // Props lainnya
+
               textPlaceholder={`Isi ${d.requirement_name.toLowerCase()}...`}
               accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx"
               maxSizeMB={2}
@@ -156,7 +163,7 @@ export default function RequirementPage() {
           ))}
 
           {!docs.length && !loading && (
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-gray-500 dark:text-[#f5fefd]">
               Tidak ada persyaratan untuk diunggah.
             </div>
           )}

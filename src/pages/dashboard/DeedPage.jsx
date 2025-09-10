@@ -332,10 +332,10 @@ export default function DeedPage() {
                     idx === 0 ? "border-t-0" : ""
                   }`}
                 >
-                  <td className="py-4 px-4 align-top whitespace-nowrap font-semibold text-[#0e1528] dark:text-white">
+                  <td className="py-4 px-4 align-top text-center whitespace-nowrap font-semibold text-[#0e1528] dark:text-white">
                     {row.name}
                   </td>
-                  <td className="py-4 px-4 align-top whitespace-nowrap text-[#6b7280] text-center dark:text-[#f5fefd]">
+                  <td className="py-4 px-4 align-top text-center whitespace-nowrap text-[#6b7280] dark:text-[#f5fefd]">
                     {row.description?.length > 80
                       ? row.description.slice(0, 60) + "…"
                       : row.description}
@@ -360,11 +360,11 @@ export default function DeedPage() {
                     )}
                   </td> */}
 
-                  <td className="py-4 px-4 align-top whitespace-nowrap text-[#0e1528] dark:text-white">
+                  <td className="py-4 px-4 align-top items-center text-center whitespace-nowrap text-[#0e1528] dark:text-white">
                     {fmtDate(row.created_at)}
                   </td>
-                  <td className="py-4 px-4 align-top whitespace-nowrap">
-                    <div className="flex items-center gap-2">
+                  <td className="py-4 px-4 align-top items-center whitespace-nowrap">
+                    <div className="flex justify-center gap-2">
                       {/* <ActionButton
                         variant="success"
                         onClick={() => openExtras(row)}

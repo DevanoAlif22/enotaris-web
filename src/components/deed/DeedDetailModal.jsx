@@ -52,7 +52,7 @@ export default function DeedDetailModal({
       actions={
         <button
           onClick={onClose}
-          className="px-4 py-2 rounded-lg dark:text-gray-600 bg-gray-100 dark:bg-[#f5fefd]"
+          className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-200 dark:hover:bg-gray-300 transition-colors disabled:opacity-60"
         >
           Tutup
         </button>
@@ -71,9 +71,11 @@ export default function DeedDetailModal({
 
         {/* 2 kartu: Jumlah Penghadap & Dibuat */}
         <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-          <div className="bg-gray-100 rounded-xl p-4">
-            <div className="text-sm text-gray-500 mb-1">Dibuat</div>
-            <div className="text-xl font-semibold">
+          <div className="bg-gray-100 dark:bg-[#01043c] rounded-xl p-4">
+            <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+              Dibuat
+            </div>
+            <div className="text-xl font-light dark:text-[#f5fefd]">
               {fmtDateTime(data.created_at)}
             </div>
           </div>
