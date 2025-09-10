@@ -280,7 +280,7 @@ export default function ActivityFormModal({
                 type="button"
                 onClick={addPartyField}
                 disabled={!canAddMore || isSubmitting || isInitializing}
-                className="px-3 py-1.5 rounded-lg bg-gray-100 text-sm font-medium disabled:opacity-60"
+                className="px-3 py-1.5 rounded-lg dark:text-[#f5fefd] dark:bg-[#01043c] bg-gray-100 text-sm font-medium disabled:opacity-60"
               >
                 + Tambah Penghadap
               </button>
@@ -296,7 +296,11 @@ export default function ActivityFormModal({
               <div key={idx} className="flex items-center gap-3">
                 <div className="flex-1">
                   <SearchSelect
-                    label={`Penghadap ${idx + 1}`}
+                    label={
+                      <span className="dark:text-gray-300">
+                        Penghadap {idx + 1}
+                      </span>
+                    }
                     placeholder={
                       loadingClients ? "Memuat klien..." : "Pilih klien..."
                     }

@@ -173,7 +173,7 @@ export default function SearchSelect({
         disabled={disabled}
         onClick={() => setOpen((v) => !v)}
         onKeyDown={onKeyDown}
-        className={`w-full border border-gray-300 rounded-lg px-4 h-12 text-left flex items-center justify-between focus:ring-2 focus:ring-blue-500 focus:outline-none
+        className={`w-full border border-gray-400 dark:bg-[#01043c] dark:text-[#f5fefd] rounded-lg px-4 h-12 text-left flex items-center justify-between focus:ring-2 focus:ring-blue-500 focus:outline-none
           ${
             disabled
               ? "bg-gray-100 text-gray-500 cursor-not-allowed"
@@ -191,7 +191,7 @@ export default function SearchSelect({
       {/* Dropdown */}
       {open && !disabled && (
         <div className="relative">
-          <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-xl">
+          <div className="absolute z-50 mt-1 w-full bg-white dark:bg-[#01043c] border border-gray-200 rounded-lg shadow-xl">
             {/* Search input */}
             <div className="p-2 border-b border-gray-200">
               <div className="relative">
@@ -200,14 +200,14 @@ export default function SearchSelect({
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder={searchPlaceholder}
-                  className="w-full h-10 pl-10 pr-8 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full h-10 pl-10 pr-8 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none "
                 />
                 <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
                 {query && (
                   <button
                     type="button"
                     onClick={() => setQuery("")}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-gray-100"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-gray-100 "
                     aria-label="Clear"
                   >
                     <XMarkIcon className="w-4 h-4 text-gray-500" />
@@ -220,7 +220,7 @@ export default function SearchSelect({
             <ul
               ref={listRef}
               role="listbox"
-              className="max-h-56 overflow-y-auto py-1"
+              className="max-h-56 overflow-y-auto py-1 "
               tabIndex={-1}
             >
               {loading && (
@@ -241,7 +241,7 @@ export default function SearchSelect({
                       role="option"
                       aria-selected={isSelected}
                       data-active={isActive ? "true" : "false"}
-                      className={`px-4 py-2 cursor-pointer text-sm
+                      className={`px-4 py-2 cursor-pointer text-sm dark:bg-[#01043c] hover:bg-gray-100 dark:hover:bg-[#002d6a]
                         ${isActive ? "bg-blue-50" : ""}
                         ${isSelected ? "font-semibold" : ""}`}
                       onMouseEnter={() => setActiveIndex(i)}

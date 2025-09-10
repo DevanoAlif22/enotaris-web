@@ -50,7 +50,7 @@ export default function SimpleVerificationModal({
     <Modal
       open={open}
       onClose={loading ? () => {} : onClose}
-      title={title}
+      title={<span className="dark:text-[#f5fefd]">{title}</span>}
       size="sm"
       actions={
         <>
@@ -82,11 +82,11 @@ export default function SimpleVerificationModal({
           ) : (
             <CheckCircleIcon className="h-6 w-6 text-emerald-600 mt-0.5" />
           )}
-          <p className="text-[15px] leading-6">{message}</p>
+          <p className="text-[15px] leading-6 dark:text-[#f5fefd]">{message}</p>
         </div>
 
         {/* Hint keyboard */}
-        <div className="mt-4 text-xs text-gray-500">
+        <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">
           Tip: Tekan <kbd className="px-1 py-0.5 border rounded">Enter</kbd>{" "}
           untuk konfirmasi,
           <span className="mx-1" />{" "}
