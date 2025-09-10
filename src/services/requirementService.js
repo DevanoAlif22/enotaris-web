@@ -8,11 +8,17 @@ const normalizeErr = (err) => {
   return { message: msg, errors, status: err?.response?.status };
 };
 
+// SESUAIKAN BASE dengan route di backend kamu:
+// - Kalau kamu taruh di Route::prefix('requirement') => "/requirement"
+// - Kalau di Route::prefix('notaris/requirement')   => "/notaris/requirement"
+const BASE = "/admin/requirement";
+
 export const requirementService = {
-  async list({ deed_id, page = 1, per_page = 50, search = "" } = {}) {
+  // list requirement per activity
+  async list({ activity_id, page = 1, per_page = 50, search = "" } = {}) {
     try {
-      const { data } = await api.get("/admin/requirement", {
-        params: { deed_id, page, per_page, search },
+      const { data } = await api.get(BASE, {
+        params: { activity_id, page, per_page, search },
       });
       return data;
     } catch (err) {
@@ -20,23 +26,24 @@ export const requirementService = {
     }
   },
 
-  async create({ deed_id, name, is_file }) {
+  // create requirement untuk activity tertentu
+  async create({ activity_id, name, is_file }) {
     try {
-      const payload = { deed_id, name, is_file };
-      const { data } = await api.post("/admin/requirement", payload);
+      const payload = { activity_id, name, is_file };
+      const { data } = await api.post(BASE, payload);
       return data;
     } catch (err) {
       throw normalizeErr(err);
     }
   },
 
-  async update(id, { deed_id, name, is_file }) {
+  // update nama/tipe requirement (tidak memindahkan activity_id)
+  async update(id, { name, is_file }) {
     try {
-      const payload = { deed_id, name, is_file };
-      const { data } = await api.post(
-        `/admin/requirement/update/${id}`,
-        payload
-      );
+      const payload = { name, is_file };
+      // pakai POST /update/{id} biar konsisten dengan pattern lain di app-mu
+      const { data } = await api.post(`${BASE}/update/${id}`, payload);
+      // kalau backend kamu pakai PUT: await api.put(`${BASE}/${id}`, payload)
       return data;
     } catch (err) {
       throw normalizeErr(err);
@@ -45,7 +52,7 @@ export const requirementService = {
 
   async destroy(id) {
     try {
-      const { data } = await api.delete(`/admin/requirement/${id}`);
+      const { data } = await api.delete(`${BASE}/${id}`);
       return data;
     } catch (err) {
       throw normalizeErr(err);

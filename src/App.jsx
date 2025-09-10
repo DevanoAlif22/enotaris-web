@@ -13,6 +13,7 @@ import UserPage from "./pages/dashboard/UserPage";
 import VerificationUserPage from "./pages/dashboard/VerificationUserPage";
 import NotaryActivityPage from "./pages/dashboard/NotarisActivityPage";
 import NotarisClientActivityPage from "./pages/dashboard/NotarisClientActivityPage";
+import DraftPage from "./pages/dashboard/DraftPage";
 import ForgotPage from "./pages/auth/ForgotPage";
 import RequirementPage from "./pages/dashboard/RequirementPage";
 import RequirementNotarisPage from "./pages/dashboard/RequirementNotarisPage";
@@ -51,6 +52,10 @@ function App() {
             <Route
               path="/app/project-flow/:activityId"
               element={<ActivityFlowPage />}
+            />
+            <Route
+              path="/app/project-flow/draft/:activityId"
+              element={<DraftPage />}
             />
             <Route
               path="/app/verification-user"

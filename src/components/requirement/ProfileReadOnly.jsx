@@ -76,6 +76,24 @@ export default function ProfileReadOnly({ profile, identity }) {
           disabled
         />
         <InputField
+          label={<Label>Kota</Label>}
+          name="kota"
+          value={profile.kota}
+          disabled
+        />
+        <InputField
+          label={<Label>Provinsi</Label>}
+          name="provinsi"
+          value={profile.provinsi}
+          disabled
+        />
+        <InputField
+          label={<Label>Kode Pos</Label>}
+          name="kodepos"
+          value={profile.kodepos}
+          disabled
+        />
+        <InputField
           label={<Label>Role</Label>}
           name="role"
           value={profile.roleLabel}
