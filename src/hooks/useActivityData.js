@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { userService } from "../services/userService";
 import { activityService } from "../services/activityService";
-import { mapTrackToStepStatus } from "../utils/flowStatus";
+import { mapTrackToStepStatus } from "../utils/project/flowStatus";
 import { showError } from "../utils/toastConfig";
 
 export function useActivityData(activityId) {

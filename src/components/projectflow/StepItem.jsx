@@ -3,8 +3,8 @@ import {
   badgeClass,
   containerClass,
   headerClass,
-} from "../../utils/flowUiClasses";
-import { statusLabel } from "../../utils/flowStatus";
+} from "../../utils/project/flowUiClasses";
+import { statusLabel } from "../../utils/project/flowStatus";
 import getStatusIcon from "./GetStatusIcon";
 
 export default function StepItem({
@@ -13,6 +13,7 @@ export default function StepItem({
   status,
   isExpanded,
   onToggle,
+  icon: Icon,
   children,
 }) {
   return (
