@@ -48,6 +48,7 @@ export function useActivityData(activityId) {
   useEffect(() => {
     fetchMe();
   }, [fetchMe]);
+
   useEffect(() => {
     fetchActivity();
   }, [fetchActivity]);
@@ -57,12 +58,10 @@ export function useActivityData(activityId) {
     [activity?.clients]
   );
 
+  // 🔁 CHANGED: ambil requirement dari activity (fallback ke deed bila ada data lama)s
   const requirementList = useMemo(
-    () =>
-      Array.isArray(activity?.deed?.requirements)
-        ? activity.deed.requirements
-        : [],
-    [activity?.deed?.requirements]
+    () => (Array.isArray(activity?.requirements) ? activity.requirements : []),
+    [activity?.requirements]
   );
 
   const progress = useMemo(() => {
@@ -87,7 +86,7 @@ export function useActivityData(activityId) {
     () => ({
       code: activity?.tracking_code || "-",
       notaris: activity?.notaris?.name || "-",
-      deed_type: activity?.deed?.name || "-",
+      deed_type: activity?.deed?.name || "-", // tetap oke
       name: activity?.name || "-",
       schedule: activity?.schedules?.[0]?.datetime || null,
     }),
@@ -105,7 +104,7 @@ export function useActivityData(activityId) {
     stepStatus,
     setStepStatus,
     partyList,
-    requirementList,
+    requirementList, // <- sekarang dari activity
     progress,
     stepPermissions,
     header,

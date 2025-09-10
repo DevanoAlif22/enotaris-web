@@ -7,14 +7,33 @@ export function useRequirements({
   setStepStatus,
   setIsMutating,
 }) {
-  const handleExtrasCreate = async ({ deed_id, name, input_type }) => {
-    const is_file = input_type ? input_type === "file" : true;
+  // hooks/useRequirements.js (atau tempat kamu define handleExtrasCreate)
+  const handleExtrasCreate = async (payload) => {
+    // ------- normalisasi input lama vs baru -------
+    const name = String(payload?.name || "").trim();
+    const activity_id =
+      payload?.activity_id ?? // format baru
+      activity?.id; // fallback dari context
+
+    // is_file: prioritas boolean langsung, fallback dari input_type, terakhir default true
+    const is_file =
+      typeof payload?.is_file === "boolean"
+        ? payload.is_file
+        : payload?.input_type
+        ? payload.input_type === "file"
+        : true;
+
+    if (!name) {
+      showError("Nama persyaratan wajib diisi.");
+      return;
+    }
+    if (!activity_id) {
+      showError("Activity tidak ditemukan.");
+      return;
+    }
+
     try {
-      await requirementService.create({
-        deed_id: deed_id || activity?.deed?.id,
-        name,
-        is_file,
-      });
+      await requirementService.create({ activity_id, name, is_file });
       showSuccess("Persyaratan berhasil ditambahkan.");
       await fetchActivity();
       setStepStatus((s) => (s.docs === "pending" ? { ...s, docs: "todo" } : s));

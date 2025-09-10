@@ -11,10 +11,10 @@ export default function AddPartyModal({
   loading = false,
   onConfirm, // (selectedUserId) => void|Promise<void>
 }) {
-  const [selected, setSelected] = useState(null); // string|null
+  const [selected, setSelected] = useState(null);
 
   useEffect(() => {
-    if (open) setSelected(null); // reset setiap buka modal
+    if (open) setSelected(null);
   }, [open]);
 
   const canConfirm = !!selected && !loading && options.length > 0;
@@ -53,7 +53,7 @@ export default function AddPartyModal({
               ? "Memuat klien..."
               : options.length
               ? "Cari & pilih klien..."
-              : "Tidak ada klien yang tersedia"
+              : "Tidak ada klien tersedia"
           }
           options={options}
           value={selected}
@@ -62,8 +62,7 @@ export default function AddPartyModal({
           required
         />
         <p className="text-xs text-gray-500">
-          Hanya menampilkan klien yang belum menjadi penghadap pada aktivitas
-          ini.
+          Hanya menampilkan klien yang belum jadi penghadap pada aktivitas ini.
         </p>
       </div>
     </Modal>

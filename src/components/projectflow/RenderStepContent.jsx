@@ -13,7 +13,7 @@ export default function renderStepContent(stepId, status, actions = {}) {
     markDone,
     onSchedule,
     onViewSchedule,
-    onMarkDocsDone,
+    // onMarkDocsDone,
     onOpenAddRequirement, // ⬅️ baru: buka modal tambah persyaratan
     permissions = {},
     activity,
@@ -108,12 +108,12 @@ export default function renderStepContent(stepId, status, actions = {}) {
 
           {status === "todo" && (
             <div className="flex gap-3">
-              <button
+              {/* <button
                 className={primaryButton}
                 onClick={() => onMarkDocsDone?.("docs")}
               >
                 Tandai Selesai
-              </button>
+              </button> */}
               {/* Tombol Tambah Persyaratan (khusus notaris) */}
               {docsPerm.canSelectAnyParty &&
                 typeof onOpenAddRequirement === "function" && (
@@ -201,8 +201,14 @@ export default function renderStepContent(stepId, status, actions = {}) {
               Unggah atau buat draft akta untuk direview oleh para pihak.
             </p>
           </div>
+
+          {/* ——— tombol-tombol lama (opsional) ——— */}
           <div className="flex gap-3">
-            <button className={secondaryButton}>Lihat Draft</button>
+            <button className={secondaryButton}>
+              <Link to={`/app/project-flow/draft/${activity?.id}`}>
+                Lihat Draft
+              </Link>
+            </button>
             {!permissions?.draft?.readOnly && status !== "reject" && (
               <>
                 <button className={secondaryButton}>Unggah Draft</button>

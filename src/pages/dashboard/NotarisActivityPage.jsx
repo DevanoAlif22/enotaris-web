@@ -325,9 +325,9 @@ export default function NotaryActivityPage() {
                 <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
                   Jumlah Penghadap
                 </th>
-                <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
+                {/* <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
                   Status
-                </th>
+                </th> */}
                 <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
                   Aksi
                 </th>
@@ -349,9 +349,9 @@ export default function NotaryActivityPage() {
                   <td className="py-4 px-5 whitespace-nowrap">
                     {(r.parties || []).length}
                   </td>
-                  <td className="py-4 px-5 whitespace-nowrap">
+                  {/* <td className="py-4 px-5 whitespace-nowrap">
                     <StatusBadge status={r.status} />
-                  </td>
+                  </td> */}
                   <td className="py-4 px-5 whitespace-nowrap">
                     <div className="flex items-center gap-2">
                       <ActionButton variant="info">
