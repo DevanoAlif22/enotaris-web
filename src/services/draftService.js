@@ -36,11 +36,14 @@ export const draftService = {
   // services/draftService.js (tambahkan)
   async renderPdf(id, { html } = {}) {
     try {
-      const fd = new FormData();
-      if (html != null) fd.append("html", html);
-      const { data } = await api.post(`/admin/draft/${id}/render-pdf`, fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const payload = {};
+      if (html != null) payload.html_rendered = html; // ⬅️ pakai html_rendered
+
+      const { data } = await api.post(
+        `/admin/draft/${id}/render-pdf`,
+        payload,
+        { headers: { "Content-Type": "application/json" } }
+      );
       return data; // { success, data: { file, file_path, ... } }
     } catch (err) {
       const data = err?.response?.data;
@@ -50,7 +53,6 @@ export const draftService = {
       throw { message: msg, errors, status: err?.response?.status };
     }
   },
-
   /**
    * create draft
    * payload:

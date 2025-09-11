@@ -20,6 +20,12 @@ const menuItems = [
     to: "/app/deed",
   },
   {
+    id: "template-akta",
+    label: "Template Akta",
+    icon: DocumentTextIcon,
+    to: "/app/template",
+  },
+  {
     id: "pengguna",
     label: "Pengguna",
     icon: UserGroupIcon,
