@@ -205,6 +205,8 @@
 /* (opsional) tinggi minimum area mengetik */
 .deed-quill .ql-editor {
   min-height: 380px;
+  white-space: break-spaces; /* atau pre-wrap */
+  tab-size: 4;
 }
 
 /* ===== KHUSUS CETAK (Ctrl+P) ===== */

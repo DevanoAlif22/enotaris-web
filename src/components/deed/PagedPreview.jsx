@@ -1,9 +1,3 @@
-/**
- * PagedPreview splits HTML content into word-like pages by height.
- * @param {string} html - The HTML string to render.
- * @param {number} pageHeightPx - Height of each page in px (default A4: 1123px).
- * @param {number} pageWidthPx - Width of each page in px (default A4: 794px).
- */
 import { useRef, useEffect, useState } from "react";
 
 export default function PagedPreview({
@@ -16,7 +10,6 @@ export default function PagedPreview({
   const [pages, setPages] = useState([html]);
 
   useEffect(() => {
-    // Dynamically paginate content by height
     if (!containerRef.current) return;
 
     // Create a hidden div to measure/fake pages
@@ -28,25 +21,32 @@ export default function PagedPreview({
     hidden.style.width = `${pageWidthPx - 80}px`; // subtract padding
     hidden.style.minHeight = "auto";
     hidden.style.padding = "0";
-    hidden.innerHTML = html;
+
+    // ⬅️ penting: samakan white-space & tab-size dgn tampilan
+    hidden.style.whiteSpace = "break-spaces"; // atau "pre-wrap"
+    hidden.style.tabSize = "4";
+
+    // ⬅️ (opsional tapi direkomendasikan) samakan font metrics agar tinggi akurat
+    const computed = getComputedStyle(containerRef.current);
+    hidden.style.fontFamily = computed.fontFamily;
+    hidden.style.fontSize = computed.fontSize;
+    hidden.style.lineHeight = computed.lineHeight;
+
+    hidden.innerHTML = html || "";
     document.body.appendChild(hidden);
 
-    // Split children nodes into pages
     let currPage = [];
     let currHeight = 0;
-    let pagesArr = [];
-    const children = Array.from(hidden.childNodes);
+    const pagesArr = [];
 
-    children.forEach((node, idx) => {
-      // Clone node to measure
+    const children = Array.from(hidden.childNodes);
+    children.forEach((node) => {
       const clone = node.cloneNode(true);
       hidden.innerHTML = "";
       hidden.appendChild(clone);
-      console.log(idx);
       const nodeHeight = hidden.offsetHeight;
 
       if (currHeight + nodeHeight > pageHeightPx && currPage.length) {
-        // Start new page
         pagesArr.push(currPage.join(""));
         currPage = [];
         currHeight = 0;
@@ -55,9 +55,7 @@ export default function PagedPreview({
       currHeight += nodeHeight;
     });
 
-    if (currPage.length) {
-      pagesArr.push(currPage.join(""));
-    }
+    if (currPage.length) pagesArr.push(currPage.join(""));
 
     setPages(pagesArr);
     hidden.remove();
@@ -68,21 +66,19 @@ export default function PagedPreview({
       {pages.map((pageHtml, i) => (
         <div
           key={i}
-          className="paged-preview-page preview-content"
+          // ⬅️ penting: jaga spasi/tab saat ditampilkan
+          className="paged-preview-page preview-content whitespace-break-spaces [tab-size:4]"
           style={{ width: pageWidthPx, minHeight: pageHeightPx }}
           dangerouslySetInnerHTML={{ __html: pageHtml }}
-        ></div>
+        />
       ))}
-      {/* Page numbers */}
+
       {pages.length > 1 &&
         pages.map((_, i) => (
           <div
-            key={i}
+            key={`num-${i}`}
             className="paged-preview-page-number"
-            style={{
-              left: "50%",
-              transform: "translateX(-50%)",
-            }}
+            style={{ left: "50%", transform: "translateX(-50%)" }}
           >
             {i + 1}
           </div>

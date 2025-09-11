@@ -16,6 +16,8 @@ import NotarisClientActivityPage from "./pages/dashboard/NotarisClientActivityPa
 import DraftPage from "./pages/dashboard/DraftPage";
 import ForgotPage from "./pages/auth/ForgotPage";
 import RequirementPage from "./pages/dashboard/RequirementPage";
+import TemplateEditorPage from "./pages/dashboard/TemplateEditorPage";
+import TemplatePage from "./pages/dashboard/TemplatePage";
 import RequirementNotarisPage from "./pages/dashboard/RequirementNotarisPage";
 import ActivityFlowPage from "./pages/dashboard/ActivityFlowPage";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -43,6 +45,12 @@ function App() {
             <Route path="/app" element={<HomePage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/app/deed" element={<DeedPage />} />
+            <Route path="/app/template" element={<TemplatePage />} />
+            <Route path="/app/template/new" element={<TemplateEditorPage />} />
+            <Route
+              path="/app/template/:id/edit"
+              element={<TemplateEditorPage />}
+            />
             <Route path="/profile" element={<ProfilePage />} />
             <Route
               path="/app/requirement/:activityId"
