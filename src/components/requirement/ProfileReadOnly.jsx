@@ -104,7 +104,7 @@ export default function ProfileReadOnly({ profile, identity }) {
       {/* Dokumen Identitas */}
       <SectionTitle>Dokumen Identitas</SectionTitle>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 dark:text-gray-400">
         <ReadOnlyFileBox
           labelTitle={<Label>File KTP</Label>}
           previewUrl={identity.fileKtp}
@@ -117,7 +117,7 @@ export default function ProfileReadOnly({ profile, identity }) {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 dark:text-gray-400">
         <ReadOnlyFileBox
           labelTitle={<Label>Tanda Tangan (PNG)</Label>}
           previewUrl={identity.fileSign}
@@ -131,7 +131,7 @@ export default function ProfileReadOnly({ profile, identity }) {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 dark:text-gray-400">
         <ReadOnlyFileBox
           labelTitle={<Label>File NPWP (opsional)</Label>}
           previewUrl={identity.fileNpwp}
