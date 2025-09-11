@@ -38,13 +38,15 @@ export default function RequirementNotarisPage() {
           <h1 className="text-2xl font-semibold text-gray-800 dark:text-[#f5fefd] mb-1">
             {title}
           </h1>
-          <div className="text-sm text-gray-600">Akta: {deedName}</div>
+          <div className="text-sm text-gray-600 dark:text-[#f5fefd]">
+            Akta: {deedName}
+          </div>
         </div>
 
         {/* Picker Penghadap */}
-        <div className="w-full mb-6">
+        <div className="w-full mb-6 dark:text-[#f5fefd]">
           <SearchSelect
-            label="Pilih Penghadap"
+            label={<span className="dark:text-gray-300">Pilih Penghadap</span>}
             placeholder="Pilih klien…"
             options={userOptions}
             value={selectedUserId}

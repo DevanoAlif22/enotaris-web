@@ -12,11 +12,12 @@ export default function DocsList({ docs, onUpload, onTextSave }) {
   return (
     <>
       <div className="text-sm text-gray-700 dark:text-[#f5fefd] mb-6">
-        Upload dokumen berikut (PDF/JPG/JPEG/PNG, maks 2MB). Teks akan disimpan
-        setelah Anda menekan tombol simpan.
+        Upload dokumen-dokumen berikut untuk melengkapi verifikasi aktivitas
+        Anda. File yang diperbolehkan: PDF, JPG, JPEG, PNG (maksimal 2MB per
+        file). Dokumen akan tersimpan otomatis setelah diupload.
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 dark:text-[#f5fefd]">
         {docs.map((d) => (
           <ExtraFieldCard
             key={d.id}
