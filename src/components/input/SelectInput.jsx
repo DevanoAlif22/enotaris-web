@@ -37,7 +37,7 @@ function SelectInput({
             hover:border-gray-400
             ${
               disabled
-                ? "bg-gray-50 text-gray-500 cursor-not-allowed border-gray-200"
+                ? "bg-gray-100 dark:bg-gray-300 text-gray-500 cursor-not-allowed"
                 : "hover:shadow-sm"
             }
             ${defaultValue === "" ? "text-gray-500" : "text-gray-900"}
