@@ -14,10 +14,11 @@ export default function DraftPage() {
   const [saving, setSaving] = useState(false);
   const [exporting, setExporting] = useState(false);
 
-  const draft = useMemo(() => {
-    // activity.draft kadang array (hasMany). Ambil yang pertama.
-    return Array.isArray(activity?.draft) ? activity.draft[0] : activity?.draft;
-  }, [activity]);
+  const draft = useMemo(
+    () =>
+      Array.isArray(activity?.draft) ? activity.draft[0] : activity?.draft,
+    [activity]
+  );
 
   const initialHtml =
     [draft?.custom_value_template, activity?.deed?.default_template].find(
@@ -37,6 +38,7 @@ export default function DraftPage() {
     if (!draft?.id) return showError("Draft belum tersedia.");
     try {
       setSaving(true);
+      // simpan template mentah ke DB (kalau masih perlu)
       await draftService.update(draft.id, { custom_value_template: html });
       showSuccess("Draft disimpan.");
       refetch?.();
@@ -47,14 +49,16 @@ export default function DraftPage() {
     }
   };
 
-  const handleExportServer = async (html) => {
+  const handleExportServer = async (htmlFinal) => {
     if (!draft?.id) return showError("Draft belum tersedia.");
     try {
       setExporting(true);
-      // opsi A (recommended): BE render PDF & upload
-      await draftService.renderPdf(draft.id, { html }); // lihat services di bawah
+      const res = await draftService.renderPdf(draft.id, { html: htmlFinal });
+      const url = res?.data?.file || res?.file; // BE kirim di data.file
+      if (url) window.open(url, "_blank", "noopener"); // langsung lihat file
       showSuccess("PDF berhasil dibuat & diunggah.");
-      refetch?.();
+      refetch?.(); // refresh agar file terbaru tampil
+      return url;
     } catch (e) {
       showError(e.message);
     } finally {
@@ -74,12 +78,12 @@ export default function DraftPage() {
 
         <DeedTemplateEditor
           activity={activity}
-          // template awal dari BE (boleh string kosong)
           initialHtml={initialHtml}
           onSave={handleSave}
-          onExportPdf={handleExportServer}
+          onExportPdf={handleExportServer} // ⬅️ server-only
           saving={saving}
           exporting={exporting}
+          fileUrl={draft?.file} // ⬅️ untuk tombol "Lihat PDF"
         />
       </div>
     </div>
