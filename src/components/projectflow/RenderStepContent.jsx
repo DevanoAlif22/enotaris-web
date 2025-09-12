@@ -24,8 +24,8 @@ export default function renderStepContent(stepId, status, actions = {}) {
   } = actions;
 
   const buttonClass = "px-4 py-2 rounded-lg font-medium transition-colors";
-  const primaryButton = `${buttonClass} bg-blue-600 text-white hover:bg-blue-700`;
-  const secondaryButton = `${buttonClass} bg-gray-100 text-gray-700 hover:bg-gray-200`;
+  const primaryButton = `${buttonClass} inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 dark:text-[#f5fefd] hover:bg-gray-50 dark:hover:bg-[#01043c] dark:bg-gradient-to-r from-blue-500 to-[#0256c4]`;
+  const secondaryButton = `${buttonClass} inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 dark:text-[#f5fefd] hover:bg-gray-50 dark:hover:bg-[#01043c]`;
 
   const canMarkDone = permissions.canMarkDone ?? true;
   const docsPerm = permissions.docs || { canSelectAnyParty: true };
@@ -48,7 +48,7 @@ export default function renderStepContent(stepId, status, actions = {}) {
           {RejectNotice}
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="flex-1 p-4 border border-gray-200 rounded-lg">
-              <h4 className="font-medium mb-2">
+              <h4 className="font-medium mb-2 dark:text-[#f5fefd]">
                 {docsPerm.canSelectAnyParty
                   ? "Data & Dokumen Semua Penghadap"
                   : `Data & Dokumen`}
@@ -56,7 +56,7 @@ export default function renderStepContent(stepId, status, actions = {}) {
               {docsPerm.canSelectAnyParty ? (
                 <Link
                   to={`/app/requirement-notaris/${activity?.id}`}
-                  className={secondaryButton}
+                  className={primaryButton}
                 >
                   Buka Form
                 </Link>
@@ -76,7 +76,7 @@ export default function renderStepContent(stepId, status, actions = {}) {
               {/* daftar persyaratan (lengkap & bisa dihapus, khusus notaris) */}
               {docsPerm.canSelectAnyParty && requirementList.length > 0 && (
                 <div className="mt-4">
-                  <div className="text-sm text-gray-700 mb-2">
+                  <div className="text-sm text-gray-700 dark:text-gray-300 mb-2">
                     Kelola persyaratan:
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -120,7 +120,7 @@ export default function renderStepContent(stepId, status, actions = {}) {
                   <button
                     type="button"
                     onClick={onOpenAddRequirement}
-                    className="inline-flex items-center justify-center gap-2 h-11 px-4 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+                    className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 dark:text-[#f5fefd] hover:bg-gray-50 dark:hover:bg-[#01043c]"
                     title="Tambah Persyaratan"
                   >
                     <PlusIcon className="w-5 h-5" />
@@ -197,7 +197,7 @@ export default function renderStepContent(stepId, status, actions = {}) {
         <div className="space-y-4">
           {RejectNotice}
           <div className="p-4 border border-gray-200 rounded-lg">
-            <p className="text-sm text-gray-600 mb-3">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
               Unggah atau buat draft akta untuk direview oleh para pihak.
             </p>
           </div>
