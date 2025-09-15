@@ -7,7 +7,7 @@ import SearchSelect from "../../components/input/SearchSelect";
 import TabBtn from "../../components/requirement/TabBtn";
 import ProfileReadOnly from "../../components/requirement/ProfileReadOnly";
 import DocsList from "../../components/requirement/DocsList";
-
+import { Link } from "react-router-dom";
 import { useNotaryRequirements } from "../../hooks/useNotaryRequirements";
 
 export default function RequirementNotarisPage() {
@@ -33,6 +33,12 @@ export default function RequirementNotarisPage() {
       <LoadingOverlay show={loading} />
 
       <div className="bg-white dark:bg-[#002d6a] rounded-lg p-6 shadow-sm">
+        <Link
+          to={`/app/project-flow/${activityId}`}
+          className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded mb-4 bg-gray-100 hover:bg-gray-200 text-gray-700 transition"
+        >
+          <span aria-hidden>←</span> Kembali
+        </Link>
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-gray-800 dark:text-[#f5fefd] mb-1">

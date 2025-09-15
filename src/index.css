@@ -197,7 +197,7 @@
 .deed-quill .ql-toolbar {
   position: sticky;
   top: 0;
-  z-index: 10;
+  /* z-index: 10; */
   background: #fff;
   border-bottom: 1px solid #e5e7eb; /* opsional, biar ada pemisah */
 }
