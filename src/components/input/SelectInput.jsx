@@ -40,7 +40,11 @@ function SelectInput({
                 ? "bg-gray-100 dark:bg-gray-300 text-gray-500 cursor-not-allowed"
                 : "hover:shadow-sm"
             }
-            ${defaultValue === "" ? "text-gray-500" : "text-gray-900"}
+            ${
+              defaultValue === ""
+                ? "text-gray-500"
+                : "text-gray-900 dark:text-gray-500"
+            }
           `}
           value={defaultValue}
           onChange={handleChange}

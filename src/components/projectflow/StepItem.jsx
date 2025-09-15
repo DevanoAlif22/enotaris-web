@@ -18,7 +18,7 @@ export default function StepItem({
 }) {
   return (
     <div
-      className={`rounded-lg border overflow-hidden ${containerClass(
+      className={`rounded-lg border dark:bg-[#002d6a] overflow-hidden ${containerClass(
         status,
         isExpanded
       )}`}
@@ -31,14 +31,18 @@ export default function StepItem({
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-3">
             {getStatusIcon(status)}
-            <div className="text-sm font-mono w-4 text-gray-500">
+            <div className="text-sm font-mono w-4 text-gray-500 dark:text-[#f5fefd]">
               {index + 1}.
             </div>
           </div>
-          <Icon className="w-5 h-5 text-gray-400" />
+          <Icon className="w-5 h-5 text-gray-400 dark:text-[#f5fefd]" />
           <div className="text-left">
-            <div className="font-medium text-gray-900">{step.title}</div>
-            <div className="text-sm text-gray-500">{step.description}</div>
+            <div className="font-medium text-gray-900 dark:text-[#f5fefd]">
+              {step.title}
+            </div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              {step.description}
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-3">

@@ -18,7 +18,7 @@ export const containerClass = (status, isExpanded) => {
       : "bg-white border-green-200";
   if (status === "todo")
     return isExpanded
-      ? "bg-blue-50 border-blue-200"
+      ? "bg-blue-50 dark:bg-[#002d6a] border-blue-200"
       : "bg-white border-blue-200";
   if (status === "reject")
     return isExpanded ? "bg-red-50 border-red-200" : "bg-white border-red-200";
@@ -31,16 +31,16 @@ export const headerClass = (status, isExpanded) => {
   if (status === "pending") return `${base} cursor-not-allowed opacity-60`;
   const hover =
     status === "done"
-      ? "hover:bg-green-50"
+      ? "hover:bg-green-50 dark:hover:bg-[#0649a0]"
       : status === "todo"
-      ? "hover:bg-blue-50"
+      ? "hover:bg-blue-50 dark:hover:bg-[#01043c]"
       : "hover:bg-red-50";
   const expanded =
     isExpanded &&
     (status === "done"
-      ? "bg-green-50"
+      ? "bg-green-50 dark:bg-[#01043c]"
       : status === "todo"
-      ? "bg-blue-50"
-      : "bg-red-50");
+      ? "bg-blue-50 dark:bg-[#002d6a]"
+      : "bg-red-50 dark:bg-[#7a2a2a]");
   return `${base} cursor-pointer ${hover} ${expanded || ""}`;
 };
