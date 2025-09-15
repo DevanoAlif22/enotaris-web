@@ -1,12 +1,10 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import ReactQuill from "react-quill-new";
-import "react-quill-new/dist/quill.snow.css";
-
+import QuillEditor from "../../components/common/QuillEditor";
+import HtmlPreviewModal from "../../components/common/HtmlPreviewModal"; // ⬅️ baru
 import { templateService } from "../../services/templateService";
 import { showError, showSuccess } from "../../utils/toastConfig";
-import PagedPreview from "../../components/deed/PagedPreview";
 
 // helper: preserve spasi & tab saat disimpan
 function preserveSpaces(html) {
@@ -25,14 +23,15 @@ export default function TemplateEditorPage() {
   const [customValue, setCustomValue] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [dirty, setDirty] = useState(false); // cegah overwrite saat user ngetik
+  const [dirty, setDirty] = useState(false);
 
+  const [showPreview, setShowPreview] = useState(false); // ⬅️ modal state
   const quillRef = useRef(null);
 
-  // ambil detail kalau edit (JANGAN jalan kalau sudah dirty)
+  // fetch awal (tanpa overwrite setelah user ngetik)
   useEffect(() => {
     if (!templateId) return;
-    if (dirty) return; // penting: hindari refetch/overwrite setelah user ngetik
+    if (dirty) return;
     (async () => {
       try {
         setLoading(true);
@@ -46,93 +45,17 @@ export default function TemplateEditorPage() {
         setLoading(false);
       }
     })();
-  }, [templateId]); // ⬅️ tidak depend ke `dirty`
-
-  // ========= QUILL CONFIG =========
-  const NBSP4 = "\u00A0\u00A0\u00A0\u00A0";
-
-  const modules = useMemo(
-    () => ({
-      toolbar: [
-        [{ header: [1, 2, 3, 4, 5, 6, false] }],
-        ["bold", "italic", "underline", "strike"],
-        [{ align: [] }],
-        [{ list: "ordered" }, { list: "bullet" }],
-        [{ indent: "-1" }, { indent: "+1" }],
-        [{ size: ["small", false, "large", "huge"] }],
-        [{ color: [] }, { background: [] }],
-        ["clean"],
-        ["link", "image"],
-      ],
-      clipboard: { matchVisual: false },
-      keyboard: {
-        bindings: {
-          handleTab: {
-            key: 9,
-            handler(range) {
-              const quill = quillRef.current?.getEditor();
-              if (!quill) return true;
-              quill.insertText(range.index, NBSP4, "user");
-              quill.setSelection(range.index + NBSP4.length, 0, "user");
-              return false;
-            },
-          },
-          handleShiftTab: {
-            key: 9,
-            shiftKey: true,
-            handler(range) {
-              const quill = quillRef.current?.getEditor();
-              if (!quill) return true;
-              const prev = quill.getText(Math.max(0, range.index - 4), 4);
-              if (prev === NBSP4) {
-                quill.deleteText(range.index - 4, 4, "user");
-                quill.setSelection(range.index - 4, 0, "user");
-                return false;
-              }
-              return true;
-            },
-          },
-        },
-      },
-    }),
-    []
-  );
-
-  // Hindari error register — cukup "list" (tanpa "bullet") di formats
-  const formats = useMemo(
-    () => [
-      "header",
-      "font",
-      "size",
-      "bold",
-      "italic",
-      "underline",
-      "strike",
-      "blockquote",
-      "list",
-      "indent",
-      "link",
-      "image",
-      "video",
-      "align",
-      "color",
-      "background",
-    ],
-    []
-  );
+  }, [templateId]); // penting: jangan depend ke `dirty` supaya tidak re-fetch saat user ngetik
 
   const handleChange = (val, _delta, source) => {
-    if (source === "user") setDirty(true); // tandai user edit
+    if (source === "user") setDirty(true);
     setCustomValue(val);
   };
 
   const handleSave = async () => {
     try {
       setSaving(true);
-      const payload = {
-        name,
-        custom_value: preserveSpaces(customValue), // simpan versi NBSP
-      };
+      const payload = { name, custom_value: preserveSpaces(customValue) };
       if (templateId) {
         await templateService.update(templateId, payload);
         showSuccess("Template berhasil diperbarui.");
@@ -157,6 +80,12 @@ export default function TemplateEditorPage() {
 
   return (
     <div className="space-y-6 p-6">
+      <Link
+        to={`/app/template`}
+        className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded mb-4 bg-gray-100 hover:bg-gray-200 text-gray-700 transition"
+      >
+        <span aria-hidden>←</span> Kembali
+      </Link>
       <h1 className="text-2xl font-semibold dark:text-white">
         {templateId ? "Edit Template" : "Tambah Template"}
       </h1>
@@ -165,7 +94,6 @@ export default function TemplateEditorPage() {
         <div>Memuat…</div>
       ) : (
         <>
-          {/* Form Input */}
           <div className="grid grid-cols-1 gap-6">
             <div className="lg:col-span-2">
               <div className="mb-4">
@@ -184,20 +112,19 @@ export default function TemplateEditorPage() {
               <div className="mb-2">
                 <div className="text-sm font-medium mb-2">Isi Template</div>
                 <div className="border rounded quill-wrap">
-                  <ReactQuill
+                  <QuillEditor
                     ref={quillRef}
-                    theme="snow"
                     value={customValue}
                     onChange={handleChange}
-                    modules={modules}
-                    formats={formats}
-                    className="deed-quill"
                     placeholder="Tulis isi template…"
+                    className="deed-quill"
+                    tabSize={4}
+                    tabIndent
+                    stickyToolbar
                   />
                 </div>
               </div>
 
-              {/* Actions */}
               <div className="mt-8 flex flex-wrap gap-4 items-center">
                 <button
                   type="button"
@@ -207,6 +134,15 @@ export default function TemplateEditorPage() {
                 >
                   {saving ? "Menyimpan…" : "Simpan"}
                 </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowPreview(true)} // ⬅️ buka modal
+                  className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 transition-colors"
+                >
+                  Lihat Preview
+                </button>
+
                 <Link
                   to="/app/template"
                   className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 transition-colors"
@@ -217,12 +153,13 @@ export default function TemplateEditorPage() {
             </div>
           </div>
 
-          {/* Preview Section */}
-          <div>
-            <div className="text-sm font-medium mb-2">Preview</div>
-            {/* PagedPreview sudah set whitespace-nya sendiri */}
-            <PagedPreview html={customValue} />
-          </div>
+          {/* Modal Preview */}
+          <HtmlPreviewModal
+            open={showPreview}
+            onClose={() => setShowPreview(false)}
+            html={customValue}
+            title="Preview Template"
+          />
         </>
       )}
     </div>
