@@ -6,12 +6,8 @@ import ExtraFieldCard from "../../components/input/ExtraFieldCard";
 import { clientActivityService } from "../../services/clientActivityService";
 import { documentRequirementService } from "../../services/documentRequirementService";
 import { showError } from "../../utils/toastConfig";
+import { Link } from "react-router-dom";
 
-/**
- * Route SARAN:
- * - /requirement/:activityId  (untuk role penghadap)
- *   halaman ini akan fetch activity (client) lalu menampilkan semua documentRequirements untuk user login
- */
 export default function RequirementPage() {
   const params = useParams();
   const activityId = params?.activityId;
@@ -104,6 +100,12 @@ export default function RequirementPage() {
             Memuat…
           </div>
         )}
+        <Link
+          to={`/app/project-flow/${activityId}`}
+          className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded mb-4 bg-gray-100 hover:bg-gray-200 text-gray-700 transition"
+        >
+          <span aria-hidden>←</span> Kembali
+        </Link>
 
         <h1 className="text-2xl font-semibold dark:text-[#f5fefd] mb-1">
           Data Tambahan {deedName ? `- ${deedName}` : ""}

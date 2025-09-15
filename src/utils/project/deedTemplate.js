@@ -223,11 +223,24 @@ export function buildTokenMap(activity) {
   return map;
 }
 
-export function replaceTokens(template, tokenMap) {
+// utils/deedTemplate.js
+
+export function replaceTokens(template, tokenMap, opts = {}) {
   if (!template) return "";
-  return template.replace(/\{([a-zA-Z0-9_]+)\}/g, (_, key) =>
+  const { allowSingle = true } = opts; // biar kompatibel template lama
+
+  const replacer = (_m, key) =>
     Object.prototype.hasOwnProperty.call(tokenMap, key)
       ? tokenMap[key] ?? "-"
-      : `{${key}}`
-  );
+      : _m; // biarkan apa adanya kalau gak dikenal
+
+  // 1) utamakan {{token}}
+  let out = template.replace(/\{\{\s*([\w]+)\s*\}\}/g, replacer);
+
+  // 2) (opsional) kompatibel {token} lama
+  if (allowSingle) {
+    out = out.replace(/\{([\w]+)\}/g, replacer);
+  }
+
+  return out;
 }

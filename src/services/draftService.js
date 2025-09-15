@@ -34,18 +34,62 @@ export const draftService = {
   },
 
   // services/draftService.js (tambahkan)
-  async renderPdf(id, { html } = {}) {
+  // async renderPdf(id, { html } = {}) {
+  //   try {
+  //     const payload = {};
+  //     if (html != null) payload.html_rendered = html; // ⬅️ pakai html_rendered
+
+  //     const { data } = await api.post(
+  //       `/admin/draft/${id}/render-pdf`,
+  //       payload,
+  //       { headers: { "Content-Type": "application/json" } }
+  //     );
+  //     return data; // { success, data: { file, file_path, ... } }
+  //   } catch (err) {
+  //     const data = err?.response?.data;
+  //     const msg =
+  //       data?.message || err?.message || "Terjadi kesalahan. Coba lagi.";
+  //     const errors = data?.data || data?.errors || null;
+  //     throw { message: msg, errors, status: err?.response?.status };
+  //   }
+  // },
+
+  // Perbaikan di draftService.js
+  // draftService.js - dengan logging untuk debug
+  async renderPdf(id, { html, pdf_options } = {}) {
     try {
       const payload = {};
-      if (html != null) payload.html_rendered = html; // ⬅️ pakai html_rendered
+      if (html != null) payload.html = html;
+      if (pdf_options != null) payload.pdf_options = pdf_options;
+
+      // Debug logging
+      console.log("🔍 renderPdf called with:", {
+        id,
+        html_length: html ? html.length : "null",
+        pdf_options,
+        payload,
+      });
 
       const { data } = await api.post(
         `/admin/draft/${id}/render-pdf`,
         payload,
-        { headers: { "Content-Type": "application/json" } }
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        }
       );
-      return data; // { success, data: { file, file_path, ... } }
+
+      console.log("✅ renderPdf response:", data);
+      return data;
     } catch (err) {
+      console.error("❌ renderPdf error:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+      });
+
       const data = err?.response?.data;
       const msg =
         data?.message || err?.message || "Terjadi kesalahan. Coba lagi.";
