@@ -57,12 +57,14 @@ export const authService = {
 
   async login({ email, password }) {
     try {
+      console.log("error cuy 2");
       const { data } = await api.post("/auth/login", { email, password });
       // BE balikin: role_id, name, email, token
       tokenStore.set(data?.data?.token);
       localStorage.setItem("auth_user", JSON.stringify(data?.data || {}));
       return data;
     } catch (err) {
+      console.log("error cuy");
       throw normalizeErr(err);
     }
   },
