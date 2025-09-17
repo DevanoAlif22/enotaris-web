@@ -71,34 +71,38 @@ export default function PdfSettingsPanel({
   ];
 
   return (
-    <div className={`border rounded-lg bg-white shadow-sm ${className}`}>
+    <div
+      className={`border rounded-lg bg-white dark:bg-gradient-to-r from-blue-500 to-[#0256c4] text-[#0256c4] shadow-sm ${className}`}
+    >
       {/* Header */}
       <div
-        className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+        className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-[#002d6a] transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-2">
-          <CogIcon className="w-4 h-4 text-gray-600" />
-          <span className="font-medium text-gray-800">Pengaturan PDF</span>
+          <CogIcon className="w-4 h-4 text-gray-600 dark:text-[#f5fefd]" />
+          <span className="font-medium text-gray-800 dark:text-[#f5fefd]">
+            Pengaturan PDF
+          </span>
           <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
             {pdfOptions.page_size} • {pdfOptions.orientation} •{" "}
             {pdfOptions.font_size_pt}pt
           </span>
         </div>
         {isExpanded ? (
-          <ChevronUpIcon className="w-4 h-4 text-gray-500" />
+          <ChevronUpIcon className="w-4 h-4 text-gray-500 dark:text-[#f5fefd]" />
         ) : (
-          <ChevronDownIcon className="w-4 h-4 text-gray-500" />
+          <ChevronDownIcon className="w-4 h-4 text-gray-500 dark:text-[#f5fefd]" />
         )}
       </div>
 
       {/* Settings Panel */}
       {isExpanded && (
-        <div className="border-t bg-gray-50">
+        <div className="border-t bg-gray-50 dark:bg-[#002d6a] dark:text-[#f5fefd]">
           <div className="p-4 space-y-6">
             {/* Paper Settings */}
             <div className="space-y-4">
-              <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+              <div className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200">
                 <DocumentTextIcon className="w-4 h-4" />
                 Pengaturan Kertas
               </div>
@@ -106,13 +110,13 @@ export default function PdfSettingsPanel({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Page Size */}
                 <div className="space-y-2">
-                  <label className="text-xs font-medium text-gray-600">
+                  <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
                     Ukuran Kertas
                   </label>
                   <select
                     value={pdfOptions.page_size}
                     onChange={(e) => handleChange("page_size", e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 text-sm border dark:bg-[#01043c] border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     {pageSizes.map((size) => (
                       <option key={size.value} value={size.value}>
@@ -124,7 +128,7 @@ export default function PdfSettingsPanel({
 
                 {/* Orientation */}
                 <div className="space-y-2">
-                  <label className="text-xs font-medium text-gray-600">
+                  <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
                     Orientasi
                   </label>
                   <select
@@ -132,7 +136,7 @@ export default function PdfSettingsPanel({
                     onChange={(e) =>
                       handleChange("orientation", e.target.value)
                     }
-                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 text-sm border dark:bg-[#01043c] border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="portrait">Portrait (Tegak)</option>
                     <option value="landscape">Landscape (Mendatar)</option>
@@ -143,7 +147,7 @@ export default function PdfSettingsPanel({
 
             {/* Margins */}
             <div className="space-y-4">
-              <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+              <div className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200">
                 <RectangleStackIcon className="w-4 h-4" />
                 Margin (mm)
               </div>
@@ -151,7 +155,7 @@ export default function PdfSettingsPanel({
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {Object.entries(pdfOptions.margins_mm).map(([side, value]) => (
                   <div key={side} className="space-y-1">
-                    <label className="text-xs font-medium text-gray-600 capitalize">
+                    <label className="text-xs font-medium text-gray-600 dark:text-gray-300 capitalize">
                       {side === "top"
                         ? "Atas"
                         : side === "right"
@@ -181,7 +185,9 @@ export default function PdfSettingsPanel({
 
               {/* Quick margin presets */}
               <div className="flex flex-wrap gap-2">
-                <span className="text-xs text-gray-500">Preset:</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  Preset:
+                </span>
                 {[
                   { label: "Sempit (10mm)", value: 10 },
                   { label: "Normal (20mm)", value: 20 },
@@ -197,7 +203,7 @@ export default function PdfSettingsPanel({
                         left: preset.value,
                       })
                     }
-                    className="text-xs px-2 py-1 bg-white border border-gray-200 rounded hover:bg-gray-50 transition-colors"
+                    className="text-xs px-2 py-1 bg-white dark:bg-[#01043c] dark:hover:bg-[#002d6a] border border-gray-200 rounded hover:bg-gray-50 transition-colors"
                   >
                     {preset.label}
                   </button>
@@ -207,14 +213,14 @@ export default function PdfSettingsPanel({
 
             {/* Typography */}
             <div className="space-y-4">
-              <div className="text-sm font-medium text-gray-700">
+              <div className="text-sm font-medium text-gray-700 dark:text-gray-200">
                 Pengaturan Teks
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Font Family */}
                 <div className="space-y-2">
-                  <label className="text-xs font-medium text-gray-600">
+                  <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
                     Jenis Font
                   </label>
                   <select
@@ -222,7 +228,7 @@ export default function PdfSettingsPanel({
                     onChange={(e) =>
                       handleChange("font_family", e.target.value)
                     }
-                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 text-sm border dark:bg-[#01043c] border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     {fontFamilies.map((font) => (
                       <option key={font.value} value={font.value}>
@@ -234,7 +240,7 @@ export default function PdfSettingsPanel({
 
                 {/* Font Size */}
                 <div className="space-y-2">
-                  <label className="text-xs font-medium text-gray-600">
+                  <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
                     Ukuran Font (pt)
                   </label>
                   <div className="relative">
@@ -249,7 +255,7 @@ export default function PdfSettingsPanel({
                           parseInt(e.target.value) || 12
                         )
                       }
-                      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-8"
+                      className="w-full px-3 py-2 text-sm border dark:bg-[#01043c] border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-8"
                     />
                     <span className="absolute right-2 top-1/2 transform -translate-y-1/2 text-xs text-gray-400">
                       pt
@@ -260,7 +266,9 @@ export default function PdfSettingsPanel({
 
               {/* Font size presets */}
               <div className="flex flex-wrap gap-2">
-                <span className="text-xs text-gray-500">Ukuran:</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  Ukuran:
+                </span>
                 {[10, 11, 12, 13, 14, 16].map((size) => (
                   <button
                     key={size}
@@ -268,7 +276,7 @@ export default function PdfSettingsPanel({
                     className={`text-xs px-2 py-1 border rounded transition-colors ${
                       pdfOptions.font_size_pt === size
                         ? "bg-blue-100 border-blue-300 text-blue-700"
-                        : "bg-white border-gray-200 hover:bg-gray-50"
+                        : "bg-white dark:bg-[#01043c] border-gray-200 hover:bg-gray-50 dark:hover:bg-[#002d6a]"
                     }`}
                   >
                     {size}pt
@@ -278,7 +286,7 @@ export default function PdfSettingsPanel({
 
               {/* Nomor Halaman */}
               <div className="space-y-2">
-                <div className="text-sm font-medium text-gray-700">
+                <div className="text-sm font-medium text-gray-700 dark:text-gray-200">
                   Nomor Halaman
                 </div>
 
@@ -296,7 +304,7 @@ export default function PdfSettingsPanel({
                 {/* Posisi — muncul aktif saat checkbox dicentang */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-gray-600">
+                    <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
                       Perataan Horizontal
                     </label>
                     <select
@@ -305,7 +313,7 @@ export default function PdfSettingsPanel({
                         handleChange("page_number_h_align", e.target.value)
                       }
                       disabled={!pdfOptions.show_page_numbers}
-                      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+                      className="w-full px-3 py-2 text-sm border dark:bg-[#01043c] border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
                     >
                       <option value="left">Kiri</option>
                       <option value="center">Tengah</option>
@@ -314,7 +322,7 @@ export default function PdfSettingsPanel({
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-gray-600">
+                    <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
                       Posisi Vertikal
                     </label>
                     <select
@@ -323,7 +331,7 @@ export default function PdfSettingsPanel({
                         handleChange("page_number_v_align", e.target.value)
                       }
                       disabled={!pdfOptions.show_page_numbers}
-                      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+                      className="w-full px-3 py-2 text-sm border dark:bg-[#01043c] border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
                     >
                       <option value="top">Atas</option>
                       <option value="bottom">Bawah</option>
@@ -337,11 +345,11 @@ export default function PdfSettingsPanel({
             <div className="flex justify-between items-center pt-4 border-t">
               <button
                 onClick={resetToDefault}
-                className="text-xs px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
+                className="text-xs px-3 py-2 text-gray-600 dark:text-[#f5fefd] hover:text-gray-800 dark:hover:text-[#f5fefd] hover:bg-gray-100 dark:hover:bg-[#01043c] rounded transition-colors"
               >
                 Reset ke Default
               </button>
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-gray-500 dark:text-[#f5fefd]">
                 Pengaturan akan diterapkan saat generate PDF
               </div>
             </div>

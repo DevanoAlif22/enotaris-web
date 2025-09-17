@@ -35,7 +35,7 @@ export default function TemplatePicker({ onPick, onReset, onOpenSettings }) {
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2 dark:text-[#f5fefd]">
       <select
         className="border rounded px-2 py-1 text-sm"
         value={selectedTplId}
@@ -57,7 +57,7 @@ export default function TemplatePicker({ onPick, onReset, onOpenSettings }) {
         type="button"
         onClick={handleUse}
         disabled={!selectedTplId || tplLoading}
-        className="px-3 py-1.5 rounded bg-gray-100 hover:bg-gray-200 text-sm"
+        className="px-3 py-1.5 rounded dark:text-[#f5fefd] bg-gray-100 hover:bg-gray-200 text-sm dark:bg-gradient-to-r from-blue-500 to-[#0256c4] text-[#0256c4]"
       >
         Gunakan
       </button>
@@ -65,7 +65,7 @@ export default function TemplatePicker({ onPick, onReset, onOpenSettings }) {
       <button
         type="button"
         onClick={() => onReset?.()}
-        className="px-3 py-1.5 rounded bg-gray-100 hover:bg-gray-200 text-sm"
+        className="px-3 py-1.5 rounded dark:text-[#f5fefd] bg-gray-100 hover:bg-gray-200 text-sm dark:bg-gradient-to-r from-blue-500 to-[#0256c4] text-[#0256c4]"
         title="Kembalikan ke template bawaan"
       >
         Reset Bawaan
@@ -76,7 +76,7 @@ export default function TemplatePicker({ onPick, onReset, onOpenSettings }) {
         <button
           type="button"
           onClick={onOpenSettings}
-          className="px-3 py-1.5 rounded bg-gray-100 hover:bg-gray-200 text-sm"
+          className="px-3 py-1.5 rounded bg-gray-100 dark:text-[#f5fefd] hover:bg-gray-300 text-sm"
           title="Pengaturan PDF (ukuran kertas, orientasi, margin, font)"
         >
           Pengaturan PDF

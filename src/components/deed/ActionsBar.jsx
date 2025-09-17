@@ -49,7 +49,7 @@ export default function ActionsBar({
       <button
         type="button"
         onClick={onPreview} // ⬅️ panggil modal
-        className="px-3 py-2 rounded bg-gray-100 hover:bg-gray-200 transition-colors"
+        className="px-3 py-2 rounded dark:text-[#f5fefd] bg-gray-100 dark:bg-[#01043c] hover:bg-gray-200 dark:hover:bg-[#0b0255] transition-colors"
       >
         Lihat Preview
       </button>
