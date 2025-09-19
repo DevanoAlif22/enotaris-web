@@ -23,7 +23,7 @@ import AddPartyModal from "../../components/activitynotaris/AddPartyModal";
 import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 import DeedExtraFieldsModal from "../../components/deed/DeedExtraFieldsModal";
 import LoadingOverlay from "../../components/common/LoadingOverlay";
-import { showSuccess } from "../../utils/toastConfig";
+import { showSuccess, showError } from "../../utils/toastConfig";
 
 const STEPS = [
   {
@@ -137,6 +137,139 @@ export default function ActivityFlowPage() {
       showSuccess("Step dokumen ditandai selesai.");
       setStepStatus((st) => ({ ...st, docs: "done" }));
       fetchActivity();
+    } finally {
+      setIsMutating(false);
+    }
+  };
+
+  const toLocalISO = (dateStr, timeStr) => {
+    if (!dateStr || !timeStr) return "";
+    // dateStr contoh: "2025-09-18T00:00:00.000000Z"
+    const ymd = dateStr.slice(0, 10); // "YYYY-MM-DD"
+    // bikin Date lokal dari YYYY-MM-DD + HH:mm
+    const local = new Date(`${ymd}T${timeStr}:00`);
+    // normalisasi agar stabil di zona waktu user
+    const fixed = new Date(local.getTime() - local.getTimezoneOffset() * 60000);
+    return fixed.toISOString();
+  };
+
+  // ====== Draft approvals ======
+  const draftApprovals =
+    activity?.draft?.clientDrafts ?? activity?.draft?.client_drafts ?? [];
+
+  const myDraftPivot = draftApprovals.find?.((cd) => cd.user_id === me?.id);
+  const myDraftStatus = (myDraftPivot?.status_approval || "").toLowerCase(); // pending|approved|rejected|''
+
+  const onApproveDraft = async () => {
+    try {
+      setIsMutating(true);
+      const { clientDraftService } = await import(
+        "../../services/clientDraftService"
+      );
+      const draftId = activity?.draft?.id;
+      if (!draftId) throw new Error("Draft belum tersedia.");
+      await clientDraftService.approve(draftId);
+      showSuccess("Draft disetujui.");
+      setStepStatus((st) => ({
+        ...st,
+        draft: st.draft === "todo" ? "pending" : st.draft,
+      }));
+      await fetchActivity();
+    } catch (e) {
+      showError(e?.message || "Gagal menyetujui draft.");
+    } finally {
+      setIsMutating(false);
+    }
+  };
+
+  // di dalam ActivityFlowPage component, bareng handler lain
+  // di dalam ActivityFlowPage component
+  const onSaveSchedule = async ({ datetime, place, note }) => {
+    try {
+      setIsMutating(true);
+
+      // dynamic import utk code-splitting
+      const { scheduleService } = await import(
+        "../../services/scheduleService"
+      );
+
+      // Backend butuh date & time terpisah (format Y-m-d & H:i).
+      // Di UI kita pegang ISO. Kita convert ke lokal lalu split.
+      const splitDateTime = (iso) => {
+        const d = new Date(iso);
+        // konversi ISO (UTC) ke waktu lokal
+        const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+        const ymd = local.toISOString().slice(0, 10); // YYYY-MM-DD
+        const hm = local.toISOString().slice(11, 16); // HH:mm
+        return { date: ymd, time: hm };
+      };
+
+      const { date, time } = splitDateTime(datetime);
+
+      // kalau sudah ada schedule pertama → update, kalau belum → store
+      const existing = activity?.schedules?.[0];
+
+      if (existing?.id) {
+        await scheduleService.update(existing.id, {
+          activity_id: activity?.id,
+          date,
+          time,
+          location: place,
+          notes: note,
+        });
+        showSuccess("Jadwal berhasil diperbarui.");
+      } else {
+        await scheduleService.store({
+          activity_id: activity?.id,
+          date,
+          time,
+          location: place,
+          notes: note,
+        });
+        showSuccess("Jadwal berhasil dibuat.");
+      }
+
+      await fetchActivity();
+    } catch (e) {
+      showError(e?.message || "Gagal menyimpan jadwal.");
+    } finally {
+      setIsMutating(false);
+    }
+  };
+
+  const onRejectDraft = async () => {
+    try {
+      setIsMutating(true);
+      const { clientDraftService } = await import(
+        "../../services/clientDraftService"
+      );
+      const draftId = activity?.draft?.id;
+      if (!draftId) throw new Error("Draft belum tersedia.");
+      await clientDraftService.reject(draftId);
+      showSuccess("Draft ditolak.");
+      setStepStatus((st) => ({ ...st, draft: "reject" }));
+      await fetchActivity();
+    } catch (e) {
+      showError(e?.message || "Gagal menolak draft.");
+    } finally {
+      setIsMutating(false);
+    }
+  };
+
+  // ====== Upload Draft (Notaris & Klien) ======
+  const onUploadDraft = async (file) => {
+    if (!file) return;
+    try {
+      setIsMutating(true);
+      const draftId = activity?.draft?.id;
+      if (!draftId) throw new Error("Draft belum tersedia.");
+      // GANTI nama service/metode sesuai proyekmu kalau berbeda
+      const { draftService } = await import("../../services/draftService");
+      await draftService.uploadFile(draftId, file);
+      showSuccess("Draft berhasil diunggah.");
+      await fetchActivity();
+    } catch (e) {
+      showError(e?.message || "Gagal mengunggah draft.");
     } finally {
       setIsMutating(false);
     }
@@ -257,6 +390,7 @@ export default function ActivityFlowPage() {
                 {renderStepContent(step.id, status, {
                   activity,
                   deed: activity?.deed,
+                  draftApprovals,
                   clients: activity?.clients || [],
                   track: activity?.track,
                   permissions: stepPermissions,
@@ -274,6 +408,13 @@ export default function ActivityFlowPage() {
                   onDeleteRequirement: isNotary
                     ? handleDeleteRequirement
                     : undefined,
+
+                  // draft actions/props
+                  isNotary,
+                  myDraftStatus,
+                  onApproveDraft: isClient ? onApproveDraft : undefined,
+                  onRejectDraft: isClient ? onRejectDraft : undefined,
+                  onUploadDraft, // <<— dipakai dua peran (notaris & klien)
                 })}
               </StepItem>
             );
@@ -283,6 +424,7 @@ export default function ActivityFlowPage() {
 
       {/* Modals */}
       <ScheduleModal
+        key={activity?.schedules?.[0]?.id || "new-schedule"}
         open={schedule.open}
         onClose={() => setSchedule({ open: false, row: null })}
         activity={{
@@ -293,13 +435,15 @@ export default function ActivityFlowPage() {
           ),
         }}
         initial={{
-          datetime:
-            schedule.row?.schedules?.[0]?.datetime ??
-            activity?.schedules?.[0]?.datetime ??
-            header.schedule,
-          place: schedule.row?.place ?? "",
-          note: schedule.row?.note ?? "",
+          id: activity?.schedules?.[0]?.id,
+          datetime: toLocalISO(
+            activity?.schedules?.[0]?.date,
+            activity?.schedules?.[0]?.time
+          ),
+          place: activity?.schedules?.[0]?.location ?? "",
+          note: activity?.schedules?.[0]?.notes ?? "",
         }}
+        onSave={onSaveSchedule}
       />
 
       <ScheduleViewModal

@@ -55,22 +55,20 @@ export function buildPartiesTableHTML(parties) {
     .join("");
 
   return `
-    <div style="display:flex;justify-content:center">
-      <table border="1" cellspacing="0" cellpadding="6"
-             style="border-collapse:collapse;font-size:12px;margin:0 auto;width:100%;max-width:180mm">
-        <thead>
-          <tr>
-            <th style="text-align:center">No</th>
-            <th style="text-align:center">Nama</th>
-            <th style="text-align:center">NIK</th>
-            <th style="text-align:center">Alamat</th>
-            <th style="text-align:center">Kota</th>
-            <th style="text-align:center">Provinsi</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>
+    <table border="1" cellspacing="0" cellpadding="6"
+           style="border-collapse:collapse;font-size:12px;width:100%;margin:0">
+      <thead>
+        <tr>
+          <th style="text-align:center">No</th>
+          <th style="text-align:center">Nama</th>
+          <th style="text-align:center">NIK</th>
+          <th style="text-align:center">Alamat</th>
+          <th style="text-align:center">Kota</th>
+          <th style="text-align:center">Provinsi</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
   `;
 }
 
