@@ -13,19 +13,29 @@ export default function renderStepContent(stepId, status, actions = {}) {
     markDone,
     onSchedule,
     onViewSchedule,
-    // onMarkDocsDone,
-    onOpenAddRequirement, // ⬅️ baru: buka modal tambah persyaratan
+    onOpenAddRequirement,
     permissions = {},
     activity,
     clients = [],
     currentUserId,
     requirementList = [],
     onDeleteRequirement,
+
+    // draft props
+    isNotary = false,
+    myDraftStatus = "",
+    onApproveDraft,
+    onRejectDraft,
+    draftApprovals = [],
+    onUploadDraft, // <- handler upload dipass dari page
   } = actions;
 
   const buttonClass = "px-4 py-2 rounded-lg font-medium transition-colors";
   const primaryButton = `${buttonClass} inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 dark:text-[#f5fefd] hover:bg-gray-50 dark:hover:bg-[#01043c] dark:bg-gradient-to-r from-blue-500 to-[#0256c4]`;
   const secondaryButton = `${buttonClass} inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 dark:text-[#f5fefd] hover:bg-gray-50 dark:hover:bg-[#01043c]`;
+
+  const approveButton = `${buttonClass} bg-green-500 text-white hover:bg-green-600`;
+  const rejectButton = `${buttonClass} bg-red-500 text-white hover:bg-red-600`;
 
   const canMarkDone = permissions.canMarkDone ?? true;
   const docsPerm = permissions.docs || { canSelectAnyParty: true };
@@ -40,6 +50,24 @@ export default function renderStepContent(stepId, status, actions = {}) {
         </span>
       </div>
     ) : null;
+
+  // helper: tombol upload (dipakai notaris & klien)
+  const UploadButton = ({ label = "Unggah Draft" }) => (
+    <label className={secondaryButton}>
+      {label}
+      <input
+        type="file"
+        accept=".pdf,.doc,.docx,.odt"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file && typeof onUploadDraft === "function") onUploadDraft(file);
+          // reset value biar bisa upload file yang sama lagi kalau perlu
+          e.target.value = "";
+        }}
+      />
+    </label>
+  );
 
   switch (stepId) {
     case "docs":
@@ -73,7 +101,7 @@ export default function renderStepContent(stepId, status, actions = {}) {
                   );
                 })()
               )}
-              {/* daftar persyaratan (lengkap & bisa dihapus, khusus notaris) */}
+
               {docsPerm.canSelectAnyParty && requirementList.length > 0 && (
                 <div className="mt-4">
                   <div className="text-sm text-gray-700 dark:text-gray-300 mb-2">
@@ -108,13 +136,6 @@ export default function renderStepContent(stepId, status, actions = {}) {
 
           {status === "todo" && (
             <div className="flex gap-3">
-              {/* <button
-                className={primaryButton}
-                onClick={() => onMarkDocsDone?.("docs")}
-              >
-                Tandai Selesai
-              </button> */}
-              {/* Tombol Tambah Persyaratan (khusus notaris) */}
               {docsPerm.canSelectAnyParty &&
                 typeof onOpenAddRequirement === "function" && (
                   <button
@@ -132,7 +153,6 @@ export default function renderStepContent(stepId, status, actions = {}) {
         </div>
       );
 
-    // ——— case lain tetap sama (invite/respond/draft/schedule/sign/print) ———
     case "invite":
       return (
         <div className="space-y-4">
@@ -192,41 +212,160 @@ export default function renderStepContent(stepId, status, actions = {}) {
         </div>
       );
 
-    case "draft":
+    case "draft": {
+      const hasDraftFile = Boolean(
+        activity?.draft?.file || activity?.draft?.file_path
+      );
+      const draftFileUrl = activity?.draft?.file || "";
+
+      // Tombol link ke file draft (preview/download)
+      const DraftLinkButton = ({
+        label = "Lihat Draft",
+        downloadFile = false,
+      }) => {
+        const disabled = !hasDraftFile || !draftFileUrl;
+        return (
+          <a
+            href={disabled ? undefined : draftFileUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${secondaryButton} ${
+              disabled ? "opacity-50 pointer-events-none" : ""
+            }`}
+            title={disabled ? "Belum ada file draft" : "Buka draft (PDF)"}
+            {...(downloadFile ? { download: true } : {})}
+          >
+            {label}
+          </a>
+        );
+      };
+
       return (
         <div className="space-y-4">
           {RejectNotice}
+
+          {/* Info singkat */}
           <div className="p-4 border border-gray-200 rounded-lg">
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
               Unggah atau buat draft akta untuk direview oleh para pihak.
             </p>
+
+            {!hasDraftFile && (
+              <div className="mt-2 p-3 rounded-lg border border-amber-200 bg-amber-50 text-amber-800 text-sm">
+                Draft sedang dibuat. Silakan menunggu notaris generate file
+                draft.
+              </div>
+            )}
           </div>
 
-          {/* ——— tombol-tombol lama (opsional) ——— */}
-          <div className="flex gap-3">
-            <button className={secondaryButton}>
-              <Link to={`/app/project-flow/draft/${activity?.id}`}>
-                Lihat Draft
-              </Link>
-            </button>
-            {!permissions?.draft?.readOnly && status !== "reject" && (
+          {/* Ringkasan status persetujuan semua penghadap */}
+          {draftApprovals?.length > 0 && (
+            <div className="space-y-2">
+              <div className="text-sm font-medium dark:text-[#f5fefd]">
+                Status Persetujuan Draft:
+              </div>
+              <div className="space-y-2">
+                {draftApprovals.map((cd) => {
+                  const s = (cd.status_approval || "").toLowerCase();
+                  const boxClass =
+                    s === "approved"
+                      ? "bg-green-50 border-green-200"
+                      : s === "rejected"
+                      ? "bg-red-50 border-red-200"
+                      : "bg-amber-50 border-amber-200";
+                  const icon =
+                    s === "approved" ? (
+                      <CheckCircleIcon className="w-5 h-5 text-green-600" />
+                    ) : s === "rejected" ? (
+                      <XCircleIcon className="w-5 h-5 text-red-600" />
+                    ) : (
+                      <ClockIcon className="w-5 h-5 text-amber-600" />
+                    );
+                  const label =
+                    s === "approved"
+                      ? "Disetujui"
+                      : s === "rejected"
+                      ? "Ditolak"
+                      : "Menunggu";
+                  const fallback =
+                    clients.find?.((c) => c.id === cd.user_id)?.name ||
+                    clients.find?.((c) => c.id === cd.user_id)?.email ||
+                    cd?.user?.name ||
+                    cd?.user?.email ||
+                    `#${cd.user_id}`;
+
+                  return (
+                    <div
+                      key={cd.id}
+                      className={`flex items-center justify-between p-3 rounded-lg border ${boxClass}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        {icon}
+                        <span className="font-medium">{fallback}</span>
+                      </div>
+                      <span className="text-sm">{label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Aksi */}
+          <div className="flex flex-wrap gap-3">
+            {/* NOTARIS */}
+            {isNotary && (
               <>
-                <button className={secondaryButton}>Unggah Draft</button>
-                {canMarkDone && (
-                  <button
-                    className={primaryButton}
-                    onClick={() => markDone?.("draft")}
+                {/* Lihat Draft (Editor) disembunyikan bila step draft sudah 'done' */}
+                {status !== "done" && (
+                  <Link
+                    to={`/app/project-flow/draft/${activity?.id}`}
+                    className={secondaryButton}
                   >
-                    Tandai Selesai
-                  </button>
+                    Lihat Draft (Editor)
+                  </Link>
                 )}
+
+                {/* Link ke file PDF bila tersedia */}
+                {hasDraftFile && (
+                  <DraftLinkButton label="Unduh Draft" downloadFile />
+                )}
+              </>
+            )}
+
+            {/* KLIEN */}
+            {!isNotary && (
+              <>
+                {/* Klien hanya melihat file PDF (bukan editor). Nonaktif jika belum ada file */}
+                <DraftLinkButton label="Lihat Draft" />
+
+                {/* Setujui/Tolak hanya jika file SUDAH ada & status approval masih pending/empty */}
+                {typeof onApproveDraft === "function" &&
+                  status !== "reject" &&
+                  hasDraftFile &&
+                  (myDraftStatus === "" || myDraftStatus === "pending") && (
+                    <>
+                      <button
+                        className={approveButton}
+                        onClick={onApproveDraft}
+                      >
+                        Setujui Draft
+                      </button>
+                      <button className={rejectButton} onClick={onRejectDraft}>
+                        Tolak Draft
+                      </button>
+                    </>
+                  )}
               </>
             )}
           </div>
         </div>
       );
+    }
 
-    case "schedule":
+    case "schedule": {
+      const hasSchedule = Boolean(activity?.schedules?.[0]);
+
       return (
         <div className="space-y-4">
           {RejectNotice}
@@ -236,27 +375,39 @@ export default function renderStepContent(stepId, status, actions = {}) {
             </p>
           </div>
           <div className="flex gap-3">
-            <button className={secondaryButton} onClick={onViewSchedule}>
+            <button
+              className={secondaryButton}
+              onClick={onViewSchedule}
+              disabled={!hasSchedule}
+              title={
+                hasSchedule
+                  ? "Lihat jadwal yang sudah dibuat"
+                  : "Belum ada jadwal"
+              }
+            >
               Lihat Jadwal
             </button>
-            {permissions?.schedule?.canEdit && status !== "reject" && (
-              <>
+
+            {permissions?.schedule?.canEdit &&
+              status !== "reject" &&
+              !hasSchedule && (
                 <button className={secondaryButton} onClick={onSchedule}>
                   Jadwalkan
                 </button>
-                {canMarkDone && (
-                  <button
-                    className={primaryButton}
-                    onClick={() => markDone?.("schedule")}
-                  >
-                    Tandai Selesai
-                  </button>
-                )}
-              </>
-            )}
+              )}
+
+            {/* Jika ingin tampilkan tombol “Edit Jadwal” ketika sudah ada jadwal */}
+            {permissions?.schedule?.canEdit &&
+              status !== "reject" &&
+              hasSchedule && (
+                <button className={secondaryButton} onClick={onSchedule}>
+                  Ubah Jadwal
+                </button>
+              )}
           </div>
         </div>
       );
+    }
 
     case "sign":
       return (
