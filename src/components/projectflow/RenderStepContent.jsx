@@ -8,6 +8,82 @@ import {
 } from "@heroicons/react/24/outline";
 import Pill from "../../utils/Pill";
 
+/**
+ * Gabungkan client_drafts dari activity dengan daftar clients.
+ * - Jika klien belum punya baris di client_drafts -> dianggap pending.
+ * - Jika ada di client_drafts -> pakai status dari server.
+ */
+function buildDraftApprovals(activity, clients = [], draftApprovalsProp = []) {
+  const rawClientDrafts =
+    activity?.draft?.client_drafts &&
+    Array.isArray(activity.draft.client_drafts)
+      ? activity.draft.client_drafts
+      : [];
+
+  // Index cepat by user_id dari sumber mana pun yang ada
+  const byUserId = new Map();
+
+  // Ambil dari server (activity.draft.client_drafts)
+  for (const cd of rawClientDrafts) {
+    if (!cd) continue;
+    byUserId.set(cd.user_id, {
+      id: cd.id ?? `server-${cd.user_id}`,
+      user_id: cd.user_id,
+      status_approval: (cd.status_approval || "pending").toLowerCase(),
+      user: cd.user, // bisa undefined, nanti fallback pakai clients
+      _source: "server",
+    });
+  }
+
+  // Jika ada draftApprovals dikirim via props, merge tapi jangan timpa server
+  for (const cd of draftApprovalsProp || []) {
+    if (!cd) continue;
+    if (!byUserId.has(cd.user_id)) {
+      byUserId.set(cd.user_id, {
+        id: cd.id ?? `prop-${cd.user_id}`,
+        user_id: cd.user_id,
+        status_approval: (cd.status_approval || "pending").toLowerCase(),
+        user: cd.user,
+        _source: "prop",
+      });
+    }
+  }
+
+  // Pastikan SEMUA clients punya entri
+  for (const c of clients || []) {
+    if (!byUserId.has(c.id)) {
+      byUserId.set(c.id, {
+        id: `phantom-${c.id}`, // key unik untuk React
+        user_id: c.id,
+        status_approval: "pending",
+        user: c,
+        _source: "phantom",
+      });
+    } else {
+      // Lengkapi nama/email jika belum ada
+      const exist = byUserId.get(c.id);
+      if (!exist.user) exist.user = c;
+    }
+  }
+
+  // Urutkan sesuai urutan klien (pakai pivot.order jika ada, lalu by name)
+  const withOrder = Array.from(byUserId.values()).map((row) => {
+    const client = (clients || []).find((c) => c.id === row.user_id);
+    return {
+      ...row,
+      _order: client?.pivot?.order ?? client?.order ?? 999999, // fallback besar biar di akhir
+      _name: client?.name || row?.user?.name || "",
+    };
+  });
+
+  withOrder.sort((a, b) => {
+    if (a._order !== b._order) return a._order - b._order;
+    return a._name.localeCompare(b._name);
+  });
+
+  return withOrder;
+}
+
 export default function renderStepContent(stepId, status, actions = {}) {
   const {
     markDone,
@@ -218,6 +294,13 @@ export default function renderStepContent(stepId, status, actions = {}) {
       );
       const draftFileUrl = activity?.draft?.file || "";
 
+      // NORMALISASI: bikin array approvals yang sudah digabung
+      const viewDraftApprovals = buildDraftApprovals(
+        activity,
+        clients,
+        draftApprovals
+      );
+
       // Tombol link ke file draft (preview/download)
       const DraftLinkButton = ({
         label = "Lihat Draft",
@@ -259,13 +342,13 @@ export default function renderStepContent(stepId, status, actions = {}) {
           </div>
 
           {/* Ringkasan status persetujuan semua penghadap */}
-          {draftApprovals?.length > 0 && (
+          {viewDraftApprovals.length > 0 && (
             <div className="space-y-2">
               <div className="text-sm font-medium dark:text-[#f5fefd]">
                 Status Persetujuan Draft:
               </div>
               <div className="space-y-2">
-                {draftApprovals.map((cd) => {
+                {viewDraftApprovals.map((cd) => {
                   const s = (cd.status_approval || "").toLowerCase();
                   const boxClass =
                     s === "approved"
@@ -287,6 +370,7 @@ export default function renderStepContent(stepId, status, actions = {}) {
                       : s === "rejected"
                       ? "Ditolak"
                       : "Menunggu";
+
                   const fallback =
                     clients.find?.((c) => c.id === cd.user_id)?.name ||
                     clients.find?.((c) => c.id === cd.user_id)?.email ||
@@ -330,6 +414,9 @@ export default function renderStepContent(stepId, status, actions = {}) {
                 {hasDraftFile && (
                   <DraftLinkButton label="Unduh Draft" downloadFile />
                 )}
+
+                {/* Opsi unggah draft (jika mau izinkan notaris upload manual) */}
+                {/* {typeof onUploadDraft === "function" && <UploadButton />} */}
               </>
             )}
 
@@ -356,6 +443,9 @@ export default function renderStepContent(stepId, status, actions = {}) {
                       </button>
                     </>
                   )}
+
+                {/* Opsi upload dari sisi klien (kalau workflow mengizinkan) */}
+                {/* {typeof onUploadDraft === "function" && <UploadButton />} */}
               </>
             )}
           </div>
@@ -376,7 +466,9 @@ export default function renderStepContent(stepId, status, actions = {}) {
           </div>
           <div className="flex gap-3">
             <button
-              className={secondaryButton}
+              className={`${secondaryButton} ${
+                !hasSchedule ? "opacity-50 cursor-not-allowed" : ""
+              }`}
               onClick={onViewSchedule}
               disabled={!hasSchedule}
               title={
@@ -419,15 +511,22 @@ export default function renderStepContent(stepId, status, actions = {}) {
             </p>
           </div>
           <div className="flex gap-3">
-            {canMarkDone && status !== "reject" && (
+            {status !== "reject" && (
               <>
-                <button className={secondaryButton}>Rekam Tanda Tangan</button>
                 <button
                   className={primaryButton}
-                  onClick={() => markDone?.("sign")}
+                  onClick={() => actions?.onOpenSignPage?.()}
                 >
-                  Tandai Selesai
+                  Buka Halaman TTD
                 </button>
+                {canMarkDone && (
+                  <button
+                    className={secondaryButton}
+                    onClick={() => markDone?.("sign")}
+                  >
+                    Tandai Selesai
+                  </button>
+                )}
               </>
             )}
           </div>
