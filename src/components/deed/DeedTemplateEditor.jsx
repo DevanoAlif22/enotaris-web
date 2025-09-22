@@ -136,7 +136,9 @@ export default function DeedTemplateEditor({
         {/* Editor */}
         <div className="lg:col-span-2">
           <div className="mb-2">
-            <div className="text-sm font-medium mb-2">Template Akta</div>
+            <div className="text-sm font-medium mb-2 dark:text-[#f5fefd]">
+              Template Akta
+            </div>
             <TemplatePicker
               onPick={handlePickTemplate}
               onReset={handleResetTemplate}
@@ -168,7 +170,9 @@ export default function DeedTemplateEditor({
 
         {/* Token list */}
         <div>
-          <div className="text-sm font-medium mb-2">Variabel Tersedia</div>
+          <div className="text-sm font-medium mb-2 dark:text-[#f5fefd]">
+            Variabel Tersedia
+          </div>
           <div className="border rounded p-3 bg-gray-50 max-h-[500px] overflow-auto">
             <div className="text-xs text-gray-600 mb-2">
               Klik variabel untuk menyisipkan ke editor

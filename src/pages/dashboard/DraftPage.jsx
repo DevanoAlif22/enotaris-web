@@ -82,66 +82,66 @@ export default function DraftPage() {
   };
 
   // DraftPage.jsx - handleExportServer dengan logging
- const handleExportServer = async (htmlFinal) => {
-   if (!draft?.id) return showError("Draft belum tersedia.");
+  const handleExportServer = async (htmlFinal) => {
+    if (!draft?.id) return showError("Draft belum tersedia.");
 
-   try {
-     setExporting(true);
+    try {
+      setExporting(true);
 
-     // sanitasi options (buang proxy/fn)
-     const cleanOptions = JSON.parse(JSON.stringify(pdfOptions || {}));
+      // sanitasi options (buang proxy/fn)
+      const cleanOptions = JSON.parse(JSON.stringify(pdfOptions || {}));
 
-     // fallback default kalau ada key yang belum kepasang
-     const mergedOptions = {
-       page_size: cleanOptions.page_size || "A4",
-       orientation: cleanOptions.orientation || "portrait",
-       margins_mm: {
-         top: Number(cleanOptions?.margins_mm?.top ?? 20),
-         right: Number(cleanOptions?.margins_mm?.right ?? 20),
-         bottom: Number(cleanOptions?.margins_mm?.bottom ?? 20),
-         left: Number(cleanOptions?.margins_mm?.left ?? 20),
-       },
-       font_family: cleanOptions.font_family || "times",
-       font_size_pt: Number(cleanOptions.font_size_pt ?? 12),
+      // fallback default kalau ada key yang belum kepasang
+      const mergedOptions = {
+        page_size: cleanOptions.page_size || "A4",
+        orientation: cleanOptions.orientation || "portrait",
+        margins_mm: {
+          top: Number(cleanOptions?.margins_mm?.top ?? 20),
+          right: Number(cleanOptions?.margins_mm?.right ?? 20),
+          bottom: Number(cleanOptions?.margins_mm?.bottom ?? 20),
+          left: Number(cleanOptions?.margins_mm?.left ?? 20),
+        },
+        font_family: cleanOptions.font_family || "times",
+        font_size_pt: Number(cleanOptions.font_size_pt ?? 12),
 
-       // nomor halaman (opsional)
-       show_page_numbers: !!cleanOptions.show_page_numbers,
-       page_number_h_align: cleanOptions.page_number_h_align || "right", // left|center|right
-       page_number_v_align: cleanOptions.page_number_v_align || "bottom", // top|bottom
-       // page_number_size_pt: Number(cleanOptions.page_number_size_pt ?? 11),
-     };
+        // nomor halaman (opsional)
+        show_page_numbers: !!cleanOptions.show_page_numbers,
+        page_number_h_align: cleanOptions.page_number_h_align || "right", // left|center|right
+        page_number_v_align: cleanOptions.page_number_v_align || "bottom", // top|bottom
+        // page_number_size_pt: Number(cleanOptions.page_number_size_pt ?? 11),
+      };
 
-     console.log("➡️ renderPdf payload", {
-       id: draft.id,
-       html_len: htmlFinal?.length,
-       pdf_options: mergedOptions,
-     });
+      console.log("➡️ renderPdf payload", {
+        id: draft.id,
+        html_len: htmlFinal?.length,
+        pdf_options: mergedOptions,
+      });
 
-     const res = await draftService.renderPdf(draft.id, {
-       html: htmlFinal, // sudah HTML final (token diganti)
-       pdf_options: mergedOptions, // kirim opsi ke BE
-     });
+      const res = await draftService.renderPdf(draft.id, {
+        html: htmlFinal, // sudah HTML final (token diganti)
+        pdf_options: mergedOptions, // kirim opsi ke BE
+      });
 
-     console.log("✅ renderPdf result", res);
+      console.log("✅ renderPdf result", res);
 
-     const url = res?.data?.file || res?.file;
-     if (url) window.open(url, "_blank", "noopener");
+      const url = res?.data?.file || res?.file;
+      if (url) window.open(url, "_blank", "noopener");
 
-     showSuccess("PDF berhasil dibuat & diunggah.");
-     refetch?.();
-     return url;
-   } catch (e) {
-     console.error("❌ renderPdf error:", e);
-     // tampilkan detail dari BE kalau ada
-     const msg = e?.message || "Gagal membuat PDF.";
-     const more = e?.errors
-       ? ` (${Object.values(e.errors).flat().join(", ")})`
-       : "";
-     showError(msg + more);
-   } finally {
-     setExporting(false);
-   }
- };
+      showSuccess("PDF berhasil dibuat & diunggah.");
+      refetch?.();
+      return url;
+    } catch (e) {
+      console.error("❌ renderPdf error:", e);
+      // tampilkan detail dari BE kalau ada
+      const msg = e?.message || "Gagal membuat PDF.";
+      const more = e?.errors
+        ? ` (${Object.values(e.errors).flat().join(", ")})`
+        : "";
+      showError(msg + more);
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const handlePdfOptionsChange = (newOptions) => {
     setPdfOptions(newOptions);
@@ -153,25 +153,25 @@ export default function DraftPage() {
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-6xl mx-auto bg-white rounded-lg shadow p-6">
+    <div className="p-6 bg-gray-50 dark:bg-[#01043c] min-h-screen">
+      <div className="max-w-6xl mx-auto bg-white dark:bg-[#002d6a] rounded-lg shadow p-6">
         <Link
           to={`/app/project-flow/${activity?.id}`}
-          className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded mb-4 bg-gray-100 hover:bg-gray-200 text-gray-700 transition"
+          className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded mb-4 bg-gray-100 dark:bg-[#002d6a] hover:bg-gray-200 dark:hover:bg-[#01043c] text-gray-700 dark:text-[#f5fefd] transition"
         >
           <span aria-hidden>←</span> Kembali
         </Link>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-semibold mb-2 text-gray-800">
+            <h1 className="text-2xl font-semibold mb-2 text-gray-800 dark:text-[#f5fefd]">
               Draft Akta: {activity?.name}
             </h1>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Kode Aktivitas: {activity?.tracking_code}
             </p>
           </div>
           <div className="mt-4 sm:mt-0">
-            <div className="text-xs text-gray-500 bg-gray-100 px-3 py-1.5 rounded-full">
+            <div className="text-xs text-gray-500 dark:text-[#fef5fd] bg-gray-100 dark:bg-[#01043c] px-3 py-1.5 rounded-full">
               PDF: {pdfOptions.page_size} • {pdfOptions.orientation} •{" "}
               {pdfOptions.font_size_pt}pt
             </div>
