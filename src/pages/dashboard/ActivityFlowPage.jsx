@@ -415,6 +415,12 @@ export default function ActivityFlowPage() {
                   onApproveDraft: isClient ? onApproveDraft : undefined,
                   onRejectDraft: isClient ? onRejectDraft : undefined,
                   onUploadDraft, // <<— dipakai dua peran (notaris & klien)
+
+                  // 👇 tambahan baru untuk step "sign"
+                  isClient,
+                  onOpenSignPage: () => {
+                    window.location.href = `/app/project-flow/${activity?.id}/sign`;
+                  },
                 })}
               </StepItem>
             );
