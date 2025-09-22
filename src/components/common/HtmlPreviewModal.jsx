@@ -17,6 +17,7 @@ export default function HtmlPreviewModal({
       title={<span className="text-xl dark:text-[#f5fefd]">{title}</span>}
       titleAlign="center"
       size="xl" // bisa "lg" / "xl" / "fullscreen" sesuai komponen Modal kamu
+      className="dark:bg-[#01043c]"
       actions={
         <button
           onClick={onClose}

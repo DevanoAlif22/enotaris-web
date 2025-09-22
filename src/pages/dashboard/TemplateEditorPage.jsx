@@ -97,27 +97,29 @@ export default function TemplateEditorPage() {
           <div className="grid grid-cols-1 gap-6">
             <div className="lg:col-span-2">
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-sm font-medium mb-1 dark:text-[#f5fefd]">
                   Nama Template
                 </label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full border rounded px-3 py-2"
+                  className="w-full border rounded px-3 py-2 dark:text-[#f5fefd]"
                   placeholder="Contoh: Akta Pendirian CV"
                 />
               </div>
 
               <div className="mb-2">
-                <div className="text-sm font-medium mb-2">Isi Template</div>
-                <div className="border rounded quill-wrap">
+                <div className="text-sm font-medium mb-2 dark:text-[#f5fefd]">
+                  Isi Template
+                </div>
+                <div className="border rounded quill-wrap dark:text-[#f5fefd]">
                   <QuillEditor
                     ref={quillRef}
                     value={customValue}
                     onChange={handleChange}
+                    className="deed-quill dark:text-[#f5fefd]"
                     placeholder="Tulis isi template…"
-                    className="deed-quill"
                     tabSize={4}
                     tabIndent
                     stickyToolbar

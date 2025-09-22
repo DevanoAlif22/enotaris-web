@@ -168,7 +168,11 @@ export default function PagedPreview({
   };
 
   return (
-    <div className={`paged-preview ${className}`} ref={containerRef}>
+    <div
+      style={{ backgroundColor: "#01043c" }}
+      className={`paged-preview ${className}`}
+      ref={containerRef}
+    >
       {pages.map((pageHtml, i) => (
         <div
           key={i}

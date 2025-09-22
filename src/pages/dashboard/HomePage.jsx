@@ -343,7 +343,7 @@ export default function HomePage() {
               {activities.map((activity, index) => (
                 <tr
                   key={index}
-                  className="text-center border-b border-gray-100 hover:bg-[#002d6a] dark:text-[#f5fefd]"
+                  className="text-center border-b border-gray-100 dark:hover:bg-[#002d6a] dark:text-[#f5fefd]"
                 >
                   <td className="py-3 px-4 text-sm">{activity.nomor}</td>
                   <td className="py-3 px-4 text-sm">{activity.kode}</td>
