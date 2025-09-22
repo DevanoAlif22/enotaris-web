@@ -165,6 +165,10 @@ const QuillEditor = forwardRef(function QuillEditor(
           background: #fff;
           border-bottom: 1px solid #e5e7eb;
         }
+          .quill-base .ql-editor.ql-blank::before {
+  color: #9ca3af;
+  opacity: 1;
+}
       `}</style>
     </div>
   );

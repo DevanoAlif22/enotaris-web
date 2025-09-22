@@ -258,12 +258,12 @@ export default function NotaryActivityPage() {
         )}
 
         {/* Header */}
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
           <h1 className="text-2xl font-semibold dark:text-[#f5fefd]">
             Proyek Notaris
           </h1>
 
-          <div className="flex items-center gap-2 w-full max-w-3xl justify-end">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-3 w-full max-w-3xl relative">
             {/* Tabs */}
             <div className="flex rounded-lg border border-[#f5fefd] overflow-hidden">
               {TABS.map((t) => {
@@ -273,7 +273,7 @@ export default function NotaryActivityPage() {
                     key={t.label}
                     onClick={() => setActiveTab(t)}
                     className={
-                      "px-3 py-2 text-sm font-semibold " +
+                      "px-3 py-2 flex-1 text-sm font-semibold " +
                       (active
                         ? "bg-gradient-to-r from-blue-500 to-[#0256c4] text-[#f5fefd]"
                         : "bg-[#f5fefd] text-gray-800")
@@ -286,14 +286,14 @@ export default function NotaryActivityPage() {
             </div>
 
             {/* Search */}
-            <div className="relative w-80">
+            <div className="relative w-full max-w-sm">
               <input
                 defaultValue={query}
                 onChange={onChangeSearch}
                 placeholder="Cari kode, nama, jenis akta, penghadap…"
                 className="w-full h-11 pl-4 pr-10 rounded-lg border outline-none focus:ring-2 focus:ring-[#0256c4]/40 dark:text-[#f5fefd]"
               />
-              <MagnifyingGlassIcon className="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-[#f5fefd]" />
+              <MagnifyingGlassIcon className="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 dark:text-[#f5fefd]" />
             </div>
 
             <button
