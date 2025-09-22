@@ -22,6 +22,7 @@ import RequirementNotarisPage from "./pages/dashboard/RequirementNotarisPage";
 import ActivityFlowPage from "./pages/dashboard/ActivityFlowPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import { ToastContainer } from "react-toastify";
+import SignPage from "./pages/dashboard/SignPage";
 import ProtectedRoute from "./components/routing/ProtectedRoute";
 
 function App() {
@@ -64,6 +65,10 @@ function App() {
             <Route
               path="/app/project-flow/draft/:activityId"
               element={<DraftPage />}
+            />
+            <Route
+              path="/app/project-flow/:activityId/sign"
+              element={<SignPage />}
             />
             <Route
               path="/app/verification-user"

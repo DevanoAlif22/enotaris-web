@@ -15,7 +15,6 @@ export default function ProfileReadOnly({ profile, identity }) {
 
   return (
     <div className="space-y-6">
-      {/* Status Verifikasi */}
       <div className="flex items-center gap-3">
         <span className="text-gray-600 dark:text-[#f5fefd]">
           Status Verifikasi :
