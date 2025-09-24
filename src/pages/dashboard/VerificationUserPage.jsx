@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from "react";
 import MagnifyingGlassIcon from "@heroicons/react/24/outline/MagnifyingGlassIcon";
 import StatusBadge from "../../utils/StatusBadge";
 import ActionButton from "../../components/ActionButton";
-import FileLink from "../../utils/FileLink";
 import { verificationService } from "../../services/verificationService";
 import { showError, showSuccess } from "../../utils/toastConfig";
 
@@ -180,14 +179,14 @@ export default function VerificationUserPage() {
           </div>
         )}
         {/* Header */}
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
           <h1 className="text-2xl font-semibold dark:text-[#f5fefd]">
             Verifikasi Identitas
           </h1>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
             {/* Tabs */}
-            <div className="flex rounded-lg border dark:border-[#f5fefd] overflow-hidden">
+            <div className="flex rounded-lg border dark:border-[#f5fefd] overflow-hidden w-full sm:w-auto">
               {TAB_MAP.map((t) => {
                 const active = activeTab.type === t.type;
                 return (
@@ -195,7 +194,7 @@ export default function VerificationUserPage() {
                     key={t.type}
                     onClick={() => setActiveTab(t)}
                     className={
-                      "px-3 py-2 text-sm font-semibold " +
+                      "px-3 py-2 text-sm font-semibold flex-1 sm:flex-none " +
                       (active
                         ? "bg-gradient-to-r from-blue-500 to-[#0256c4] text-[#f5fefd]"
                         : "bg-[#f5fefd] text-gray-800")
@@ -208,7 +207,7 @@ export default function VerificationUserPage() {
             </div>
 
             {/* Search */}
-            <div className="relative w-72">
+            <div className="relative w-full sm:w-72">
               <input
                 defaultValue={query}
                 onChange={onChangeSearch}
@@ -334,7 +333,10 @@ export default function VerificationUserPage() {
               «
             </button>
             <div className="px-4 py-2 rounded-lg bg-gray-100 font-semibold">
-              Hal {meta.current_page || page} / {totalPages}
+              <span className="md:hidden">{meta.current_page || page}</span>
+              <span className="hidden md:inline">
+                Hal {meta.current_page || page} / {totalPages}
+              </span>
             </div>
             <button
               className="px-3 py-2 rounded-lg bg-gray-100 disabled:opacity-50"
