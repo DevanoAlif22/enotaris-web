@@ -9,6 +9,7 @@ import {
   IdentificationIcon,
   UserGroupIcon,
   XMarkIcon,
+  ChartBarIcon,
 } from "@heroicons/react/24/outline";
 
 const menuItems = [
@@ -51,9 +52,15 @@ const menuItems = [
   },
   {
     id: "calendar",
-    label: "Calendar",
+    label: "Kalender",
     icon: CalendarDaysIcon,
     to: "/app/calendar",
+  },
+  {
+    id: "track",
+    label: "Tracking",
+    icon: ChartBarIcon,
+    to: "/app/track",
   },
 ];
 

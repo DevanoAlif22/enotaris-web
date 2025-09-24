@@ -224,7 +224,7 @@ export default function DeedTemplateEditor({
 const DEFAULT_TEMPLATE = `
 <div style="text-align:center;margin-bottom:12px">
   <h2 style="margin:0">AKTA OTENTIK</h2>
-  <div style="font-size:12px">Nomor: {{activity_code}}</div>
+  <div style="font-size:12px">Nomor: {{reference_number}}</div>
 </div>
 
 <p>Pada hari ini, tanggal {{today}}, bertempat di {{schedule_place}}, saya {{notaris_name}}, Notaris, telah membacakan akta dengan judul <b>{{deed_name}}</b> terkait aktivitas <b>{{activity_name}}</b>.</p>

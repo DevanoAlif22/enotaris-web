@@ -1,19 +1,18 @@
 // pages/projectflow/DraftPage.jsx
 import { useMemo, useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useActivityData } from "../../hooks/useActivityData";
 import DeedTemplateEditor from "../../components/deed/DeedTemplateEditor";
 import LoadingOverlay from "../../components/common/LoadingOverlay";
 import { draftService } from "../../services/draftService";
 import { showError, showSuccess } from "../../utils/toastConfig";
-import { Link } from "react-router-dom";
 
 export default function DraftPage() {
   const DEFAULT_PDF_OPTIONS = {
-    page_size: "A4", // A4 | Letter | Legal | A3 | Folio
-    orientation: "portrait", // portrait | landscape
-    margins_mm: { top: 20, right: 20, bottom: 20, left: 20 }, // mm
-    font_family: "times", // times | arial | calibri | georgia | garamond | cambria | helvetica
+    page_size: "A4",
+    orientation: "portrait",
+    margins_mm: { top: 20, right: 20, bottom: 20, left: 20 },
+    font_family: "times",
     font_size_pt: 12,
   };
 
@@ -36,12 +35,10 @@ export default function DraftPage() {
       (v) => typeof v === "string" && v.trim() !== ""
     ) || undefined;
 
-  // Load saved PDF options from draft or localStorage
   useEffect(() => {
     if (draft?.pdf_options) {
       setPdfOptions({ ...DEFAULT_PDF_OPTIONS, ...draft.pdf_options });
     } else {
-      // Try to load from localStorage as fallback
       const savedOptions = localStorage.getItem(`pdf_options_${activityId}`);
       if (savedOptions) {
         try {
@@ -67,7 +64,6 @@ export default function DraftPage() {
     if (!draft?.id) return showError("Draft belum tersedia.");
     try {
       setSaving(true);
-      // Simpan template mentah dan PDF options ke DB
       await draftService.update(draft.id, {
         custom_value_template: html,
         pdf_options: pdfOptions,
@@ -81,17 +77,13 @@ export default function DraftPage() {
     }
   };
 
-  // DraftPage.jsx - handleExportServer dengan logging
   const handleExportServer = async (htmlFinal) => {
     if (!draft?.id) return showError("Draft belum tersedia.");
 
     try {
       setExporting(true);
 
-      // sanitasi options (buang proxy/fn)
       const cleanOptions = JSON.parse(JSON.stringify(pdfOptions || {}));
-
-      // fallback default kalau ada key yang belum kepasang
       const mergedOptions = {
         page_size: cleanOptions.page_size || "A4",
         orientation: cleanOptions.orientation || "portrait",
@@ -103,12 +95,9 @@ export default function DraftPage() {
         },
         font_family: cleanOptions.font_family || "times",
         font_size_pt: Number(cleanOptions.font_size_pt ?? 12),
-
-        // nomor halaman (opsional)
         show_page_numbers: !!cleanOptions.show_page_numbers,
-        page_number_h_align: cleanOptions.page_number_h_align || "right", // left|center|right
-        page_number_v_align: cleanOptions.page_number_v_align || "bottom", // top|bottom
-        // page_number_size_pt: Number(cleanOptions.page_number_size_pt ?? 11),
+        page_number_h_align: cleanOptions.page_number_h_align || "right",
+        page_number_v_align: cleanOptions.page_number_v_align || "bottom",
       };
 
       console.log("➡️ renderPdf payload", {
@@ -118,8 +107,8 @@ export default function DraftPage() {
       });
 
       const res = await draftService.renderPdf(draft.id, {
-        html: htmlFinal, // sudah HTML final (token diganti)
-        pdf_options: mergedOptions, // kirim opsi ke BE
+        html: htmlFinal, // kirim HTML final
+        pdf_options: mergedOptions, // kirim opsi PDF
       });
 
       console.log("✅ renderPdf result", res);
@@ -132,12 +121,9 @@ export default function DraftPage() {
       return url;
     } catch (e) {
       console.error("❌ renderPdf error:", e);
-      // tampilkan detail dari BE kalau ada
+
       const msg = e?.message || "Gagal membuat PDF.";
-      const more = e?.errors
-        ? ` (${Object.values(e.errors).flat().join(", ")})`
-        : "";
-      showError(msg + more);
+      showError(msg);
     } finally {
       setExporting(false);
     }
@@ -145,7 +131,6 @@ export default function DraftPage() {
 
   const handlePdfOptionsChange = (newOptions) => {
     setPdfOptions(newOptions);
-    // Save to localStorage as backup
     localStorage.setItem(
       `pdf_options_${activityId}`,
       JSON.stringify(newOptions)
@@ -161,6 +146,7 @@ export default function DraftPage() {
         >
           <span aria-hidden>←</span> Kembali
         </Link>
+
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
           <div>
             <h1 className="text-2xl font-semibold mb-2 text-gray-800 dark:text-[#f5fefd]">

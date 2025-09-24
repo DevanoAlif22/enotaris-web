@@ -116,6 +116,14 @@ export default function renderStepContent(stepId, status, actions = {}) {
   const canMarkDone = permissions.canMarkDone ?? true;
   const docsPerm = permissions.docs || { canSelectAnyParty: true };
 
+  // status sign dari backend (track), fallback ke status step lokal
+  const signDone =
+    status === "done" ||
+    (activity?.track?.status_sign || "").toLowerCase() === "done";
+
+  const signedUrl = activity?.draft?.file_ttd || ""; // hasil TTD final
+  const hasSignedFile = Boolean(signedUrl);
+
   const RejectNotice =
     status === "reject" ? (
       <div className="p-3 mb-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-start gap-2">
@@ -415,7 +423,7 @@ export default function renderStepContent(stepId, status, actions = {}) {
                   <DraftLinkButton label="Unduh Draft" downloadFile />
                 )}
 
-                {/* Opsi unggah draft (jika mau izinkan notaris upload manual) */}
+                {/* Opsi unggah draft (kalau diizinkan) */}
                 {/* {typeof onUploadDraft === "function" && <UploadButton />} */}
               </>
             )}
@@ -501,7 +509,8 @@ export default function renderStepContent(stepId, status, actions = {}) {
       );
     }
 
-    case "sign":
+    case "sign": {
+      const hasSigned = hasSignedFile; // alias
       return (
         <div className="space-y-4">
           {RejectNotice}
@@ -510,30 +519,52 @@ export default function renderStepContent(stepId, status, actions = {}) {
               Kelola proses tanda tangan para pihak.
             </p>
           </div>
-          <div className="flex gap-3">
-            {status !== "reject" && (
-              <>
-                <button
-                  className={primaryButton}
-                  onClick={() => actions?.onOpenSignPage?.()}
-                >
-                  Buka Halaman TTD
-                </button>
-                {canMarkDone && (
-                  <button
-                    className={secondaryButton}
-                    onClick={() => markDone?.("sign")}
-                  >
-                    Tandai Selesai
-                  </button>
-                )}
-              </>
+          <div className="flex gap-3 flex-wrap">
+            {/* Buka Halaman TTD */}
+            {!signDone && status !== "reject" && (
+              <button
+                className={primaryButton}
+                onClick={() =>
+                  actions?.onOpenSignPage?.() ??
+                  window.location.assign(
+                    `/app/project-flow/${activity?.id}/sign`
+                  )
+                }
+              >
+                Buka Halaman TTD
+              </button>
+            )}
+
+            {/* Lihat File TTD (final) */}
+            <a
+              href={hasSigned ? signedUrl : undefined}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${secondaryButton} ${
+                hasSigned ? "" : "opacity-50 pointer-events-none"
+              }`}
+              title={hasSigned ? "Buka hasil TTD (PDF)" : "Belum ada hasil TTD"}
+            >
+              Lihat File TTD
+            </a>
+
+            {/* Tandai Selesai → disembunyikan jika sudah done */}
+            {!signDone && status !== "reject" && canMarkDone && (
+              <button
+                className={secondaryButton}
+                onClick={() => markDone?.("sign")}
+              >
+                Tandai Selesai
+              </button>
             )}
           </div>
         </div>
       );
+    }
 
-    case "print":
+    case "print": {
+      // Unduh PDF Final = file_ttd
+      const disabled = !hasSignedFile;
       return (
         <div className="space-y-4">
           {RejectNotice}
@@ -543,18 +574,32 @@ export default function renderStepContent(stepId, status, actions = {}) {
             </p>
           </div>
           <div className="flex gap-3">
-            <button className={secondaryButton}>Unduh PDF Final</button>
-            {canMarkDone && status !== "reject" && (
+            <a
+              href={disabled ? undefined : signedUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${secondaryButton} ${
+                disabled ? "opacity-50 pointer-events-none" : ""
+              }`}
+              title={
+                disabled ? "Belum ada hasil TTD" : "Unduh PDF final (hasil TTD)"
+              }
+              download
+            >
+              Unduh PDF Final
+            </a>
+            {/* {canMarkDone && status !== "reject" && (
               <button
                 className={primaryButton}
-                onClick={() => markDone?.("print")}
+                onClick={() => actions?.markDone?.("print")}
               >
                 Tandai Selesai
               </button>
-            )}
+            )} */}
           </div>
         </div>
       );
+    }
 
     default:
       return null;

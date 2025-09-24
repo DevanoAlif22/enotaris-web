@@ -25,13 +25,21 @@ export const signService = {
   async apply(activityId, payload) {
     try {
       const { data } = await api.post(
-        `/activities/${activityId}/sign/apply`,
+        `/notaris/activities/${activityId}/sign/apply`,
         payload
       );
       return data;
     } catch (e) {
       throw normErr(e);
     }
+  },
+  async resetTtd(activityId) {
+    const { data } = await api.post(
+      `/notaris/activities/${activityId}/sign/reset-ttd`,
+      {},
+      { headers: { "Content-Type": "application/json" } }
+    );
+    return data;
   },
 
   /**
@@ -40,12 +48,23 @@ export const signService = {
   async savePlacements(activityId, payload) {
     try {
       const { data } = await api.post(
-        `/activities/${activityId}/sign/placements`,
+        `/notaris/activities/${activityId}/sign/placements`,
         payload
       );
       return data;
     } catch (e) {
       throw normErr(e);
+    }
+  },
+
+  async markDone(activityId) {
+    try {
+      const { data } = await api.post(
+        `/notaris/activities/${activityId}/sign/done`
+      );
+      return data;
+    } catch (err) {
+      throw normErr(err);
     }
   },
 };
