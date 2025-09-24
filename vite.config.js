@@ -32,9 +32,9 @@ export default defineConfig({
   server: {
     // Enable CORS for CDN resources
     cors: true,
-    headers: {
-      "Cross-Origin-Embedder-Policy": "require-corp",
-      "Cross-Origin-Opener-Policy": "same-origin",
-    },
+    // headers: {
+    //   "Cross-Origin-Embedder-Policy": "require-corp",
+    //   "Cross-Origin-Opener-Policy": "same-origin",
+    // },
   },
 });

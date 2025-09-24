@@ -77,6 +77,118 @@
   color: #86efac;
 } */
 
+.fc-theme-standard .fc-scrollgrid {
+  border: none;
+}
+
+.fc-theme-standard td,
+.fc-theme-standard th {
+  border: 1px solid rgb(229 231 235 / 0.3);
+}
+
+.fc-col-header-cell {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  font-weight: 600;
+  color: #475569;
+  padding: 12px 8px;
+}
+
+.dark .fc-col-header-cell {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  color: #cbd5e1;
+}
+
+.fc-daygrid-day {
+  background: #ffffff;
+  transition: background-color 0.2s;
+}
+
+.fc-daygrid-day:hover {
+  background: #f8fafc;
+}
+
+.dark .fc-daygrid-day {
+  background: #1e293b;
+}
+
+.dark .fc-daygrid-day:hover {
+  background: #334155;
+}
+
+.fc-daygrid-day-number {
+  font-weight: 600;
+  color: #374151;
+  padding: 8px;
+}
+
+.dark .fc-daygrid-day-number {
+  color: #d1d5db;
+}
+
+.fc-day-today {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%) !important;
+}
+
+.dark .fc-day-today {
+  background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%) !important;
+}
+
+.fc-button {
+  border: none !important;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+  color: white !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  padding: 8px 16px !important;
+  transition: all 0.2s !important;
+  margin-right: 15px !important;
+}
+
+.fc-button:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 20px rgb(59 130 246 / 0.4) !important;
+}
+
+.fc-button:disabled {
+  background: #9ca3af !important;
+  opacity: 0.5 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.fc-toolbar-title {
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  color: #1f2937 !important;
+  background: linear-gradient(135deg, #1f2937 0%, #374151 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+.dark .fc-toolbar-title {
+  background: linear-gradient(135deg, #f9fafb 0%, #e5e7eb 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+.fc-more-link {
+  color: #3b82f6 !important;
+  font-weight: 600 !important;
+  background: #dbeafe !important;
+  border-radius: 8px !important;
+  padding: 2px 8px !important;
+  text-decoration: none !important;
+  transition: all 0.2s !important;
+}
+
+.fc-more-link:hover {
+  background: #bfdbfe !important;
+  transform: scale(1.05) !important;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

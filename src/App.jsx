@@ -23,6 +23,8 @@ import ActivityFlowPage from "./pages/dashboard/ActivityFlowPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import { ToastContainer } from "react-toastify";
 import SignPage from "./pages/dashboard/SignPage";
+import CalendarPage from "./pages/dashboard/CalendarPage";
+import TrackPage from "./pages/dashboard/TrackPage";
 import ProtectedRoute from "./components/routing/ProtectedRoute";
 
 function App() {
@@ -48,6 +50,8 @@ function App() {
             <Route path="/app/deed" element={<DeedPage />} />
             <Route path="/app/template" element={<TemplatePage />} />
             <Route path="/app/template/new" element={<TemplateEditorPage />} />
+            <Route path="/app/calendar" element={<CalendarPage />} />
+            <Route path="/app/track" element={<TrackPage />} />
             <Route
               path="/app/template/:id/edit"
               element={<TemplateEditorPage />}

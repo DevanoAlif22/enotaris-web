@@ -55,78 +55,139 @@ export function buildPartiesTableHTML(parties) {
     .join("");
 
   return `
-    <table border="1" cellspacing="0" cellpadding="6"
-           style="border-collapse:collapse;font-size:12px;width:100%;margin:0">
-      <thead>
-        <tr>
-          <th style="text-align:center">No</th>
-          <th style="text-align:center">Nama</th>
-          <th style="text-align:center">NIK</th>
-          <th style="text-align:center">Alamat</th>
-          <th style="text-align:center">Kota</th>
-          <th style="text-align:center">Provinsi</th>
-        </tr>
-      </thead>
-      <tbody>${rows}</tbody>
-    </table>
-  `;
+  <table class="parties-table" border="1" cellspacing="0" cellpadding="6"
+         style="border-collapse:collapse;font-size:12px;width:100%;margin:0">
+    <thead>
+      <tr>
+        <th style="text-align:center">No</th>
+        <th style="text-align:center">Nama</th>
+        <th style="text-align:center">NIK</th>
+        <th style="text-align:center">Alamat</th>
+        <th style="text-align:center">Kota</th>
+        <th style="text-align:center">Provinsi</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>
+`;
 }
 
-// Blok tanda tangan: para penghadap, saksi, dan notaris
+// Blok tanda tangan (DOMPDF-safe, tanpa grid/flex)
 export function buildSignaturesBlockHTML(activity, opts = {}) {
   const {
-    partyCols = "auto", // "auto" → kolom menyesuaikan jumlah penghadap (maks 3)
-    boxHeight = 84, // tinggi minimal kotak tanda tangan (px)
-    gap = 12, // jarak antar kotak penghadap (px)
+    partyCols = "auto", // 1..3 kolom untuk penghadap
+    boxHeight = 0, // tinggi area ttd
+    gap = 12, // jarak antar kolom/baris (px)
+    showDatePlace = true,
+    headingLeft = "Penghadap",
+    headingRight = "Notaris",
   } = opts;
 
   const parties = sortParties(activity);
   const cols =
     partyCols === "auto"
-      ? Math.max(1, Math.min(3, parties.length || 1)) // 1..3 kolom
+      ? Math.max(1, Math.min(3, parties.length || 1))
       : Math.max(1, parseInt(partyCols, 10) || 1);
 
-  // kotak tanda tangan (nama di bawah garis)
+  // tempat & tanggal
+  const schedule = Array.isArray(activity?.schedules)
+    ? activity.schedules[0]
+    : null;
+  const place =
+    safe(schedule?.place) !== "-"
+      ? schedule.place
+      : safe(activity?.notaris?.city) !== "-"
+      ? activity.notaris.city
+      : "";
+  const dateStr = schedule?.datetime
+    ? formatDateID(schedule.datetime)
+    : formatDateID(new Date());
+
+  const notaryName = safe(activity?.notaris?.name);
+
+  // kotak tanda tangan sederhana (tanpa flex/grid)
   const signBox = (label) => `
-    <div style="text-align:center; min-height:${boxHeight}px; display:flex; flex-direction:column; justify-content:flex-end;">
-      <div style="height:${Math.max(boxHeight - 24, 40)}px"></div>
+    <div style="text-align:center; height:${boxHeight}px;">
+      <div style="height:${Math.max(boxHeight - 28, 40)}px;"></div>
       <div style="border-bottom:1px solid #000; width:90%; margin:0 auto 6px;"></div>
       <div style="font-size:12px; font-weight:bold;">${safe(label)}</div>
     </div>
   `;
 
-  // grid para penghadap (dinamis)
-  const partyGrid = `
-    <div style="display:grid; grid-template-columns:repeat(${cols}, 1fr); gap:${gap}px;">
+  // helper pecah array jadi baris2 kolom
+  const chunk = (arr, size) => {
+    const out = [];
+    for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+    return out;
+  };
+
+  // list nama penghadap
+  const partyNames = parties.length
+    ? parties.map((p) => p.name || p.email || "-")
+    : ["-"];
+
+  // baris-baris penghadap (pakai table)
+  const rows = chunk(partyNames, cols)
+    .map(
+      (row) => `
+    <tr>
+      ${row
+        .map(
+          (name) => `
+        <td style="vertical-align:top; padding:${Math.floor(
+          gap / 2
+        )}px;">${signBox(name)}</td>
+      `
+        )
+        .join("")}
       ${
-        parties.length
-          ? parties.map((p) => signBox(p.name || p.email || "-")).join("")
-          : signBox("-")
+        row.length < cols
+          ? `<td colspan="${cols - row.length}" style="padding:${Math.floor(
+              gap / 2
+            )}px;"></td>`
+          : ""
       }
-    </div>
+    </tr>
+  `
+    )
+    .join("");
+
+  // dua kolom: kiri penghadap (sub-tabel), kanan notaris
+  const tableTwoCols = `
+    <table style="width:100%; border-collapse:separate; border-spacing:${gap}px ${gap}px;">
+      <tr>
+        <td style="vertical-align:top; width:${100 - 35}%; padding:0;">
+          <div style="text-align:center; font-weight:600; margin-bottom:8px;">${safe(
+            headingLeft
+          )}
+          </div>
+          <table style="width:100%; border-collapse:separate; border-spacing:${gap}px;">
+            ${rows}
+          </table>
+          </td>
+        <td style="vertical-align:top; width:35%; padding:0;">
+          <div style="text-align:center; font-weight:600; margin-bottom:8px;">${safe(
+            headingRight
+          )}</div>
+          <table style="width:100%; border-collapse:separate; border-spacing:${gap}px; padding-top:30px;">
+            ${signBox(notaryName)}
+          </table>
+        </td>
+      </tr>
+    </table>
   `;
 
-  const notaryName = safe(activity?.notaris?.name);
+  const dateLine =
+    showDatePlace && (place || dateStr)
+      ? `<div style="text-align:right; margin-bottom:10px;">${
+          place ? safe(place) + ", " : ""
+        }${dateStr}</div>`
+      : "";
 
   return `
-    <div style="margin-top:24px">
-      
-      <table style="width:100%; border-collapse:collapse; font-size:12px;" cellspacing="0" cellpadding="6">
-        <thead>
-          <tr>
-            <th style="text-align:center; width:65%">Para Penghadap</th>
-            <th style="text-align:center; width:35%">Notaris</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td style="vertical-align:top; padding:12px;">${partyGrid}</td>
-            <td style="vertical-align:top; padding:12px;">
-              ${signBox(notaryName)}
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div style="margin-top:24px;">
+      ${dateLine}
+      ${tableTwoCols}
     </div>
   `;
 }
@@ -138,6 +199,7 @@ export function buildTokenMap(activity) {
   map.activity_code = safe(activity?.tracking_code);
   map.activity_name = safe(activity?.name);
   map.deed_name = safe(activity?.deed?.name);
+  map.reference_number = safe(activity?.draft?.reference_number);
   map.today = formatDateID(new Date());
 
   const sched = (activity?.schedules || [])[0];

@@ -16,7 +16,6 @@ export const draftService = {
       const { data } = await api.get(`${BASE_PATH}`, {
         params: { page, per_page, search },
       });
-      // { success, message, data: [], meta: {...} }
       return data;
     } catch (err) {
       throw normalizeErr(err);
@@ -26,49 +25,17 @@ export const draftService = {
   async detail(id) {
     try {
       const { data } = await api.get(`${BASE_PATH}/${id}`);
-      // { success, data: { ...draft, activity: {...} } }
       return data;
     } catch (err) {
       throw normalizeErr(err);
     }
   },
 
-  // services/draftService.js (tambahkan)
-  // async renderPdf(id, { html } = {}) {
-  //   try {
-  //     const payload = {};
-  //     if (html != null) payload.html_rendered = html; // ⬅️ pakai html_rendered
-
-  //     const { data } = await api.post(
-  //       `/admin/draft/${id}/render-pdf`,
-  //       payload,
-  //       { headers: { "Content-Type": "application/json" } }
-  //     );
-  //     return data; // { success, data: { file, file_path, ... } }
-  //   } catch (err) {
-  //     const data = err?.response?.data;
-  //     const msg =
-  //       data?.message || err?.message || "Terjadi kesalahan. Coba lagi.";
-  //     const errors = data?.data || data?.errors || null;
-  //     throw { message: msg, errors, status: err?.response?.status };
-  //   }
-  // },
-
-  // Perbaikan di draftService.js
-  // draftService.js - dengan logging untuk debug
   async renderPdf(id, { html, pdf_options } = {}) {
     try {
       const payload = {};
       if (html != null) payload.html = html;
       if (pdf_options != null) payload.pdf_options = pdf_options;
-
-      // Debug logging
-      console.log("🔍 renderPdf called with:", {
-        id,
-        html_length: html ? html.length : "null",
-        pdf_options,
-        payload,
-      });
 
       const { data } = await api.post(
         `/admin/draft/${id}/render-pdf`,
@@ -80,16 +47,8 @@ export const draftService = {
           },
         }
       );
-
-      console.log("✅ renderPdf response:", data);
       return data;
     } catch (err) {
-      console.error("❌ renderPdf error:", {
-        message: err.message,
-        response: err.response?.data,
-        status: err.response?.status,
-      });
-
       const data = err?.response?.data;
       const msg =
         data?.message || err?.message || "Terjadi kesalahan. Coba lagi.";
@@ -97,15 +56,7 @@ export const draftService = {
       throw { message: msg, errors, status: err?.response?.status };
     }
   },
-  /**
-   * create draft
-   * payload:
-   * - activity_id (required, number)
-   * - custom_value_template (string, html) [opsional]
-   * - reading_schedule (string "YYYY-MM-DD HH:mm:ss") [opsional]
-   * - status_approval ("pending"|"approved"|"rejected") [opsional]
-   * - file (File/Blob) [opsional]
-   */
+
   async create({
     activity_id,
     custom_value_template,
@@ -133,16 +84,6 @@ export const draftService = {
     }
   },
 
-  /**
-   * update draft
-   * payload:
-   * - custom_value_template, reading_schedule, status_approval (opsional)
-   * - file (File/Blob) untuk replace (opsional)
-   * - clear_file (boolean) untuk hapus file yang lama tanpa upload baru
-   *
-   * NOTE: backend kamu pakai POST /draft/update/{id}. Kalau nanti ganti ke PUT /draft/{id},
-   * ubah URL-nya.
-   */
   async update(
     id,
     {
@@ -176,6 +117,44 @@ export const draftService = {
   async destroy(id) {
     try {
       const { data } = await api.delete(`${BASE_PATH}/${id}`);
+      return data;
+    } catch (err) {
+      throw normalizeErr(err);
+    }
+  },
+
+  // =========== ⬇️ Tambahan API untuk upload gambar editor (Quill) ===========
+
+  /**
+   * Upload gambar dari editor ke BE → Cloudinary.
+   * @param {File|Blob} file
+   * @returns {Promise<{success:boolean, data:{url:string, public_id:string}}>}
+   */
+  async uploadEditorImage(file) {
+    try {
+      const fd = new FormData();
+      fd.append("image", file);
+
+      // endpoint sesuai controller yg kita buat: POST /notaris/editor/upload-image
+      const { data } = await api.post(`/notaris/editor/upload-image`, fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return data; // {success, message, data:{url, public_id, ...}}
+    } catch (err) {
+      throw normalizeErr(err);
+    }
+  },
+
+  /**
+   * (Opsional) Hapus gambar editor berdasarkan public_id Cloudinary.
+   * @param {string} publicId
+   */
+  async deleteEditorImage(publicId) {
+    try {
+      const { data } = await api.delete(`/notaris/editor/image`, {
+        data: { public_id: publicId },
+        headers: { "Content-Type": "application/json" },
+      });
       return data;
     } catch (err) {
       throw normalizeErr(err);
