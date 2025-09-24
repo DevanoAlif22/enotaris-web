@@ -10,6 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fullcalendar/daygrid": "^6.1.19",
+    "@fullcalendar/interaction": "^6.1.19",
+    "@fullcalendar/react": "^6.1.19",
     "@heroicons/react": "^2.2.0",
     "@react-pdf/renderer": "^4.3.0",
     "@reduxjs/toolkit": "^2.8.2",
@@ -22,6 +25,9 @@
     "html2pdf.js": "^0.12.0",
     "jspdf": "^3.0.2",
     "pdfjs-dist": "^5.4.149",
+    "quill": "^2.0.3",
+    "quill-image-resize-module": "^3.0.0",
+    "quill-image-resize-module-react": "^3.0.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-loading-indicators": "^1.0.1",

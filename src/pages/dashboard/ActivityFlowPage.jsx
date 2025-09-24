@@ -24,6 +24,7 @@ import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 import DeedExtraFieldsModal from "../../components/deed/DeedExtraFieldsModal";
 import LoadingOverlay from "../../components/common/LoadingOverlay";
 import { showSuccess, showError } from "../../utils/toastConfig";
+import { signService } from "../../services/signService";
 
 const STEPS = [
   {
@@ -124,9 +125,25 @@ export default function ActivityFlowPage() {
   const toggleStep = (id) =>
     stepStatus[id] !== "pending" &&
     setExpandedStep(expandedStep === id ? null : id);
-  const markDone = (id) =>
-    !isClient && setStepStatus((st) => ({ ...st, [id]: "done" }));
-
+  const markDone = async (id) => {
+    try {
+      // hanya notaris yang boleh trigger ini (jaga-jaga di FE)
+      if (id === "sign") {
+        setIsMutating(true);
+        await signService.markDone(activityId);
+        showSuccess("Step Tanda Tangan ditandai selesai.");
+        setStepStatus((st) => ({ ...st, [id]: "done" }));
+        await fetchActivity(); // refresh detail activity/track
+      } else {
+        // fallback untuk step lain (tetap lokal)
+        setStepStatus((st) => ({ ...st, [id]: "done" }));
+      }
+    } catch (e) {
+      showError(e?.message || "Gagal menandai selesai.");
+    } finally {
+      setIsMutating(false);
+    }
+  };
   const onMarkDocsDone = async () => {
     try {
       setIsMutating(true);

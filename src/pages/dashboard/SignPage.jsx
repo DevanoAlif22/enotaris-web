@@ -28,9 +28,20 @@ export default function SignPage() {
   const [pages, setPages] = useState([]);
   const columnRef = useRef(null);
 
+  // ===== Role: notaris?
+  const isNotary = useMemo(
+    () => !!(activity?.notaris?.id && me?.id && activity.notaris.id === me.id),
+    [activity?.notaris?.id, me?.id]
+  );
+
+  // ===== Sumber TTD: hanya milik user login
   const signSources = useMemo(() => {
     const list = [];
-    if (activity?.notaris?.identity?.file_sign) {
+    if (
+      me?.id &&
+      activity?.notaris?.id === me.id &&
+      activity?.notaris?.identity?.file_sign
+    ) {
       list.push({
         user_id: activity.notaris.id,
         role: "notary",
@@ -38,30 +49,61 @@ export default function SignPage() {
         url: activity.notaris.identity.file_sign,
       });
     }
-    for (const c of activity?.clients || []) {
-      if (c?.identity?.file_sign) {
-        list.push({
-          user_id: c.id,
-          role: "client",
-          name: c.name || c.email,
-          url: c.identity.file_sign,
-        });
+    if (me?.id) {
+      for (const c of activity?.clients || []) {
+        if (c?.id === me.id && c?.identity?.file_sign) {
+          list.push({
+            user_id: c.id,
+            role: "client",
+            name: c.name || c.email,
+            url: c.identity.file_sign,
+          });
+        }
       }
     }
-    return list.sort((a, b) =>
-      a.user_id === me?.id ? -1 : b.user_id === me?.id ? 1 : 0
-    );
+    return list.slice(0, 1);
   }, [activity, me?.id]);
 
-  const pdfUrl = useMemo(() => activity?.draft?.file || null, [activity]);
+  // ====== Status & URL TTD tersimpan (sinkron lokal + server) ======
+  const [hasSigned, setHasSigned] = useState(false);
+  const [signedUrlLocal, setSignedUrlLocal] = useState(null);
 
+  // Sinkronkan saat data activity baru masuk / setelah refresh
   useEffect(() => {
-    if (!pdfUrl) return;
+    const serverSigned = activity?.draft?.file_ttd || null;
+    setHasSigned(!!serverSigned);
+    setSignedUrlLocal(serverSigned); // kalau null, berarti belum ada
+  }, [activity?.draft?.file_ttd]);
+
+  // ====== Viewer URL (prioritas signedUrlLocal → file_ttd → file) + bust cache
+  const baseViewer = useMemo(() => {
+    return (
+      signedUrlLocal ||
+      activity?.draft?.file_ttd ||
+      activity?.draft?.file ||
+      null
+    );
+  }, [signedUrlLocal, activity?.draft?.file_ttd, activity?.draft?.file]);
+
+  const initialUrl = useMemo(() => {
+    return baseViewer ? `${baseViewer}?v=${Date.now()}` : null;
+  }, [baseViewer]);
+
+  const [viewerUrl, setViewerUrl] = useState(initialUrl);
+
+  // Update viewer saat base berubah (mis. habis refetch atau refresh)
+  useEffect(() => {
+    setViewerUrl(initialUrl);
+  }, [initialUrl]);
+
+  // ===== Muat dokumen PDF tiap viewerUrl berubah =====
+  useEffect(() => {
+    if (!viewerUrl) return;
     let canceled = false;
     (async () => {
       setBusy(true);
       try {
-        const task = pdfjs.getDocument({ url: pdfUrl });
+        const task = pdfjs.getDocument({ url: viewerUrl });
         const doc = await task.promise;
         if (!canceled) setPdfDoc(doc);
       } catch (e) {
@@ -74,8 +116,9 @@ export default function SignPage() {
     return () => {
       canceled = true;
     };
-  }, [pdfUrl]);
+  }, [viewerUrl]);
 
+  // ===== Render halaman PDF ke canvas + overlay Fabric
   useEffect(() => {
     if (!pdfDoc) return;
     let unmounted = false;
@@ -101,55 +144,48 @@ export default function SignPage() {
           const scale = maxColumnWidth / baseViewport.width;
           const viewport = page.getViewport({ scale });
 
-          // ===== PDF canvas =====
+          // ===== PDF canvas (background) =====
           const pdfCanvas = document.createElement("canvas");
           pdfCanvas.width = Math.round(viewport.width);
           pdfCanvas.height = Math.round(viewport.height);
-
-          // PENTING: PDF canvas sebagai background layer (z-index rendah)
           pdfCanvas.style.display = "block";
           pdfCanvas.style.width = `${pdfCanvas.width}px`;
           pdfCanvas.style.height = `${pdfCanvas.height}px`;
           pdfCanvas.style.position = "absolute";
           pdfCanvas.style.left = "0";
           pdfCanvas.style.top = "0";
-          pdfCanvas.style.zIndex = "1"; // Background layer
+          pdfCanvas.style.zIndex = "1";
           pdfCanvas.style.backgroundColor = "#ffffff";
           pdfCanvas.style.borderRadius = "8px";
           pdfCanvas.style.boxShadow = "0 10px 25px rgba(0,0,0,0.08)";
-          pdfCanvas.style.pointerEvents = "none"; // PDF tidak perlu interaksi
+          pdfCanvas.style.pointerEvents = "none";
 
           const ctx = pdfCanvas.getContext("2d", { alpha: false });
           await page.render({ canvasContext: ctx, viewport }).promise;
 
-          // ===== Fabric overlay (di atas) =====
+          // ===== Fabric overlay (foreground) =====
           const fabricEl = document.createElement("canvas");
           fabricEl.width = pdfCanvas.width;
           fabricEl.height = pdfCanvas.height;
-
-          // PENTING: Fabric canvas di layer atas dengan z-index lebih tinggi
           fabricEl.style.position = "absolute";
           fabricEl.style.left = "0";
           fabricEl.style.top = "0";
           fabricEl.style.width = `${fabricEl.width}px`;
           fabricEl.style.height = `${fabricEl.height}px`;
-          fabricEl.style.pointerEvents = "auto"; // Fabric perlu interaksi
-          fabricEl.style.zIndex = "10"; // Foreground layer - LEBIH TINGGI
-          fabricEl.style.background = "transparent"; // Transparan agar PDF terlihat
+          fabricEl.style.pointerEvents = "auto";
+          fabricEl.style.zIndex = "10";
+          fabricEl.style.background = "transparent";
 
-          // ===== Wrapper halaman =====
+          // ===== Wrapper =====
           const wrapper = document.createElement("div");
-          // PENTING: wrapper dengan posisi relative untuk anchor absolute elements
           wrapper.style.position = "relative";
           wrapper.style.width = `${pdfCanvas.width}px`;
           wrapper.style.height = `${pdfCanvas.height}px`;
           wrapper.style.margin = "0 auto 24px";
           wrapper.style.background = "transparent";
-          wrapper.style.isolation = "isolate"; // Membuat stacking context baru
+          wrapper.style.isolation = "isolate";
 
-          // Tambahkan PDF canvas terlebih dahulu (background)
           wrapper.appendChild(pdfCanvas);
-          // Kemudian fabric canvas (foreground)
           wrapper.appendChild(fabricEl);
           columnRef.current?.appendChild(wrapper);
 
@@ -158,12 +194,11 @@ export default function SignPage() {
             preserveObjectStacking: true,
             renderOnAddRemove: true,
             skipTargetFind: false,
-            backgroundColor: "transparent", // Pastikan background transparan
+            backgroundColor: "transparent",
           });
 
-          // Set fabric canvas agar tidak mengblok PDF
           f.wrapperEl.style.zIndex = "10";
-          f.upperCanvasEl.style.zIndex = "12"; // Upper canvas lebih tinggi lagi
+          f.upperCanvasEl.style.zIndex = "12";
 
           f.on("object:added", (e) => {
             if (e?.target) {
@@ -177,6 +212,7 @@ export default function SignPage() {
             }
           });
 
+          // double click hapus
           f.on("mouse:dblclick", (e) => {
             if (e.target) f.remove(e.target);
           });
@@ -198,13 +234,20 @@ export default function SignPage() {
       pages.forEach((p) => {
         try {
           p.fabricCanvas.dispose();
-        } catch {}
+        } catch {
+          // ignore
+        }
       });
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pdfDoc]);
 
+  // ===== Tempel TTD (milik sendiri saja)
   const addSignatureToPage = (sigUrl, targetPageNum = null) => {
+    if (!me?.id) return showError("Session tidak valid.");
+    if (!signSources.length)
+      return showError("Tidak ada file tanda tangan Anda.");
+
     const p = targetPageNum
       ? pages.find((x) => x.num === targetPageNum)
       : pages[pages.length - 1];
@@ -241,6 +284,7 @@ export default function SignPage() {
 
         img.set("objectCaching", false);
         img.set("data-type", "signature");
+        img.set("data-source-user-id", me.id); // milik saya
 
         p.fabricCanvas.add(img);
         p.fabricCanvas.setActiveObject(img);
@@ -251,6 +295,7 @@ export default function SignPage() {
   };
 
   const toggleFreeDraw = () => {
+    if (!me?.id) return;
     pages.forEach((p) => {
       p.fabricCanvas.isDrawingMode = !p.fabricCanvas.isDrawingMode;
       if (p.fabricCanvas.isDrawingMode) {
@@ -273,15 +318,20 @@ export default function SignPage() {
     }
   };
 
+  // ===== Kumpulkan objek milik sendiri
   const collectSignaturePlacements = () => {
     const result = [];
     for (const p of pages) {
       const f = p.fabricCanvas;
       f.discardActiveObject().renderAll();
 
-      const objs = f
-        .getObjects()
-        .filter((o) => o.get("data-type") === "signature" || o.type === "path");
+      const objs = f.getObjects().filter((o) => {
+        const isMine =
+          (o.get("data-type") === "signature" &&
+            o.get("data-source-user-id") === me?.id) ||
+          o.type === "path"; // free draw dianggap milik sendiri
+        return isMine;
+      });
 
       for (const o of objs) {
         if (o.type === "path") {
@@ -305,6 +355,7 @@ export default function SignPage() {
           result.push({
             page: p.num,
             kind: "draw",
+            source_user_id: me?.id || null,
             image_data_url: dataUrl,
             x_ratio: safeLeft / p.pdfViewport.width,
             y_ratio: safeTop / p.pdfViewport.height,
@@ -341,23 +392,29 @@ export default function SignPage() {
     return result;
   };
 
+  // ===== Apply TTD
   const handleSaveApply = async () => {
     try {
       setBusy(true);
-      if (!pdfUrl) return showError("PDF draft belum tersedia.");
+      if (!viewerUrl) return showError("PDF draft belum tersedia.");
       const placements = collectSignaturePlacements();
-      if (!placements.length) return showError("Belum ada tanda tangan.");
+      if (!placements.length) return showError("Belum ada tanda tangan Anda.");
 
       const res = await signService.apply(Number(activityId), {
-        source_pdf: pdfUrl,
+        source_pdf: viewerUrl, // kirim URL yang sedang dilihat
         placements,
       });
 
-      const url = res?.data?.file || res?.file;
+      const url = res?.data?.file || res?.file || res?.data?.file_ttd;
       if (url) {
+        const nextSigned = `${url}?v=${Date.now()}`;
+        setSignedUrlLocal(url); // sinkron lokal
+        setHasSigned(true); // tombol langsung aktif
+        setViewerUrl(nextSigned);
+        window.open(nextSigned, "_blank", "noopener,noreferrer");
+
         showSuccess("TTD berhasil diterapkan.");
-        window.open(url, "_blank", "noopener,noreferrer");
-        await refetch?.();
+        await refetch?.(); // sync state activity dari server
       } else {
         showError("Server tidak mengembalikan file hasil.");
       }
@@ -370,6 +427,40 @@ export default function SignPage() {
       setBusy(false);
     }
   };
+
+  // ===== Reset TTD → kembali ke file awal (khusus Notaris)
+  const handleResetToOriginal = async () => {
+    if (!activityId) return;
+    if (!hasSigned) return showError("Belum ada hasil TTD untuk direset.");
+    try {
+      setBusy(true);
+      const res = await signService.resetTtd(Number(activityId));
+      const base = res?.data?.file || activity?.draft?.file || null;
+      if (base) {
+        setSignedUrlLocal(null); // hapus TTD lokal
+        setHasSigned(false); // tombol langsung nonaktif
+        const next = `${base}?v=${Date.now()}`;
+        setViewerUrl(next);
+        showSuccess("File TTD telah direset ke file awal.");
+        await refetch?.(); // sync state activity
+      } else {
+        showError("File awal tidak tersedia di server.");
+      }
+    } catch (e) {
+      console.error("Reset TTD error:", e);
+      showError(
+        e?.response?.data?.message || e?.message || "Gagal reset file TTD."
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // ===== URL untuk tombol "Lihat File TTD" (pakai lokal dulu, fallback ke server)
+  const signedHref =
+    signedUrlLocal || activity?.draft?.file_ttd
+      ? `${signedUrlLocal || activity?.draft?.file_ttd}?v=${Date.now()}`
+      : null;
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -392,10 +483,38 @@ export default function SignPage() {
             >
               ← Kembali
             </button>
+            {/* 🔎 Lihat hasil TTD (ikut update lokal & server) */}
+            <button
+              className="px-3 py-1.5 rounded bg-gray-100 hover:bg-gray-200 text-sm disabled:opacity-50"
+              onClick={() =>
+                hasSigned &&
+                signedHref &&
+                window.open(signedHref, "_blank", "noopener")
+              }
+              disabled={!hasSigned}
+              title={
+                hasSigned ? "Buka hasil TTD terakhir" : "Belum ada hasil TTD"
+              }
+            >
+              Lihat File TTD Tersimpan
+            </button>
+
+            {/* 🔁 Reset ke file awal (hanya Notaris) */}
+            {isNotary && (
+              <button
+                className="px-3 py-1.5 rounded bg-amber-100 hover:bg-amber-200 text-amber-800 text-sm disabled:opacity-50"
+                onClick={handleResetToOriginal}
+                disabled={!hasSigned || busy}
+                title="Kembalikan dokumen ke versi tanpa TTD (hanya Notaris)"
+              >
+                Reset ke File Awal
+              </button>
+            )}
+
             <button
               className="px-3 py-1.5 rounded bg-blue-600 text-white text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleSaveApply}
-              disabled={busy || !pdfUrl}
+              disabled={busy || !viewerUrl}
             >
               Simpan & Terapkan TTD
             </button>
@@ -404,10 +523,10 @@ export default function SignPage() {
 
         <div className="mb-4 p-3 bg-gray-50 rounded border">
           <div className="flex items-center gap-2 mb-2">
-            <div className="text-sm font-medium">Sumber TTD:</div>
+            <div className="text-sm font-medium">Sumber TTD Anda:</div>
             {signSources.length === 0 && (
               <div className="text-xs text-gray-500">
-                Tidak ada file tanda tangan di identity para pihak.
+                Tidak ada file tanda tangan pada profil Anda (identity).
               </div>
             )}
           </div>
@@ -447,12 +566,12 @@ export default function SignPage() {
           </div>
 
           <div className="text-xs text-gray-500 mt-2">
-            💡 Tips: klik gambar TTD untuk menempel, gunakan Free Draw untuk
-            menggambar, double-click objek untuk menghapus.
+            💡 Tips: klik gambar TTD (milik Anda) untuk menempel, gunakan Free
+            Draw untuk menggambar, double-click objek untuk menghapus.
           </div>
         </div>
 
-        {!pdfUrl ? (
+        {!viewerUrl ? (
           <div className="text-center py-8">
             <div className="text-sm text-red-600 mb-2">
               PDF draft belum tersedia.

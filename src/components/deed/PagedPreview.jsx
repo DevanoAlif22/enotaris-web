@@ -169,7 +169,7 @@ export default function PagedPreview({
 
   return (
     <div
-      style={{ backgroundColor: "#01043c" }}
+      // style={{ backgroundColor: "#01043c" }}
       className={`paged-preview ${className}`}
       ref={containerRef}
     >

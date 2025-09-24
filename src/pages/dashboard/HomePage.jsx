@@ -48,11 +48,11 @@ export default function HomePage() {
     },
   ];
 
-  const verificationStats = [
-    { label: "Disetujui", value: "25,600", color: "text-green-600" },
-    { label: "Menunggu", value: "5,600", color: "text-yellow-600" },
-    { label: "Ditolak", value: "5,600", color: "text-red-600" },
-  ];
+  // const verificationStats = [
+  //   { label: "Disetujui", value: "25,600", color: "text-green-600" },
+  //   { label: "Menunggu", value: "5,600", color: "text-yellow-600" },
+  //   { label: "Ditolak", value: "5,600", color: "text-red-600" },
+  // ];
 
   const activities = [
     {
@@ -107,10 +107,10 @@ export default function HomePage() {
     console.log("Sharing data...");
   };
 
-  const handleMore = () => {
-    // Logic untuk menu more
-    console.log("More options...");
-  };
+  // const handleMore = () => {
+  //   // Logic untuk menu more
+  //   console.log("More options...");
+  // };
 
   // Format tanggal hari ini
   const getCurrentDate = () => {
