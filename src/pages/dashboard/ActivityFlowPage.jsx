@@ -92,6 +92,16 @@ export default function ActivityFlowPage() {
     fetchActivity,
   } = useActivityData(activityId);
 
+  // ===================== READ-ONLY ADMIN GUARD =====================
+  const isAdmin = Number(me?.role_id) === 1; // ⬅️ deteksi admin
+  const canManage = !isAdmin && isNotary; // ⬅️ hanya notaris non-admin yang bisa manage
+  const canEditSchedule = !isAdmin && isNotary; // ⬅️ admin tidak bisa edit jadwal (view only)
+  const canUploadDraft = !isAdmin && (isNotary || isClient);
+  const canDownloadDraft = !isAdmin; // ⬅️ admin tidak boleh unduh draft
+  const canDownloadFinal = true; // ⬅️ admin boleh unduh final pdf
+  const canViewSchedule = true; // ⬅️ admin boleh lihat jadwal
+  const canViewESignFile = true; // ⬅️ admin boleh lihat file ttd
+
   const [expandedStep, setExpandedStep] = useState("respond");
   const [schedule, setSchedule] = useState({ open: false, row: null });
   const [scheduleView, setScheduleView] = useState({ open: false, row: null });
@@ -125,17 +135,19 @@ export default function ActivityFlowPage() {
   const toggleStep = (id) =>
     stepStatus[id] !== "pending" &&
     setExpandedStep(expandedStep === id ? null : id);
+
   const markDone = async (id) => {
     try {
-      // hanya notaris yang boleh trigger ini (jaga-jaga di FE)
+      // ⬅️ admin read-only: blokir aksi mark done
+      if (isAdmin) return;
+
       if (id === "sign") {
         setIsMutating(true);
         await signService.markDone(activityId);
         showSuccess("Step Tanda Tangan ditandai selesai.");
         setStepStatus((st) => ({ ...st, [id]: "done" }));
-        await fetchActivity(); // refresh detail activity/track
+        await fetchActivity();
       } else {
-        // fallback untuk step lain (tetap lokal)
         setStepStatus((st) => ({ ...st, [id]: "done" }));
       }
     } catch (e) {
@@ -144,7 +156,9 @@ export default function ActivityFlowPage() {
       setIsMutating(false);
     }
   };
+
   const onMarkDocsDone = async () => {
+    if (isAdmin) return; // ⬅️ admin read-only
     try {
       setIsMutating(true);
       const { activityService } = await import(
@@ -159,25 +173,22 @@ export default function ActivityFlowPage() {
     }
   };
 
-  const toLocalISO = (dateStr, timeStr) => {
-    if (!dateStr || !timeStr) return "";
-    // dateStr contoh: "2025-09-18T00:00:00.000000Z"
-    const ymd = dateStr.slice(0, 10); // "YYYY-MM-DD"
-    // bikin Date lokal dari YYYY-MM-DD + HH:mm
-    const local = new Date(`${ymd}T${timeStr}:00`);
-    // normalisasi agar stabil di zona waktu user
-    const fixed = new Date(local.getTime() - local.getTimezoneOffset() * 60000);
-    return fixed.toISOString();
-  };
+  // const toLocalISO = (dateStr, timeStr) => {
+  //   if (!dateStr || !timeStr) return "";
+  //   const ymd = dateStr.slice(0, 10);
+  //   const local = new Date(`${ymd}T${timeStr}:00`);
+  //   const fixed = new Date(local.getTime() - local.getTimezoneOffset() * 60000);
+  //   return fixed.toISOString();
+  // };
 
   // ====== Draft approvals ======
   const draftApprovals =
     activity?.draft?.clientDrafts ?? activity?.draft?.client_drafts ?? [];
-
   const myDraftPivot = draftApprovals.find?.((cd) => cd.user_id === me?.id);
-  const myDraftStatus = (myDraftPivot?.status_approval || "").toLowerCase(); // pending|approved|rejected|''
+  const myDraftStatus = (myDraftPivot?.status_approval || "").toLowerCase();
 
   const onApproveDraft = async () => {
+    if (isAdmin) return; // ⬅️ admin read-only
     try {
       setIsMutating(true);
       const { clientDraftService } = await import(
@@ -199,62 +210,8 @@ export default function ActivityFlowPage() {
     }
   };
 
-  // di dalam ActivityFlowPage component, bareng handler lain
-  // di dalam ActivityFlowPage component
-  const onSaveSchedule = async ({ datetime, place, note }) => {
-    try {
-      setIsMutating(true);
-
-      // dynamic import utk code-splitting
-      const { scheduleService } = await import(
-        "../../services/scheduleService"
-      );
-
-      // Backend butuh date & time terpisah (format Y-m-d & H:i).
-      // Di UI kita pegang ISO. Kita convert ke lokal lalu split.
-      const splitDateTime = (iso) => {
-        const d = new Date(iso);
-        // konversi ISO (UTC) ke waktu lokal
-        const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
-        const ymd = local.toISOString().slice(0, 10); // YYYY-MM-DD
-        const hm = local.toISOString().slice(11, 16); // HH:mm
-        return { date: ymd, time: hm };
-      };
-
-      const { date, time } = splitDateTime(datetime);
-
-      // kalau sudah ada schedule pertama → update, kalau belum → store
-      const existing = activity?.schedules?.[0];
-
-      if (existing?.id) {
-        await scheduleService.update(existing.id, {
-          activity_id: activity?.id,
-          date,
-          time,
-          location: place,
-          notes: note,
-        });
-        showSuccess("Jadwal berhasil diperbarui.");
-      } else {
-        await scheduleService.store({
-          activity_id: activity?.id,
-          date,
-          time,
-          location: place,
-          notes: note,
-        });
-        showSuccess("Jadwal berhasil dibuat.");
-      }
-
-      await fetchActivity();
-    } catch (e) {
-      showError(e?.message || "Gagal menyimpan jadwal.");
-    } finally {
-      setIsMutating(false);
-    }
-  };
-
   const onRejectDraft = async () => {
+    if (isAdmin) return; // ⬅️ admin read-only
     try {
       setIsMutating(true);
       const { clientDraftService } = await import(
@@ -275,12 +232,11 @@ export default function ActivityFlowPage() {
 
   // ====== Upload Draft (Notaris & Klien) ======
   const onUploadDraft = async (file) => {
-    if (!file) return;
+    if (!file || !canUploadDraft) return; // ⬅️ admin read-only
     try {
       setIsMutating(true);
       const draftId = activity?.draft?.id;
       if (!draftId) throw new Error("Draft belum tersedia.");
-      // GANTI nama service/metode sesuai proyekmu kalau berbeda
       const { draftService } = await import("../../services/draftService");
       await draftService.uploadFile(draftId, file);
       showSuccess("Draft berhasil diunggah.");
@@ -337,7 +293,7 @@ export default function ActivityFlowPage() {
             <p className="text-sm text-gray-800 dark:text-[#f5fefd]">
               Penghadap :
             </p>
-            {isNotary && (
+            {canManage && ( // ⬅️ HANYA notaris non-admin
               <button
                 type="button"
                 onClick={() => setAddModalOpen(true)}
@@ -364,7 +320,7 @@ export default function ActivityFlowPage() {
                       Penghadap {i + 1}
                     </div>
                   </div>
-                  {isNotary && (
+                  {canManage && ( // ⬅️ tombol Hapus hanya notaris non-admin
                     <button
                       type="button"
                       onClick={() =>
@@ -410,31 +366,54 @@ export default function ActivityFlowPage() {
                   draftApprovals,
                   clients: activity?.clients || [],
                   track: activity?.track,
-                  permissions: stepPermissions,
-                  markDone,
-                  onMarkDocsDone,
-                  onSchedule: () => setSchedule({ open: true, row: activity }),
-                  onViewSchedule: () =>
-                    setScheduleView({ open: true, row: activity }),
+
+                  // ========= IZIN/AKSI DITERUSKAN KE KOMPONEN KONTEN =========
+                  permissions: {
+                    ...stepPermissions,
+                    // override untuk admin read-only:
+                    canManageParties: canManage,
+                    canOpenAddRequirement: canManage,
+                    canDeleteRequirement: canManage,
+                    canEditSchedule, // admin false
+                    canViewSchedule, // admin true
+                    canUploadDraft, // admin false
+                    canDownloadDraft, // admin false
+                    canViewESignFile, // admin true
+                    canDownloadFinal, // admin true
+                  },
+
+                  markDone: !isAdmin ? markDone : undefined, // admin tidak bisa mark done
+                  onMarkDocsDone: !isAdmin ? onMarkDocsDone : undefined,
+
+                  onSchedule: canEditSchedule
+                    ? () => setSchedule({ open: true, row: activity })
+                    : undefined, // edit
+                  onViewSchedule: canViewSchedule
+                    ? () => setScheduleView({ open: true, row: activity })
+                    : undefined, // view
+
                   currentUserId: me?.id || null,
                   activityId,
-                  onOpenAddRequirement: isNotary
+
+                  onOpenAddRequirement: canManage
                     ? () => setAddReqOpen(true)
                     : undefined,
                   requirementList,
-                  onDeleteRequirement: isNotary
+                  onDeleteRequirement: canManage
                     ? handleDeleteRequirement
                     : undefined,
 
                   // draft actions/props
-                  isNotary,
+                  isNotary: !isAdmin && isNotary, // jangan treat admin sebagai notaris
+                  isClient: !isAdmin && isClient, // admin bukan client
                   myDraftStatus,
-                  onApproveDraft: isClient ? onApproveDraft : undefined,
-                  onRejectDraft: isClient ? onRejectDraft : undefined,
-                  onUploadDraft, // <<— dipakai dua peran (notaris & klien)
+                  onApproveDraft:
+                    !isAdmin && isClient ? onApproveDraft : undefined,
+                  onRejectDraft:
+                    !isAdmin && isClient ? onRejectDraft : undefined,
+                  onUploadDraft: canUploadDraft ? onUploadDraft : undefined, // ⬅️ admin false
 
-                  // 👇 tambahan baru untuk step "sign"
-                  isClient,
+                  // Step Sign
                   onOpenSignPage: () => {
                     window.location.href = `/app/project-flow/${activity?.id}/sign`;
                   },
@@ -459,14 +438,25 @@ export default function ActivityFlowPage() {
         }}
         initial={{
           id: activity?.schedules?.[0]?.id,
-          datetime: toLocalISO(
-            activity?.schedules?.[0]?.date,
-            activity?.schedules?.[0]?.time
-          ),
+          datetime: (() => {
+            const date = activity?.schedules?.[0]?.date;
+            const time = activity?.schedules?.[0]?.time;
+            if (!date || !time) return "";
+            const ymd = date.slice(0, 10);
+            const local = new Date(`${ymd}T${time}:00`);
+            const fixed = new Date(
+              local.getTime() - local.getTimezoneOffset() * 60000
+            );
+            return fixed.toISOString();
+          })(),
           place: activity?.schedules?.[0]?.location ?? "",
           note: activity?.schedules?.[0]?.notes ?? "",
         }}
-        onSave={onSaveSchedule}
+        onSave={
+          canEditSchedule
+            ? undefined
+            : undefined /* edit via renderStepContent only */
+        }
       />
 
       <ScheduleViewModal
@@ -475,7 +465,8 @@ export default function ActivityFlowPage() {
         row={scheduleView.row ?? activity}
       />
 
-      {isNotary && (
+      {/* Form tambah penghadap & extra fields HANYA untuk notaris non-admin */}
+      {canManage && (
         <AddPartyModal
           open={addModalOpen}
           onClose={() => setAddModalOpen(false)}
@@ -499,7 +490,7 @@ export default function ActivityFlowPage() {
         loading={removeConfirm.loading}
       />
 
-      {isNotary && (
+      {canManage && (
         <DeedExtraFieldsModal
           open={addReqOpen}
           onClose={() => setAddReqOpen(false)}

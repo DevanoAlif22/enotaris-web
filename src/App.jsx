@@ -1,3 +1,4 @@
+// src/App.jsx
 import { Route, Routes } from "react-router-dom";
 import HomePage from "./pages/dashboard/HomePage";
 import AboutPage from "./pages/AboutPage";
@@ -19,6 +20,8 @@ import RequirementPage from "./pages/dashboard/RequirementPage";
 import TemplateEditorPage from "./pages/dashboard/TemplateEditorPage";
 import TemplatePage from "./pages/dashboard/TemplatePage";
 import RequirementNotarisPage from "./pages/dashboard/RequirementNotarisPage";
+import BlogPage from "./pages/dashboard/BlogPage";
+import BlogEditorPage from "./pages/dashboard/BlogEditorPage";
 import ActivityFlowPage from "./pages/dashboard/ActivityFlowPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import { ToastContainer } from "react-toastify";
@@ -27,14 +30,13 @@ import CalendarPage from "./pages/dashboard/CalendarPage";
 import TrackPage from "./pages/dashboard/TrackPage";
 import ProtectedRoute from "./components/routing/ProtectedRoute";
 
-function App() {
+export default function App() {
   return (
     <>
-      {/* Biarkan SATU ToastContainer di luar <Routes> */}
       <ToastContainer />
 
       <Routes>
-        {/* Public (Auth) */}
+        {/* ================= PUBLIC (Auth) ================= */}
         <Route element={<AuthLayout />}>
           <Route path="/forgot-password" element={<ForgotPage />} />
           <Route path="/verify-code" element={<VerifyCodePage />} />
@@ -42,26 +44,21 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
         </Route>
 
-        {/* Protected: semua user login */}
+        {/* ============ PROTECTED: semua user login (1/2/3) ============ */}
         <Route element={<ProtectedRoute />}>
           <Route element={<MainLayout />}>
+            {/* Common pages for all roles */}
             <Route path="/app" element={<HomePage />} />
             <Route path="/about" element={<AboutPage />} />
-            <Route path="/app/deed" element={<DeedPage />} />
-            <Route path="/app/template" element={<TemplatePage />} />
-            <Route path="/app/template/new" element={<TemplateEditorPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
             <Route path="/app/calendar" element={<CalendarPage />} />
             <Route path="/app/track" element={<TrackPage />} />
-            <Route
-              path="/app/template/:id/edit"
-              element={<TemplateEditorPage />}
-            />
-            <Route path="/profile" element={<ProfilePage />} />
+
+            {/* Flow / Dokumen – akses berdasarkan konteks aktivitas */}
             <Route
               path="/app/requirement/:activityId"
               element={<RequirementPage />}
             />
-            <Route path="/app/user" element={<UserPage />} />
             <Route
               path="/app/project-flow/:activityId"
               element={<ActivityFlowPage />}
@@ -74,28 +71,56 @@ function App() {
               path="/app/project-flow/:activityId/sign"
               element={<SignPage />}
             />
-            <Route
-              path="/app/verification-user"
-              element={<VerificationUserPage />}
-            />
-            <Route
-              path="/app/project-client-notaris"
-              element={<NotarisClientActivityPage />}
-            />
-          </Route>
-        </Route>
 
-        {/* Protected: khusus Notaris (role_id = 3) */}
-        <Route element={<ProtectedRoute allow={[3]} />}>
-          <Route element={<MainLayout />}>
-            <Route
-              path="/app/requirement-notaris/:activityId"
-              element={<RequirementNotarisPage />}
-            />
-            <Route
-              path="/app/project-notaris"
-              element={<NotaryActivityPage />}
-            />
+            {/* ===== ADMIN + NOTARIS (role_id 1 atau 3) ===== */}
+            <Route element={<ProtectedRoute allow={[1, 3]} />}>
+              {/* Akta Otentik untuk Admin & Notaris */}
+              <Route path="/app/deed" element={<DeedPage />} />
+              {/* Proyek Notaris untuk Admin & Notaris */}
+              <Route
+                path="/app/project-notaris"
+                element={<NotaryActivityPage />}
+              />
+            </Route>
+
+            {/* ===== ADMIN ONLY (role_id 1) ===== */}
+            <Route element={<ProtectedRoute allow={[1]} />}>
+              <Route path="/app/template" element={<TemplatePage />} />
+              <Route
+                path="/app/template/new"
+                element={<TemplateEditorPage />}
+              />
+              <Route
+                path="/app/template/:id/edit"
+                element={<TemplateEditorPage />}
+              />
+              <Route path="/app/user" element={<UserPage />} />
+              <Route
+                path="/app/verification-user"
+                element={<VerificationUserPage />}
+              />
+
+              {/* blog */}
+              <Route path="/app/blog" element={<BlogPage />} />
+              <Route path="/app/blog/new" element={<BlogEditorPage />} />
+              <Route path="/app/blog/:id/edit" element={<BlogEditorPage />} />
+            </Route>
+
+            {/* ===== NOTARIS ONLY (role_id 3) ===== */}
+            <Route element={<ProtectedRoute allow={[3]} />}>
+              <Route
+                path="/app/requirement-notaris/:activityId"
+                element={<RequirementNotarisPage />}
+              />
+            </Route>
+
+            {/* ===== PENGHADAP (role_id 2) ===== */}
+            <Route element={<ProtectedRoute allow={[2]} />}>
+              <Route
+                path="/app/project-client-notaris"
+                element={<NotarisClientActivityPage />}
+              />
+            </Route>
           </Route>
         </Route>
 
@@ -106,5 +131,3 @@ function App() {
     </>
   );
 }
-
-export default App;
