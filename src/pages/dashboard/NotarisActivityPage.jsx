@@ -1,53 +1,59 @@
-// app/notary/NotaryActivityPage.jsx
+// src/pages/dashboard/NotarisActivityPage.jsx
 "use client";
-import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom"; // jika pakai Next.js ganti ke next/link
+import { useEffect, useRef, useState, useMemo } from "react";
+import { Link } from "react-router-dom";
 import MagnifyingGlassIcon from "@heroicons/react/24/outline/MagnifyingGlassIcon";
-import StatusBadge from "../../utils/StatusBadge";
 import ActionButton from "../../components/ActionButton";
 import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 import ScheduleModal from "../../components/activitynotaris/ScheduleModal";
 import ActivityFormModal from "../../components/activitynotaris/ActivityFormModal";
 import { activityService } from "../../services/activityService";
+import { authService } from "../../services/authService";
 import { showError, showSuccess } from "../../utils/toastConfig";
+import StatusBadge from "../../utils/StatusBadge";
 
-// ==== helpers ====
 const mapStatusToBadge = (s) => {
   const v = (s || "").toLowerCase();
   if (v === "approved" || v === "disetujui") return "Disetujui";
   if (v === "rejected" || v === "ditolak") return "Ditolak";
   return "Menunggu";
 };
-
-const inferStatusFromClients = (a) => {
-  const pivots = Array.isArray(a.clientActivities || a.client_activities)
-    ? a.clientActivities || a.client_activities
-    : [];
-  if (!pivots.length) return "pending";
-  const allApproved = pivots.every((p) => p.status_approval === "approved");
-  const anyRejected = pivots.some((p) => p.status_approval === "rejected");
-  if (allApproved) return "approved";
-  if (anyRejected) return "rejected";
-  return "pending";
-};
-
+// const inferStatusFromClients = (a) => {
+//   const pivots = Array.isArray(a.clientActivities || a.client_activities)
+//     ? a.clientActivities || a.client_activities
+//     : [];
+//   if (!pivots.length) return "pending";
+//   const allApproved = pivots.every((p) => p.status_approval === "approved");
+//   const anyRejected = pivots.some((p) => p.status_approval === "rejected");
+//   if (allApproved) return "approved";
+//   if (anyRejected) return "rejected";
+//   return "pending";
+// };
 const mapRow = (a) => {
   const clients = Array.isArray(a.clients) ? a.clients : [];
   const parties = clients.map((c) => c.name || c.email || `#${c.id}`);
-  const statusRaw = a.status_approval || inferStatusFromClients(a);
+  const status = mapStatusToBadge(a.status_approval);
   return {
     id: a.id,
     code: a.tracking_code,
     name: a.name,
     deed_type: a.deed?.name || "-",
-    parties, // array dinamis
-    status: mapStatusToBadge(statusRaw),
+    parties,
+    status,
     updated_at: a.updated_at,
   };
 };
 
-// ==== component ====
 export default function NotaryActivityPage() {
+  // ===== akses user (admin vs notaris) =====
+  const user = authService.getLocalUser();
+  const roleId = Number(user?.role_id ?? user);
+  const isAdmin = roleId === 1;
+  const isNotary = roleId === 3;
+
+  const canCreateOrEdit = !isAdmin; // admin tidak boleh create/edit
+  const canDeleteActivity = isAdmin || isNotary; // admin & notaris boleh hapus
+
   // server data
   const [rows, setRows] = useState([]);
   const [meta, setMeta] = useState({
@@ -61,19 +67,22 @@ export default function NotaryActivityPage() {
   const [loading, setLoading] = useState(false);
 
   // filter/search/pagination
-  const TABS = [
-    { label: "Semua", value: "" },
-    { label: "Menunggu", value: "pending" },
-    { label: "Disetujui", value: "approved" },
-    { label: "Ditolak", value: "rejected" },
-  ];
+  const TABS = useMemo(
+    () => [
+      { label: "Semua", value: "" },
+      { label: "Menunggu", value: "pending" },
+      { label: "Disetujui", value: "approved" },
+      { label: "Ditolak", value: "rejected" },
+    ],
+    []
+  );
   const [activeTab, setActiveTab] = useState(TABS[0]);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const perPage = 10;
 
   // modals
-  const [schedule, setSchedule] = useState({ open: false, row: null });
+  // const [schedule, setSchedule] = useState({ open: false, row: null });
   const [form, setForm] = useState({ open: false, initial: null });
   const [confirm, setConfirm] = useState({
     open: false,
@@ -93,7 +102,6 @@ export default function NotaryActivityPage() {
     }, 400);
   };
 
-  // fetch list
   const fetchRows = async (
     pg = page,
     pp = perPage,
@@ -140,13 +148,15 @@ export default function NotaryActivityPage() {
     fetchRows(page, perPage, activeTab.value, query);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, activeTab]);
-
   useEffect(() => setPage(1), [activeTab]);
 
-  // handlers
-  const openAdd = () => setForm({ open: true, initial: null });
+  const openAdd = () => {
+    if (!canCreateOrEdit) return;
+    setForm({ open: true, initial: null });
+  };
 
   const openEdit = async (row) => {
+    if (!canCreateOrEdit) return;
     try {
       const res = await activityService.detail(row.id);
       const a = res?.data;
@@ -157,7 +167,6 @@ export default function NotaryActivityPage() {
           id: a.id,
           name: a.name,
           deed_id: a.deed_id,
-          // urutan penghadap sudah dari BE (pivot.order) → FE preserve
           parties: clients.map((c) => ({
             value: c.id,
             label: c.name ? `${c.name} (${c.email})` : c.email || `#${c.id}`,
@@ -168,7 +177,6 @@ export default function NotaryActivityPage() {
       });
     } catch (e) {
       showError(e.message || "Gagal memuat detail aktivitas.");
-      // fallback minimal (tanpa urutan/relasi lengkap)
       setForm({
         open: true,
         initial: {
@@ -189,11 +197,10 @@ export default function NotaryActivityPage() {
   const doDelete = async () => {
     try {
       setConfirm((c) => ({ ...c, loading: true }));
-      await activityService.destroy(confirm.row.id);
+      await activityService.destroy(confirm.row.id); // DELETE /activity/{id}
       showSuccess("Aktivitas berhasil dihapus.");
       setConfirm({ open: false, row: null, loading: false });
 
-      // refresh halaman; adjust page jika kosong
       const remaining = rows.length - 1;
       if (remaining === 0 && (meta.current_page || 1) > 1) {
         setPage((p) => Math.max(1, p - 1));
@@ -203,48 +210,6 @@ export default function NotaryActivityPage() {
     } catch (e) {
       setConfirm((c) => ({ ...c, loading: false }));
       showError(e.message || "Gagal menghapus aktivitas.");
-    }
-  };
-
-  // submit dari ActivityFormModal
-  // payload: { id?, name, deed_id, parties: [{value,label}, ...] }
-  const onSaveForm = async (payload) => {
-    try {
-      // preserve order sesuai array → BE akan pakai sebagai pivot.order
-      const client_ids = (payload.parties || [])
-        .map((p) => {
-          const n = Number(p.value);
-          return Number.isFinite(n) ? n : null;
-        })
-        .filter((v) => v !== null);
-
-      const body = {
-        name: payload.name,
-        deed_id: payload.deed_id,
-        client_ids, // urutan penting!
-      };
-
-      if (payload.id) {
-        await activityService.update(payload.id, body);
-        showSuccess("Aktivitas berhasil diperbarui.");
-      } else {
-        await activityService.create(body);
-        showSuccess("Aktivitas berhasil dibuat.");
-      }
-
-      setForm({ open: false, initial: null });
-      fetchRows(page, perPage, activeTab.value, query);
-    } catch (e) {
-      const firstErr =
-        e?.errors && typeof e.errors === "object"
-          ? (() => {
-              const first = Object.values(e.errors)[0];
-              return Array.isArray(first) ? first[0] : String(first);
-            })()
-          : null;
-      showError(firstErr || e.message || "Gagal menyimpan aktivitas.");
-      // biarkan modal tetap terbuka (ActivityFormModal handle sendiri isSubmitting)
-      throw e; // supaya modal tahu ada error & stop loading
     }
   };
 
@@ -296,12 +261,15 @@ export default function NotaryActivityPage() {
               <MagnifyingGlassIcon className="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 dark:text-[#f5fefd]" />
             </div>
 
-            <button
-              onClick={openAdd}
-              className="h-11 px-4 rounded-lg font-semibold bg-[#0256c4] text-white hover:opacity-90 transition-colors"
-            >
-              Tambah
-            </button>
+            {/* Tombol Tambah — sembunyikan untuk admin */}
+            {canCreateOrEdit && (
+              <button
+                onClick={openAdd}
+                className="h-11 px-4 rounded-lg font-semibold bg-[#0256c4] text-white hover:opacity-90 transition-colors"
+              >
+                Tambah
+              </button>
+            )}
           </div>
         </div>
 
@@ -325,9 +293,9 @@ export default function NotaryActivityPage() {
                 <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
                   Jumlah Penghadap
                 </th>
-                {/* <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
+                <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
                   Status
-                </th> */}
+                </th>
                 <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
                   Aksi
                 </th>
@@ -349,26 +317,35 @@ export default function NotaryActivityPage() {
                   <td className="py-4 px-5 whitespace-nowrap">
                     {(r.parties || []).length}
                   </td>
-                  {/* <td className="py-4 px-5 whitespace-nowrap">
-                    <StatusBadge status={r.status} />
-                  </td> */}
+                  <td className="py-4 px-5">
+                    <StatusBadge status={r.status} /> {/* ⬅️ pakai badge */}
+                  </td>
                   <td className="py-4 px-5 whitespace-nowrap">
                     <div className="flex items-center gap-2">
+                      {/* DETAIL selalu ada */}
                       <ActionButton variant="info">
                         <Link to={`/app/project-flow/${r.id}`}>Detail</Link>
                       </ActionButton>
-                      <ActionButton
-                        variant="success"
-                        onClick={() => openEdit(r)}
-                      >
-                        Edit
-                      </ActionButton>
-                      <ActionButton
-                        variant="danger"
-                        onClick={() => askDelete(r)}
-                      >
-                        Hapus
-                      </ActionButton>
+
+                      {/* EDIT — hanya notaris */}
+                      {canCreateOrEdit && (
+                        <ActionButton
+                          variant="success"
+                          onClick={() => openEdit(r)}
+                        >
+                          Edit
+                        </ActionButton>
+                      )}
+
+                      {/* HAPUS — admin & notaris */}
+                      {canDeleteActivity && (
+                        <ActionButton
+                          variant="danger"
+                          onClick={() => askDelete(r)}
+                        >
+                          Hapus
+                        </ActionButton>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -376,7 +353,7 @@ export default function NotaryActivityPage() {
               {rows.length === 0 && !loading && (
                 <tr>
                   <td
-                    colSpan={12}
+                    colSpan={5}
                     className="py-8 px-5 text-center text-gray-500 whitespace-nowrap"
                   >
                     Tidak ada data.
@@ -418,27 +395,49 @@ export default function NotaryActivityPage() {
         </div>
       </div>
 
-      {/* ===== Modals ===== */}
+      {/* Modals */}
       <ScheduleModal
-        open={schedule.open}
-        onClose={() => setSchedule({ open: false, row: null })}
-        activity={{
-          code: schedule.row?.code,
-          deed_type: schedule.row?.deed_type,
-          parties: schedule.row?.parties || [],
-        }}
-        initial={{
-          datetime: schedule.row?.schedule,
-          place: schedule.row?.place,
-          note: schedule.row?.note,
-        }}
+        open={
+          false /* tidak dipakai di list ini, biarkan ada kalau diperlukan */
+        }
+        onClose={() => {}}
+        activity={{ code: "", deed_type: "", parties: [] }}
+        initial={{ datetime: "", place: "", note: "" }}
       />
 
       <ActivityFormModal
         open={form.open}
         onClose={() => setForm({ open: false, initial: null })}
         initial={form.initial}
-        onSubmit={onSaveForm} // Modal handle isSubmitting sendiri
+        onSubmit={async (payload) => {
+          // create/update (hanya notaris)
+          try {
+            const client_ids = (payload.parties || [])
+              .map((p) => {
+                const n = Number(p.value);
+                return Number.isFinite(n) ? n : null;
+              })
+              .filter((v) => v !== null);
+
+            const body = {
+              name: payload.name,
+              deed_id: payload.deed_id,
+              client_ids,
+            };
+            if (payload.id) {
+              await activityService.update(payload.id, body);
+              showSuccess("Aktivitas berhasil diperbarui.");
+            } else {
+              await activityService.create(body);
+              showSuccess("Aktivitas berhasil dibuat.");
+            }
+            setForm({ open: false, initial: null });
+            fetchRows(page, perPage, activeTab.value, query);
+          } catch (e) {
+            showError(e?.message || "Gagal menyimpan aktivitas.");
+            throw e;
+          }
+        }}
       />
 
       <ConfirmDeleteModal

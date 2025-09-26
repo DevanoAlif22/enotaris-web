@@ -1,9 +1,10 @@
+// src/services/authService.js
 import api, { tokenStore } from "./api";
 
+/** FE -> BE role map */
 const mapRoleToId = (role) => {
-  // FE kamu pakai "notaris"/"klien", BE minta 3 (notaris) / 2 (penghadap)
   if (!role) return null;
-  const r = role.toLowerCase();
+  const r = String(role).toLowerCase();
   if (r === "notaris") return 3;
   if (r === "klien" || r === "penghadap") return 2;
   return null;
@@ -57,14 +58,13 @@ export const authService = {
 
   async login({ email, password }) {
     try {
-      console.log("error cuy 2");
       const { data } = await api.post("/auth/login", { email, password });
-      // BE balikin: role_id, name, email, token
+      // BE balikin: { data: { id, name, email, role_id, token } }
       tokenStore.set(data?.data?.token);
+      // Simpan full object agar konsisten
       localStorage.setItem("auth_user", JSON.stringify(data?.data || {}));
       return data;
     } catch (err) {
-      console.log("error cuy");
       throw normalizeErr(err);
     }
   },
@@ -73,7 +73,7 @@ export const authService = {
     try {
       await api.post("/auth/logout");
     } catch (err) {
-      // ignore network/401 saat logout; tetap bersihkan token
+      // abaikan error logout
       console.log(err);
     } finally {
       tokenStore.clear();
@@ -99,9 +99,30 @@ export const authService = {
     }
   },
 
+  /** Auto-heal local user: apapun bentuknya → { role_id: number, ... }  */
   getLocalUser() {
     try {
-      return JSON.parse(localStorage.getItem("auth_user") || "null");
+      const raw = localStorage.getItem("auth_user");
+      if (!raw) return null;
+
+      let parsed = JSON.parse(raw);
+
+      // Jika angka/string → ubah ke objek { role_id }
+      if (typeof parsed === "number") {
+        parsed = { role_id: parsed };
+      } else if (typeof parsed === "string" && /^\d+$/.test(parsed)) {
+        parsed = { role_id: Number(parsed) };
+      } else if (!parsed || typeof parsed !== "object") {
+        return null;
+      }
+
+      // Pastikan role_id number
+      if (parsed.role_id != null) parsed.role_id = Number(parsed.role_id);
+
+      // Tulis balik agar konsisten ke depan
+      localStorage.setItem("auth_user", JSON.stringify(parsed));
+
+      return parsed; // { id?, name?, email?, role_id }
     } catch {
       return null;
     }
