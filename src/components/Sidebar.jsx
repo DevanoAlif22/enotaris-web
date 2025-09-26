@@ -1,73 +1,136 @@
 "use client";
 import { NavLink, useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import {
-  DocumentTextIcon,
-  Squares2X2Icon,
-  CalendarDaysIcon,
-  DocumentDuplicateIcon,
-  IdentificationIcon,
-  UserGroupIcon,
+  Squares2X2Icon, // Dashboard
+  DocumentTextIcon, // Akta Otentik
+  ClipboardDocumentListIcon, // Template Akta
+  UserGroupIcon, // Pengguna
+  IdentificationIcon, // Verifikasi Identitas
+  DocumentDuplicateIcon, // Proyek Notaris
+  FolderIcon, // Proyek Penghadap
+  CalendarDaysIcon, // Kalender
+  ChartBarIcon, // Tracking
+  PencilSquareIcon, // Blog Setting
+  Cog6ToothIcon, // (cadangan) Setting
   XMarkIcon,
-  ChartBarIcon,
+  UserCircleIcon, // Profile
 } from "@heroicons/react/24/outline";
+import { authService } from "../services/authService";
 
-const menuItems = [
-  { id: "dashboard", label: "Dashboard", icon: Squares2X2Icon, to: "/app" },
-  {
-    id: "akta-otentik",
-    label: "Akta Otentik",
-    icon: DocumentTextIcon,
-    to: "/app/deed",
-  },
-  {
-    id: "template-akta",
-    label: "Template Akta",
-    icon: DocumentTextIcon,
-    to: "/app/template",
-  },
-  {
-    id: "pengguna",
-    label: "Pengguna",
-    icon: UserGroupIcon,
-    to: "/app/user",
-  },
-  {
-    id: "verifikasi-identitas",
-    label: "Verifikasi Identitas",
-    icon: IdentificationIcon,
-    to: "/app/verification-user",
-  },
-  {
-    id: "aktivitas-notaris",
-    label: "Proyek Notaris",
-    icon: DocumentDuplicateIcon,
-    to: "/app/project-notaris",
-  },
-  {
-    id: "aktivitas-notaris-client",
-    label: "Proyek Penghadap",
-    icon: DocumentDuplicateIcon,
-    to: "/app/project-client-notaris",
-  },
-  {
-    id: "calendar",
-    label: "Kalender",
-    icon: CalendarDaysIcon,
-    to: "/app/calendar",
-  },
-  {
-    id: "track",
-    label: "Tracking",
-    icon: ChartBarIcon,
-    to: "/app/track",
-  },
-];
+function getMenuByRole(roleId) {
+  // 1=Admin, 2=Penghadap, 3=Notaris
+  const common = [
+    {
+      id: "calendar",
+      label: "Kalender",
+      icon: CalendarDaysIcon,
+      to: "/app/calendar",
+    },
+    { id: "track", label: "Tracking", icon: ChartBarIcon, to: "/app/track" },
+  ];
+
+  if (roleId === 1) {
+    return [
+      { id: "dashboard", label: "Dashboard", icon: Squares2X2Icon, to: "/app" },
+      {
+        id: "profile",
+        label: "Profile",
+        icon: UserCircleIcon,
+        to: "/profile",
+      }, // ditambahkan di bawah Dashboard
+      {
+        id: "akta-otentik",
+        label: "Akta Otentik",
+        icon: DocumentTextIcon,
+        to: "/app/deed",
+      },
+      {
+        id: "template-akta",
+        label: "Template Akta",
+        icon: ClipboardDocumentListIcon,
+        to: "/app/template",
+      },
+      {
+        id: "pengguna",
+        label: "Pengguna",
+        icon: UserGroupIcon,
+        to: "/app/user",
+      },
+      {
+        id: "verifikasi-identitas",
+        label: "Verifikasi Identitas",
+        icon: IdentificationIcon,
+        to: "/app/verification-user",
+      },
+      {
+        id: "project-notaris",
+        label: "Proyek Notaris",
+        icon: DocumentDuplicateIcon,
+        to: "/app/project-notaris",
+      },
+      ...common,
+      { id: "blog", label: "Blog", icon: PencilSquareIcon, to: "/app/blog" },
+      {
+        id: "setting",
+        label: "Setting",
+        icon: Cog6ToothIcon,
+        to: "/app/setting",
+      }, // opsional
+    ];
+  }
+
+  if (roleId === 3) {
+    return [
+      { id: "dashboard", label: "Dashboard", icon: Squares2X2Icon, to: "/app" },
+      {
+        id: "profile",
+        label: "Profile",
+        icon: UserCircleIcon,
+        to: "/profile",
+      }, // ditambahkan di bawah Dashboard
+      {
+        id: "akta-otentik",
+        label: "Akta Otentik",
+        icon: DocumentTextIcon,
+        to: "/app/deed",
+      },
+      {
+        id: "project-notaris",
+        label: "Proyek Notaris",
+        icon: DocumentDuplicateIcon,
+        to: "/app/project-notaris",
+      },
+      ...common,
+    ];
+  }
+
+  // Penghadap (2)
+  return [
+    { id: "dashboard", label: "Dashboard", icon: Squares2X2Icon, to: "/app" },
+    {
+      id: "profile",
+      label: "Profile",
+      icon: UserCircleIcon,
+      to: "/profile",
+    }, // ditambahkan di bawah Dashboard
+    {
+      id: "project-client",
+      label: "Proyek Penghadap",
+      icon: FolderIcon,
+      to: "/app/project-client-notaris",
+    },
+    ...common,
+  ];
+}
 
 export default function Sidebar({ className = "", open, onClose }) {
   const { pathname } = useLocation();
+  const user = authService.getLocalUser(); // { id, role_id, ... }
+  const roleId = user?.role_id;
 
-  // (opsional) kunci body-scroll saat drawer mobile terbuka
+  const menuItems = useMemo(() => getMenuByRole(roleId), [roleId]);
+
   useEffect(() => {
     if (open) document.body.style.overflow = "hidden";
     else document.body.style.overflow = "";
@@ -75,8 +138,7 @@ export default function Sidebar({ className = "", open, onClose }) {
   }, [open]);
 
   const base =
-    "fixed inset-y-0 left-0 z-40 w-72 bg-[#0256c4] dark:bg-[#002d6a] text-white flex flex-col " +
-    "transition-transform duration-200 h-screen overflow-y-auto";
+    "fixed inset-y-0 left-0 z-40 w-72 bg-[#0256c4] dark:bg-[#002d6a] text-white flex flex-col transition-transform duration-200 h-screen overflow-y-auto";
   const visible = open ? "translate-x-0" : "-translate-x-full";
 
   return (
