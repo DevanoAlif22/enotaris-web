@@ -43,11 +43,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center relative">
+    <div className="flex items-center justify-center relative h-150 m-4 p-6">
       {/* overlay loader */}
       <LoadingOverlay show={isSubmitting} />
 
-      <div className="rounded-lg flex w-full max-w-5xl overflow-hidden bg-white">
+      <div className="rounded-lg flex w-full max-w-5xl overflow-hidden bg-white shadow-lg lg:m-5 m-9 sm:m-6">
         {/* Left side */}
         <div className="hidden lg:flex lg:w-1/2 bg-[#0256c4] flex-col justify-center items-center text-white">
           <div className="flex flex-col items-center mb-6">
@@ -65,10 +65,10 @@ export default function LoginPage() {
 
         {/* Right side */}
         <div className="w-full lg:w-1/2 p-10 flex flex-col justify-center">
-          <h1 className="text-[30px] text-center font-bold mb-2">
+          <h1 className="text-xl sm:text-2xl lg:text-[30px] text-center font-bold mb-2">
             Selamat datang kembali!
           </h1>
-          <p className="text-gray-500 text-center mb-6">
+          <p className="text-gray-500 text-center mb-6 text-sm sm:text-base">
             Masukkan detail Anda.
           </p>
 
@@ -95,7 +95,10 @@ export default function LoginPage() {
 
             {/* Forgot password */}
             <div className="flex justify-end mb-6">
-              <a href="#" className="text-sm text-blue-600 hover:underline">
+              <a
+                href="#"
+                className="text-xs sm:text-sm text-blue-600 hover:underline"
+              >
                 Lupa kata sandi?
               </a>
             </div>
@@ -104,7 +107,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-[#0256c4] text-white rounded-full py-3 text-lg font-semibold hover:bg-blue-700 transition"
+              className="w-full bg-[#0256c4] text-white rounded-full py-2 sm:py-3 text-sm sm:text-lg font-semibold hover:bg-blue-700 transition"
             >
               Masuk
             </button>
