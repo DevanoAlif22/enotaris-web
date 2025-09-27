@@ -1,3 +1,4 @@
+// components/activitynotaris/ScheduleModal.jsx
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import Modal from "../Modal";
@@ -8,15 +9,10 @@ import TextAreaField from "../../components/input/TextAreaField";
  * Props:
  * - open: boolean
  * - onClose: () => void
- * - activity: {
- *     code?: string,
- *     deed_type?: string,
- *     parties?: string[]   // prefer this
- *     // (opsional) activityClients?: Array<{name?:string,email?:string}>
- *   }
+ * - activity: { code?: string, deed_type?: string, parties?: string[] }
  * - initial?: { id?: number|string, datetime?: string, place?: string, note?: string }
- * - onSave: ({ datetime, place, note }) => void
- * - onDelete?: () => void   // optional, shown only when initial?.id exists
+ * - onSave?: ({ datetime, place, note }) => Promise|void
+ * - onDelete?: () => Promise|void
  */
 export default function ScheduleModal({
   open,
@@ -30,15 +26,11 @@ export default function ScheduleModal({
   const [time, setTime] = useState(""); // HH:mm
   const [place, setPlace] = useState("");
   const [note, setNote] = useState("");
-
   const [errs, setErrs] = useState({ date: "", time: "", place: "" });
 
-  // Derive parties (dinamis, tidak hanya 2)
   const parties = useMemo(() => {
-    if (Array.isArray(activity?.parties) && activity.parties.length) {
+    if (Array.isArray(activity?.parties) && activity.parties.length)
       return activity.parties;
-    }
-    // fallback kalau kamu mau derive dari activityClients (kalau tersedia)
     if (
       Array.isArray(activity?.activityClients) &&
       activity.activityClients.length
@@ -50,30 +42,27 @@ export default function ScheduleModal({
     return [];
   }, [activity]);
 
-  // mode create / update
   const isEdit = Boolean(initial?.id || initial?.datetime);
+  const hasSaveHandler = typeof onSave === "function";
+  const hasDeleteHandler = typeof onDelete === "function";
 
-  // batas minimal tanggal = hari ini (yyyy-mm-dd)
   const minDate = useMemo(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
     return d.toISOString().slice(0, 10);
   }, []);
 
-  // util: cek hari kerja
   const isWeekday = (yyyy_mm_dd) => {
     if (!yyyy_mm_dd) return true;
     const d = new Date(`${yyyy_mm_dd}T00:00:00`);
-    const day = d.getDay(); // 0 Minggu … 6 Sabtu
+    const day = d.getDay(); // 0 Sun … 6 Sat
     return day >= 1 && day <= 5;
   };
 
-  // hydrate initial values setiap modal dibuka
   useEffect(() => {
     if (!open) return;
     if (initial?.datetime) {
       const d = new Date(initial.datetime);
-      // handling timezone lokal
       const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
       const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
       setDate(local.toISOString().slice(0, 10));
@@ -87,25 +76,21 @@ export default function ScheduleModal({
     setErrs({ date: "", time: "", place: "" });
   }, [open, initial]);
 
-  // Validasi ringan
   const validate = () => {
     const next = { date: "", time: "", place: "" };
     if (!date) next.date = "Tanggal wajib diisi.";
     else if (!isWeekday(date))
       next.date = "Tanggal harus hari kerja (Senin–Jumat).";
     else if (date < minDate) next.date = "Tanggal tidak boleh di masa lalu.";
-
     if (!time) next.time = "Waktu wajib diisi.";
-
     if (!place.trim()) next.place = "Lokasi pertemuan wajib diisi.";
-
     setErrs(next);
     return !next.date && !next.time && !next.place;
   };
 
   const handleSave = () => {
+    if (!hasSaveHandler) return; // guard
     if (!validate()) return;
-    // gabung date & time ke ISO lokal
     const dt = new Date(`${date}T${time}:00`);
     const iso = new Date(
       dt.getTime() - dt.getTimezoneOffset() * 60000
@@ -115,11 +100,11 @@ export default function ScheduleModal({
   };
 
   const canSave = useMemo(() => {
-    // simple check sebelum validate akhir
+    if (!hasSaveHandler) return false;
     return Boolean(
       date && time && place.trim() && isWeekday(date) && date >= minDate
     );
-  }, [date, time, place, minDate]);
+  }, [date, time, place, minDate, hasSaveHandler]);
 
   return (
     <Modal
@@ -129,7 +114,7 @@ export default function ScheduleModal({
       size="lg"
       actions={
         <>
-          {!!initial?.id && typeof onDelete === "function" && (
+          {!!initial?.id && hasDeleteHandler && (
             <button
               onClick={onDelete}
               className="px-4 py-2 rounded-lg bg-red-50 text-red-600 mr-auto"
@@ -151,6 +136,9 @@ export default function ScheduleModal({
                 ? "bg-[#0256c4] hover:opacity-90"
                 : "bg-gray-300 cursor-not-allowed"
             }`}
+            title={
+              !hasSaveHandler ? "Anda tidak memiliki izin untuk menyimpan" : ""
+            }
           >
             {isEdit ? "Simpan Perubahan" : "Simpan"}
           </button>
@@ -158,7 +146,7 @@ export default function ScheduleModal({
       }
     >
       <div className="space-y-6">
-        {/* Detail Aktivitas (dinamis) */}
+        {/* Detail Aktivitas */}
         <div className="bg-gray-100 rounded-xl p-4">
           <div className="text-lg font-semibold mb-2">Detail Aktivitas</div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[15px]">
@@ -172,7 +160,6 @@ export default function ScheduleModal({
             </div>
           </div>
 
-          {/* daftar penghadap dari array */}
           <div className="mt-3">
             <span className="text-gray-500 block mb-1">Penghadap:</span>
             {parties.length ? (

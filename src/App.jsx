@@ -1,5 +1,9 @@
 // src/App.jsx
 import { Route, Routes } from "react-router-dom";
+import LandingHomePage from "./pages/landing/LandingHomePage";
+import LandingBlogPage from "./pages/landing/LandingBlogPage";
+import LandingAboutPage from "./pages/landing/LandingAboutPage";
+import LandingFeaturePage from "./pages/landing/LandingFeaturePage";
 import HomePage from "./pages/dashboard/HomePage";
 import AboutPage from "./pages/AboutPage";
 import ProfilePage from "./pages/dashboard/ProfilePage";
@@ -9,6 +13,7 @@ import AuthLayout from "./layouts/AuthLayout";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import MainLayout from "./layouts/MainLayout";
+import LandingLayout from "./layouts/LandingLayout";
 import VerifyCodePage from "./pages/auth/VerifyCode";
 import UserPage from "./pages/dashboard/UserPage";
 import VerificationUserPage from "./pages/dashboard/VerificationUserPage";
@@ -29,8 +34,10 @@ import SignPage from "./pages/dashboard/SignPage";
 import CalendarPage from "./pages/dashboard/CalendarPage";
 import TrackPage from "./pages/dashboard/TrackPage";
 import ProtectedRoute from "./components/routing/ProtectedRoute";
+import useAOSInit from "./hooks/useAOSinit";
 
 export default function App() {
+  useAOSInit(); // init sekali di sini
   return (
     <>
       <ToastContainer />
@@ -49,7 +56,7 @@ export default function App() {
           <Route element={<MainLayout />}>
             {/* Common pages for all roles */}
             <Route path="/app" element={<HomePage />} />
-            <Route path="/about" element={<AboutPage />} />
+            {/* <Route path="/about" element={<AboutPage />} /> */}
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/app/calendar" element={<CalendarPage />} />
             <Route path="/app/track" element={<TrackPage />} />
@@ -125,8 +132,12 @@ export default function App() {
         </Route>
 
         {/* Public lain */}
-        <Route path="/tes" element={<HomePage />} />
-        <Route path="*" element={<NotFoundPage />} />
+        <Route element={<LandingLayout />}>
+          <Route path="/" element={<LandingHomePage />} />
+          <Route path="/blog" element={<LandingBlogPage />} />
+          <Route path="/about" element={<LandingAboutPage />} />
+          <Route path="/feature" element={<LandingFeaturePage />} />
+        </Route>
       </Routes>
     </>
   );
