@@ -42,34 +42,44 @@ const steps = [
     video: "feature-3.mp4",
   },
   {
-    id: "monitor",
+    id: "filling",
     order: 4,
+    title: "Pengisian Data / Dokumen Tambahan",
+    icon: FileText, // bisa ganti icon lain kalau mau
+    brief: "Lengkapi data dan dokumen akta.",
+    description:
+      "Tahap pengisian data penghadap, pengunggahan dokumen tambahan, serta validasi kelengkapan akta.",
+    video: "feature-4.mp4",
+  },
+  {
+    id: "monitor",
+    order: 5,
     title: "Monitoring Praktik Pembuatan Akta",
     icon: ActivitySquare,
     brief: "Pantau progres, aktivitas, dan SLA.",
     description:
       "Timeline aktivitas, checklist kepatuhan, notifikasi, serta metrik SLA untuk tiap proyek.",
-    video: "feature-4.mp4",
+    video: "feature-5.mp4",
   },
   {
     id: "drafting",
-    order: 5,
+    order: 6,
     title: "Pembuatan Akta",
     icon: ClipboardSignature,
     brief: "Drafting akta lebih cepat & akurat.",
     description:
       "Editor akta dengan merge variabel otomatis, riwayat perubahan, dan kontrol versi terintegrasi.",
-    video: "feature-5.mp4",
+    video: "feature-6.mp4",
   },
   {
     id: "esign",
-    order: 6,
+    order: 7,
     title: "Tanda Tangan Digital",
     icon: PenLine,
     brief: "Legal & terverifikasi.",
     description:
       "Tanda tangan digital tersertifikasi, multi-penandatangan, dan bukti tanda tangan (eSeal/eCertificate).",
-    video: "feature-6.mp4",
+    video: "feature-7.mp4",
   },
 ];
 

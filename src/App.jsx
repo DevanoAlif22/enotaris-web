@@ -4,6 +4,7 @@ import LandingHomePage from "./pages/landing/LandingHomePage";
 import LandingBlogPage from "./pages/landing/LandingBlogPage";
 import LandingAboutPage from "./pages/landing/LandingAboutPage";
 import LandingFeaturePage from "./pages/landing/LandingFeaturePage";
+import LandingTrackPage from "./pages/landing/LandingTrackPage";
 import HomePage from "./pages/dashboard/HomePage";
 import AboutPage from "./pages/AboutPage";
 import ProfilePage from "./pages/dashboard/ProfilePage";
@@ -35,13 +36,14 @@ import CalendarPage from "./pages/dashboard/CalendarPage";
 import TrackPage from "./pages/dashboard/TrackPage";
 import ProtectedRoute from "./components/routing/ProtectedRoute";
 import useAOSInit from "./hooks/useAOSinit";
+import ScrollToTop from "./components/ScrollToTop";
 
 export default function App() {
   useAOSInit(); // init sekali di sini
   return (
     <>
       <ToastContainer />
-
+      <ScrollToTop behavior="smooth" />
       <Routes>
         {/* ================= PUBLIC (Auth) ================= */}
         <Route element={<AuthLayout />}>
@@ -137,6 +139,7 @@ export default function App() {
           <Route path="/blog" element={<LandingBlogPage />} />
           <Route path="/about" element={<LandingAboutPage />} />
           <Route path="/feature" element={<LandingFeaturePage />} />
+          <Route path="/track" element={<LandingTrackPage />} />
         </Route>
       </Routes>
     </>

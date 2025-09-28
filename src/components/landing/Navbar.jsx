@@ -63,13 +63,13 @@ const Navbar = ({
               </NavLink>
             </li>
             <li>
-              <NavLink to="/course" className={activeFn}>
-                Kerja Sama
+              <NavLink to="/blog" className={activeFn}>
+                Blog
               </NavLink>
             </li>
             <li>
-              <NavLink to="/blog" className={activeFn}>
-                Blog
+              <NavLink to="/track" className={activeFn}>
+                Pelacakan
               </NavLink>
             </li>
             <li>
