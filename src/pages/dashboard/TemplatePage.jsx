@@ -134,12 +134,15 @@ export default function TemplatePage() {
         )}
 
         {/* Header */}
-        <div className="flex items-center justify-between gap-3">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          {/* Judul */}
           <h1 className="text-2xl font-semibold dark:text-[#f5fefd]">
             Template Akta
           </h1>
 
-          <div className="flex items-center gap-3 w-full max-w-xl">
+          {/* Search + Tambah */}
+          <div className="flex w-full sm:max-w-xl gap-3">
             <div className="relative flex-1">
               <input
                 defaultValue={query}
@@ -149,7 +152,6 @@ export default function TemplatePage() {
               />
               <MagnifyingGlassIcon className="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-[#f5fefd]" />
             </div>
-            {/* Tombol Tambah diseragamkan seperti halaman Akta */}
             <button
               onClick={openAdd}
               className="h-11 px-4 rounded-lg font-semibold bg-[#0256c4] text-white hover:opacity-90 transition-colors"
@@ -242,7 +244,10 @@ export default function TemplatePage() {
               «
             </button>
             <div className="px-4 py-2 rounded-lg bg-gray-100 font-semibold">
-              Hal {meta.current_page || page} / {totalPages}
+              <span className="md:hidden">{meta.current_page || page}</span>
+              <span className="hidden md:inline">
+                Hal {meta.current_page || page} / {totalPages}
+              </span>
             </div>
             <button
               className="px-3 py-2 rounded-lg bg-gray-100 disabled:opacity-50"

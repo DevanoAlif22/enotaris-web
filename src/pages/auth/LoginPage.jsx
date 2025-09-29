@@ -43,87 +43,85 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center relative h-150 m-4 p-6">
+    <div className="rounded-lg flex overflow-hidden mx-4 lg:m-5 m-9 sm:m-6">
       {/* overlay loader */}
       <LoadingOverlay show={isSubmitting} />
 
-      <div className="rounded-lg flex w-full max-w-5xl overflow-hidden bg-white shadow-lg lg:m-5 m-9 sm:m-6">
-        {/* Left side */}
-        <div className="hidden lg:flex lg:w-1/2 bg-[#0256c4] flex-col justify-center items-center text-white">
-          <div className="flex flex-col items-center mb-6">
-            <img src="/images/logo-enotaris.png" alt="Logo" className="w-50" />
-            <h2 className="text-xl font-semibold text-center">
-              Membangun Pasti di Atas Janji
-            </h2>
-          </div>
-          <img
-            src="/images/team-photo.png"
-            alt="Login Illustration"
-            className="w-full"
+      {/* Left side */}
+      <div className="hidden rounded-xl lg:flex lg:w-1/2 bg-[#0256c4] flex-col justify-center items-center text-white">
+        <div className="flex flex-col items-center mb-6">
+          <img src="/images/logo-enotaris.png" alt="Logo" className="w-50" />
+          <h2 className="text-xl font-semibold text-center">
+            Membangun Pasti di Atas Janji
+          </h2>
+        </div>
+        <img
+          src="/images/team-photo.png"
+          alt="Login Illustration"
+          className="w-full rounded-xl"
+        />
+      </div>
+
+      {/* Right side */}
+      <div className="w-full lg:w-1/2 p-10 flex flex-col justify-center">
+        <h1 className="text-xl sm:text-2xl lg:text-[30px] text-center font-bold mb-2">
+          Selamat datang kembali!
+        </h1>
+        <p className="text-gray-500 text-center mb-6 text-sm sm:text-base">
+          Masukkan detail Anda.
+        </p>
+
+        <form onSubmit={handleSubmit}>
+          <InputField
+            label="Email"
+            type="email"
+            name="email"
+            placeholder="Masukkan email"
+            value={form.email}
+            onChange={handleChange}
+            disabled={isSubmitting}
           />
-        </div>
 
-        {/* Right side */}
-        <div className="w-full lg:w-1/2 p-10 flex flex-col justify-center">
-          <h1 className="text-xl sm:text-2xl lg:text-[30px] text-center font-bold mb-2">
-            Selamat datang kembali!
-          </h1>
-          <p className="text-gray-500 text-center mb-6 text-sm sm:text-base">
-            Masukkan detail Anda.
-          </p>
+          <InputField
+            label="Kata Sandi"
+            type="password"
+            name="password"
+            placeholder="Masukkan kata sandi"
+            value={form.password}
+            onChange={handleChange}
+            disabled={isSubmitting}
+          />
 
-          <form onSubmit={handleSubmit}>
-            <InputField
-              label="Email"
-              type="email"
-              name="email"
-              placeholder="Masukkan email"
-              value={form.email}
-              onChange={handleChange}
-              disabled={isSubmitting}
-            />
-
-            <InputField
-              label="Kata Sandi"
-              type="password"
-              name="password"
-              placeholder="Masukkan kata sandi"
-              value={form.password}
-              onChange={handleChange}
-              disabled={isSubmitting}
-            />
-
-            {/* Forgot password */}
-            <div className="flex justify-end mb-6">
-              <a
-                href="#"
-                className="text-xs sm:text-sm text-blue-600 hover:underline"
-              >
-                Lupa kata sandi?
-              </a>
-            </div>
-
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-[#0256c4] text-white rounded-full py-2 sm:py-3 text-sm sm:text-lg font-semibold hover:bg-blue-700 transition"
+          {/* Forgot password */}
+          <div className="flex justify-end mb-6">
+            <a
+              href="#"
+              className="text-xs sm:text-sm text-blue-600 hover:underline"
             >
-              Masuk
-            </button>
-          </form>
+              Lupa kata sandi?
+            </a>
+          </div>
 
-          {/* Register link */}
-          <p className="mt-6 text-center text-sm text-gray-600">
-            Belum punya akun?{" "}
-            <Link
-              className="text-blue-600 font-medium hover:underline"
-              to="/register"
-            >
-              Daftar
-            </Link>
-          </p>
-        </div>
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full bg-[#0256c4] text-white rounded-full py-2 sm:py-3 text-sm sm:text-lg font-semibold hover:bg-blue-700 transition"
+          >
+            Masuk
+          </button>
+        </form>
+
+        {/* Register link */}
+        <p className="mt-6 text-center text-sm text-gray-600">
+          Belum punya akun?{" "}
+          <Link
+            className="text-blue-600 font-medium hover:underline"
+            to="/register"
+          >
+            Daftar
+          </Link>
+        </p>
       </div>
     </div>
   );

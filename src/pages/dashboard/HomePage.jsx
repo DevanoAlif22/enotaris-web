@@ -99,44 +99,46 @@ export default function HomePage() {
   return (
     <div className="p-4 sm:p-6 space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white dark:bg-[#002d6a] rounded-xl p-4 shadow-sm">
-        <div className="text-sm font-medium text-gray-600 dark:text-[#f5fefd]">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 lg:gap-4 bg-white dark:bg-[#002d6a] rounded-xl p-4 shadow-sm">
+        {/* Date */}
+        <span className="flex items-start justify-between text-sm font-medium text-gray-600 dark:text-[#f5fefd]">
           {getCurrentDate()}
-        </div>
-        <div className="flex items-center gap-2">
+        </span>
+
+        {/* Action buttons */}
+        <div className="flex items-center gap-2 ml-auto">
           <button
             onClick={load}
-            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 dark:hover:bg-[#0256c4] rounded-lg transition-colors"
+            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 dark:text-[#f5fefd] hover:bg-gray-100 dark:hover:bg-[#0256c4] rounded-lg transition-colors"
           >
-            <ArrowPathIcon className="w-4 h-4 dark:text-[#f5fefd]" />
-            <span className="hidden sm:inline dark:text-[#f5fefd]">
-              Refresh Data
-            </span>
+            <ArrowPathIcon className="w-4 h-4" />
+            <span className="hidden sm:inline">Refresh Data</span>
           </button>
           <button
             onClick={() => console.log("Sharing data...")}
-            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 dark:hover:bg-[#0256c4] rounded-lg transition-colors"
+            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 dark:text-[#f5fefd] hover:bg-gray-100 dark:hover:bg-[#0256c4] rounded-lg transition-colors"
           >
-            <ShareIcon className="w-4 h-4 dark:text-[#f5fefd]" />
-            <span className="hidden sm:inline dark:text-[#f5fefd]">Share</span>
+            <ShareIcon className="w-4 h-4" />
+            <span className="hidden sm:inline">Share</span>
           </button>
 
+          {/* Dropdown */}
           <div className="relative">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-[#0256c4] rounded-full transition-colors"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-[#0256c4] rounded-lg transition-colors"
             >
               <EllipsisHorizontalIcon className="w-5 h-5 text-gray-600 dark:text-[#f5fefd]" />
             </button>
 
             {isOpen && (
-              <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-[#01043c] rounded-lg shadow-lg border border-gray-200 py-2 z-50 overflow-hidden">
+              <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-[#01043c] rounded-lg shadow-lg border border-gray-200 py-2 z-50">
                 <button
                   onClick={() => {
                     console.log("Email Digests");
                     setIsOpen(false);
                   }}
-                  className="w-full flex text-sm items-center gap-3 px-4 py-3 text-gray-700 dark:text-[#f5fefd] hover:bg-[#0256c4] dark:hover:bg-[#003782] hover:text-white hover:rounded-md duration-100 ease-in"
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 dark:text-[#f5fefd] hover:bg-[#0256c4] dark:hover:bg-[#003782] hover:text-white duration-100 ease-in text-left"
                 >
                   <EnvelopeIcon className="w-4 h-4" />
                   Email Digests
@@ -151,18 +153,17 @@ export default function HomePage() {
       {role === "notaris" && metrics?.status_verifikasi && (
         <div className="bg-white dark:bg-[#003782] rounded-xl p-4 shadow-sm">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-700 dark:text-[#f5fefd] font-medium">
+            <p className="text-sm font-medium text-gray-700 dark:text-[#f5fefd]">
               Status Verifikasi Notaris
             </p>
             <span
-              className={
-                "px-3 py-1 rounded-full text-xs font-semibold " +
-                (metrics.status_verifikasi === "approved"
+              className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                metrics.status_verifikasi === "approved"
                   ? "bg-green-100 text-green-800"
                   : metrics.status_verifikasi === "rejected"
                   ? "bg-red-100 text-red-800"
-                  : "bg-yellow-100 text-yellow-800")
-              }
+                  : "bg-yellow-100 text-yellow-800"
+              }`}
             >
               {metrics.status_verifikasi}
             </span>
@@ -175,29 +176,25 @@ export default function HomePage() {
         {metricCards.map((metric, index) => (
           <div
             key={index}
-            className="bg-gradient-to-r from-blue-500 to-[#0256c4] text-white p-4 sm:p-4 sm:py-3 rounded-[15px]"
+            className="bg-gradient-to-r from-blue-500 to-[#0256c4] text-white p-4 rounded-[15px]"
           >
-            <div className="flex items-center justify-between mb-3 sm:mb-2">
-              <h3 className="text-xs sm:text-[16px] font-medium ">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm sm:text-base font-medium">
                 {metric.title}
               </h3>
             </div>
-            <div className="space-y-1 sm:space-y-1">
-              <div className="flex justify-between">
-                <p className="text-2xl sm:text-[35px] font-bold">
-                  {metric.value}
-                </p>
-                {metric.icon}
-              </div>
+            <div className="flex justify-between items-center">
+              <p className="text-2xl sm:text-3xl font-bold">{metric.value}</p>
+              {metric.icon}
             </div>
           </div>
         ))}
       </div>
 
-      {/* Section Verifikasi (khusus Admin) */}
+      {/* Section Verifikasi (Admin only) */}
       {role === "admin" && (
         <div className="bg-white dark:bg-[#003782] rounded-xl shadow-sm overflow-hidden">
-          <div className="text-lg sm:text-xl text-gray-600 dark:text-white font-medium mt-5 ml-5">
+          <div className="text-lg sm:text-xl font-medium text-gray-600 dark:text-white px-6 py-4">
             Verifikasi Pengguna
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-gray-200">
@@ -218,10 +215,7 @@ export default function HomePage() {
                 badge: "bg-red-50 text-red-700 ring-red-600/10",
               },
             ].map((v) => (
-              <div
-                key={v.label}
-                className="relative p-6 bg-white dark:bg-[#003782]"
-              >
+              <div key={v.label} className="relative p-6">
                 <div className="absolute top-4 right-4">
                   <span
                     className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${v.badge}`}
@@ -229,16 +223,16 @@ export default function HomePage() {
                     {v.label}
                   </span>
                 </div>
-                <div className="pt-8">
-                  <div className="text-center text-blue-600 text-4xl font-bold mb-6 dark:text-[#f5fefd]">
+                <div className="pt-8 text-center">
+                  <div className="text-4xl font-bold mb-2 text-blue-600 dark:text-[#f5fefd]">
                     {v.value}
                   </div>
                 </div>
               </div>
             ))}
           </div>
-          <div className="flex justify-center text-center">
-            <button className="mt-2 mb-6 w-290 text-white font-semibold text-sm transition-colors bg-gradient-to-r from-blue-500 to-[#0256c4] sm:p-20 sm:py-2 rounded-[10px] hover:from-blue-600 hover:to-blue-700">
+          <div className="flex justify-center">
+            <button className="mt-4 mb-6 px-6 py-2 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-[#0256c4] hover:from-blue-600 hover:to-blue-700 transition-colors">
               Lihat Detail
             </button>
           </div>
@@ -261,8 +255,7 @@ export default function HomePage() {
               <div className="flex justify-between items-start mb-2">
                 <span className="font-medium text-gray-900">#{index + 1}</span>
                 <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium
-                  ${
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${
                     a.status_approval === "approved"
                       ? "bg-green-100 text-green-800"
                       : a.status_approval === "rejected"
@@ -288,7 +281,7 @@ export default function HomePage() {
             </div>
           ))}
           {!recent.length && (
-            <div className="text-center text-sm py-6 opacity-70">
+            <div className="text-center text-sm py-6 opacity-70 dark:text-[#f5fefd]">
               Belum ada aktivitas
             </div>
           )}
@@ -299,28 +292,23 @@ export default function HomePage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200 dark:border-[#7b9cc9]">
-                <th className="text-center py-3 px-4 font-medium bg-[#edf4ff] dark:bg-[#0256c4] text-[#0256c4] dark:text-[#f5fefd] text-sm">
-                  Nomor
-                </th>
-                <th className="text-center py-3 px-4 font-medium bg-[#edf4ff] dark:bg-[#0256c4] text-[#0256c4] dark:text-[#f5fefd] text-sm">
-                  Kode
-                </th>
-                <th className="text-center py-3 px-4 font-medium bg-[#edf4ff] dark:bg-[#0256c4] text-[#0256c4] dark:text-[#f5fefd] text-sm">
-                  Jenis Akta
-                </th>
-                <th className="text-center py-3 px-4 font-medium bg-[#edf4ff] dark:bg-[#0256c4] text-[#0256c4] dark:text-[#f5fefd] text-sm">
-                  Judul
-                </th>
-                <th className="text-center py-3 px-4 font-medium bg-[#edf4ff] dark:bg-[#0256c4] text-[#0256c4] dark:text-[#f5fefd] text-sm">
-                  Status
-                </th>
+                {["Nomor", "Kode", "Jenis Akta", "Judul", "Status"].map(
+                  (th) => (
+                    <th
+                      key={th}
+                      className="text-center py-3 px-4 font-medium text-sm bg-[#edf4ff] dark:bg-[#0256c4] text-[#0256c4] dark:text-[#f5fefd]"
+                    >
+                      {th}
+                    </th>
+                  )
+                )}
               </tr>
             </thead>
             <tbody>
               {recent.map((a, index) => (
                 <tr
                   key={a.id || index}
-                  className="text-center border-b border-gray-100 dark:hover:bg-[#002d6a] dark:text-[#f5fefd]"
+                  className="text-center border-b border-gray-100 hover:bg-gray-50 dark:hover:bg-[#002d6a] dark:text-[#f5fefd]"
                 >
                   <td className="py-3 px-4 text-sm">{index + 1}</td>
                   <td className="py-3 px-4 text-sm">{a.tracking_code}</td>
@@ -328,14 +316,13 @@ export default function HomePage() {
                   <td className="py-3 px-4 text-sm">{a?.name || "-"}</td>
                   <td className="py-3 px-4">
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium
-                        ${
-                          a.status_approval === "approved"
-                            ? "bg-green-100 text-green-800"
-                            : a.status_approval === "rejected"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-yellow-100 text-yellow-800"
-                        }`}
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        a.status_approval === "approved"
+                          ? "bg-green-100 text-green-800"
+                          : a.status_approval === "rejected"
+                          ? "bg-red-100 text-red-800"
+                          : "bg-yellow-100 text-yellow-800"
+                      }`}
                     >
                       {a.status_approval || "pending"}
                     </span>
@@ -356,7 +343,7 @@ export default function HomePage() {
           </table>
 
           <div className="text-center mt-7">
-            <button className="w-full h-10 rounded-md text-sm transition-colors font-medium bg-[#edf4ff] text-[#0256c4] hover:text-white hover:bg-gradient-to-r hover:from-blue-600 hover:to-[#0256c4] dark:text-[#edf4ff] dark:bg-[#0256c4] dark:hover:bg-[#003782]">
+            <button className="w-full h-10 rounded-md text-sm font-medium transition-colors bg-[#edf4ff] text-[#0256c4] hover:text-white hover:bg-gradient-to-r hover:from-blue-600 hover:to-[#0256c4] dark:text-[#edf4ff] dark:bg-[#0256c4] dark:hover:bg-[#003782]">
               Lihat Detail
             </button>
           </div>
