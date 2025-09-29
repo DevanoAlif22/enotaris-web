@@ -128,6 +128,7 @@ export default function DeedFormModal({
               className="w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-[#0256c4]/40 outline-none"
               placeholder="Deskripsi singkat akta…"
               disabled={isSubmitting}
+              required
             />
           </div>
         </div>

@@ -113,11 +113,14 @@ export default function UserPage() {
         )}
 
         {/* Header */}
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          {/* Judul */}
           <h1 className="text-2xl font-semibold dark:text-[#f5fefd]">
             Daftar Pengguna
           </h1>
-          <div className="relative w-full max-w-xl">
+
+          {/* Search */}
+          <div className="relative w-full sm:max-w-xl">
             <input
               defaultValue={query}
               onChange={onChangeSearch}
@@ -248,17 +251,20 @@ export default function UserPage() {
           <div className="flex items-center gap-2">
             <button
               className="px-3 py-2 rounded-lg bg-gray-100 disabled:opacity-50"
-              disabled={page <= 1}
+              disabled={(meta.current_page || 1) <= 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
             >
               «
             </button>
             <div className="px-4 py-2 rounded-lg bg-gray-100 font-semibold">
-              Hal {meta.current_page || page} / {totalPages}
+              <span className="md:hidden">{meta.current_page || page}</span>
+              <span className="hidden md:inline">
+                Hal {meta.current_page || page} / {totalPages}
+              </span>
             </div>
             <button
               className="px-3 py-2 rounded-lg bg-gray-100 disabled:opacity-50"
-              disabled={page >= totalPages}
+              disabled={(meta.current_page || 1) >= totalPages}
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             >
               »

@@ -125,14 +125,18 @@ export default function ScheduleModal({
     <Modal
       open={open}
       onClose={onClose}
-      title={isEdit ? "Perbarui Jadwal" : "Buat Jadwal"}
+      title={
+        <span className="dark:text-[#f5fefd]">
+          {isEdit ? "Perbarui Jadwal" : "Buat Jadwal"}
+        </span>
+      }
       size="lg"
       actions={
         <>
           {!!initial?.id && typeof onDelete === "function" && (
             <button
               onClick={onDelete}
-              className="px-4 py-2 rounded-lg bg-red-50 text-red-600 mr-auto"
+              className="px-4 py-2 rounded-lg  bg-red-50 text-red-600 mr-auto"
             >
               Hapus
             </button>
@@ -159,24 +163,32 @@ export default function ScheduleModal({
     >
       <div className="space-y-6">
         {/* Detail Aktivitas (dinamis) */}
-        <div className="bg-gray-100 rounded-xl p-4">
-          <div className="text-lg font-semibold mb-2">Detail Aktivitas</div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[15px]">
+        <div className="bg-gray-100 dark:bg-[#01043c] rounded-xl p-4">
+          <div className="text-lg font-semibold dark:text-[#f5fefd] mb-2">
+            Detail Aktivitas
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[15px] dark:text-[#f5fefd]">
             <div>
-              <span className="text-gray-500">Kode:&nbsp;</span>
+              <span className="text-gray-500 dark:text-gray-300">
+                Kode:&nbsp;
+              </span>
               <span className="font-medium">{activity?.code || "-"}</span>
             </div>
             <div>
-              <span className="text-gray-500">Jenis Akta:&nbsp;</span>
+              <span className="text-gray-500 dark:text-gray-300">
+                Jenis Akta:&nbsp;
+              </span>
               <span className="font-medium">{activity?.deed_type || "-"}</span>
             </div>
           </div>
 
           {/* daftar penghadap dari array */}
           <div className="mt-3">
-            <span className="text-gray-500 block mb-1">Penghadap:</span>
+            <span className="text-gray-500 dark:text-gray-300 block mb-1">
+              Penghadap:
+            </span>
             {parties.length ? (
-              <ul className="list-disc pl-6 space-y-0.5">
+              <ul className="list-disc pl-6 dark:text-[#f5fefd] space-y-0.5">
                 {parties.map((p, idx) => (
                   <li key={idx} className="font-medium">
                     {p}
@@ -190,9 +202,9 @@ export default function ScheduleModal({
         </div>
 
         {/* Tanggal & Waktu */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 dark:text-gray-300">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-[#f5fefd] mb-2">
               Tanggal <span className="text-red-500">*</span>
             </label>
             <input
@@ -224,7 +236,7 @@ export default function ScheduleModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-[#f5fefd] mb-2">
               Waktu <span className="text-red-500">*</span>
             </label>
             <input
@@ -250,11 +262,7 @@ export default function ScheduleModal({
 
         {/* Lokasi */}
         <InputField
-          label={
-            <span>
-              Lokasi Pertemuan <span className="text-red-500">*</span>
-            </span>
-          }
+          label={<span className="dark:text-[#f5fefd]">Lokasi Pertemuan</span>}
           name="place"
           type="text"
           placeholder="Kantor notaris, rumah klien, dll."
@@ -266,7 +274,7 @@ export default function ScheduleModal({
 
         {/* Catatan */}
         <TextAreaField
-          label="Catatan Tambahan"
+          label={<span className="dark:text-[#f5fefd]">Catatan Tambahan</span>}
           name="note"
           rows={3}
           placeholder="Dokumen yang perlu disiapkan, catatan khusus, dll."
