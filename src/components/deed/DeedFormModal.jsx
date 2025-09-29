@@ -118,7 +118,7 @@ export default function DeedFormModal({
 
           <div>
             <label className="block text-sm font-medium mb-1 dark:text-[#f5fefd]">
-              Deskripsi
+              Deskripsi <span className="text-red-500">*</span>
             </label>
             <TextAreaField
               name="description"

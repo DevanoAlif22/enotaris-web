@@ -55,9 +55,9 @@ export default function StepItem({
           </span>
           {status !== "pending" &&
             (isExpanded ? (
-              <ChevronDownIcon className="w-5 h-5 text-gray-400" />
+              <ChevronDownIcon className="w-5 h-5 text-gray-400 dark:text-[#f5fefd]" />
             ) : (
-              <ChevronRightIcon className="w-5 h-5 text-gray-400" />
+              <ChevronRightIcon className="w-5 h-5 text-gray-400 dark:text-[#f5fefd]" />
             ))}
         </div>
       </button>

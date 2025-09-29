@@ -102,25 +102,25 @@ export default function CalendarPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-blue-900 p-4 sm:p-6">
+    <div className="min-h-screen bg-[#0256c4] dark:bg-[#01043c] p-4 sm:p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20 dark:border-gray-700/30">
+        <div className="bg-white/80 dark:bg-[#002d6a] backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20 dark:border-gray-700/30">
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg">
+            <div className="p-2 bg-gradient-to-r from-blue-500 to-gray-400 rounded-xl shadow-lg">
               <CalendarDaysIcon className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold bg-gray-900 dark:bg-[#f5fefd] bg-clip-text text-transparent">
               Kalender Jadwal
             </h1>
           </div>
-          <p className="text-gray-600 dark:text-gray-400 text-sm">
+          <p className="text-gray-600 dark:text-gray-300 text-sm">
             Kelola dan lihat semua jadwal aktivitas Anda
           </p>
         </div>
 
         {/* Calendar Container */}
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl shadow-lg border border-white/20 dark:border-gray-700/30 overflow-hidden">
+        <div className="bg-white/80 dark:bg-[#002d6a] backdrop-blur-lg rounded-2xl shadow-lg border border-white/20 dark:border-gray-700/30 overflow-hidden">
           <div className="p-6">
             <div className="calendar-container">
               <FullCalendar
@@ -158,7 +158,7 @@ export default function CalendarPage() {
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full flex-shrink-0"></div>
                         <div className="flex-1 min-w-0">
-                          <div className="text-xs font-semibold truncate">
+                          <div className="text-xs font-semibold dark:text-[#f5fefd] truncate">
                             {arg.timeText && (
                               <span className="opacity-90">
                                 {arg.timeText}{" "}
@@ -167,7 +167,7 @@ export default function CalendarPage() {
                             {arg.event.title}
                           </div>
                           {r?.location && (
-                            <div className="text-xs opacity-75 truncate mt-1 flex items-center gap-1">
+                            <div className="text-xs dark:text-gray-300 opacity-75 truncate mt-1 flex items-center gap-1">
                               <MapPinIcon className="w-3 h-3" />
                               {r.location}
                             </div>
@@ -229,8 +229,8 @@ function EnhancedDialog({ row, onClose }) {
         <div className="px-6 py-4 text-white relative bg-[#0256c4] dark:bg-[#002d6a]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
-                <CalendarDaysIcon className="w-5 h-5" />
+              <div className="p-2 bg-gradient-to-r from-blue-500 to-[#0256c4] rounded-xl backdrop-blur-sm">
+                <CalendarDaysIcon className="w-5 h-5 " />
               </div>
               <h3 className="text-lg font-bold">Detail Jadwal</h3>
             </div>
@@ -244,11 +244,11 @@ function EnhancedDialog({ row, onClose }) {
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-4">
+        <div className="p-6 space-y-4 dark:bg-[#01043c]">
           {/* Title */}
-          <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl p-4">
+          <div className="bg-gray-50 dark:bg-[#002d6a] rounded-2xl p-4">
             <div className="flex items-start gap-3">
-              <DocumentTextIcon className="w-5 h-5 text-gray-500 mt-0.5 flex-shrink-0" />
+              <DocumentTextIcon className="w-5 h-5 text-white mt-0.5 flex-shrink-0" />
               <div className="flex-1">
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Judul Kegiatan
@@ -262,7 +262,7 @@ function EnhancedDialog({ row, onClose }) {
 
           {/* Date & Time */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl p-4">
+            <div className="bg-gray-50 dark:bg-[#002d6a] rounded-2xl p-4">
               <div className="flex items-center gap-3">
                 <CalendarDaysIcon className="w-5 h-5 text-blue-500 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
@@ -276,7 +276,7 @@ function EnhancedDialog({ row, onClose }) {
               </div>
             </div>
 
-            <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl p-4">
+            <div className="bg-gray-50 dark:bg-[#002d6a] rounded-2xl p-4">
               <div className="flex items-center gap-3">
                 <ClockIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
@@ -293,7 +293,7 @@ function EnhancedDialog({ row, onClose }) {
 
           {/* Location */}
           {row?.location && (
-            <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl p-4">
+            <div className="bg-gray-50 dark:bg-[#002d6a] rounded-2xl p-4">
               <div className="flex items-start gap-3">
                 <MapPinIcon className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
@@ -311,7 +311,7 @@ function EnhancedDialog({ row, onClose }) {
           {/* Additional Info */}
           <div className="grid grid-cols-1 gap-4">
             {row?.activity?.notaris?.name && (
-              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl p-4">
+              <div className="bg-gray-50 dark:bg-[#002d6a] rounded-2xl p-4">
                 <div className="flex items-center gap-3">
                   <UserIcon className="w-5 h-5 text-purple-500 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
@@ -327,7 +327,7 @@ function EnhancedDialog({ row, onClose }) {
             )}
 
             {row?.activity?.tracking_code && (
-              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl p-4">
+              <div className="bg-gray-50 dark:bg-[#002d6a] rounded-2xl p-4">
                 <div className="flex items-center gap-3">
                   <TagIcon className="w-5 h-5 text-orange-500 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
@@ -345,10 +345,10 @@ function EnhancedDialog({ row, onClose }) {
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700/30 border-t border-gray-200 dark:border-gray-700">
+        <div className="px-6 py-4 bg-gray-50 dark:bg-[#002d6a] border-t border-gray-200 dark:border-gray-700">
           <button
             onClick={onClose}
-            className="w-full px-4 py-2 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-medium rounded-xl transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+            className="w-full px-4 py-2 bg-gradient-to-r from-blue-500 to-[#0256c4] text-white font-medium rounded-xl transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
           >
             Tutup
           </button>
