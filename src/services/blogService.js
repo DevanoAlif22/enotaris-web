@@ -1,4 +1,3 @@
-// src/services/blogService.js
 import api from "./api";
 
 const normalizeErr = (err) => {
@@ -8,68 +7,80 @@ const normalizeErr = (err) => {
   return { message: msg, errors, status: err?.response?.status };
 };
 
-// Samakan dengan BE kamu. Jika pakai prefix '/blogs' saja, ubah BASE sesuai itu.
 const BASE = "/admin/blogs";
 
-const toFormData = (obj = {}) => {
-  const fd = new FormData();
-  Object.entries(obj).forEach(([k, v]) => {
-    if (v === undefined || v === null) return;
-    if (typeof v === "boolean") fd.append(k, v ? "1" : "0");
-    else fd.append(k, v);
-  });
-  return fd;
-};
-
 export const blogService = {
-  // GET /admin/blogs?search=&page=&per_page=&user_id=
+  // GET /blogs  (?search=, ?per_page=, ?user_id=)
   async list({ page = 1, per_page = 10, search = "", user_id } = {}) {
     try {
-      const params = { page, per_page };
-      if (search) params.search = search;
-      if (user_id) params.user_id = user_id;
-      const { data } = await api.get(BASE, { params });
-      return data;
+      const { data } = await api.get(BASE, {
+        params: { page, per_page, search, user_id },
+      });
+      return data; // { success, data:[...], meta:{...} }
     } catch (err) {
       throw normalizeErr(err);
     }
   },
 
-  // GET /admin/blogs/{id}
+  // GET /blogs/{id}
   async get(id) {
     try {
       const { data } = await api.get(`${BASE}/${id}`);
-      return data;
+      return data; // { success, data:{...} }
     } catch (err) {
       throw normalizeErr(err);
     }
   },
 
-  // POST /admin/blogs
-  async create({ title, description, image }) {
+  // POST /blogs  (multipart/form-data; image optional)
+  async create({ title, description, imageFile }) {
     try {
-      const form = toFormData({ title, description, image });
-      const { data } = await api.post(BASE, form);
+      const fd = new FormData();
+      fd.append("title", title);
+      fd.append("description", description);
+      if (imageFile) fd.append("image", imageFile);
+
+      const { data } = await api.post(BASE, fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       return data;
     } catch (err) {
       throw normalizeErr(err);
     }
   },
 
-  // POST /admin/blogs/update/{id}
-  async update(id, { title, description, image } = {}) {
-    const form = new FormData();
-    if (title != null) form.append("title", title);
-    if (description != null) form.append("description", description);
-    if (image) form.append("image", image);
-    const { data } = await api.post(`/admin/blogs/update/${id}`, form);
-    return data;
+  // POST /blogs/update/{id}  (image optional, clear_image optional)
+  async update(id, { title, description, imageFile, clear_image = false }) {
+    try {
+      const fd = new FormData();
+      if (title !== undefined) fd.append("title", title);
+      if (description !== undefined) fd.append("description", description);
+      if (clear_image) fd.append("clear_image", "1");
+      if (imageFile) fd.append("image", imageFile);
+
+      const { data } = await api.post(`${BASE}/update/${id}`, fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return data;
+    } catch (err) {
+      throw normalizeErr(err);
+    }
   },
 
-  // DELETE /admin/blogs/{id}
+  // DELETE /blogs/{id}
   async destroy(id) {
     try {
       const { data } = await api.delete(`${BASE}/${id}`);
+      return data;
+    } catch (err) {
+      throw normalizeErr(err);
+    }
+  },
+
+  // GET /blogs/all/blog  (?min=true)
+  async all({ min = false } = {}) {
+    try {
+      const { data } = await api.get(`${BASE}/all/blog`, { params: { min } });
       return data;
     } catch (err) {
       throw normalizeErr(err);

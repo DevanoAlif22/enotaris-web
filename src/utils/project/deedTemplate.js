@@ -169,7 +169,7 @@ export function buildSignaturesBlockHTML(activity, opts = {}) {
           <div style="text-align:center; font-weight:600; margin-bottom:8px;">${safe(
             headingRight
           )}</div>
-          <table style="width:100%; border-collapse:separate; border-spacing:${gap}px; padding-top:30px;">
+          <table style="width:100%; border-collapse:separate; border-spacing:${gap}px; margin-top:0px;">
             ${signBox(notaryName)}
           </table>
         </td>
