@@ -18,27 +18,28 @@ const steps = [
     icon: ShieldCheck,
     brief: "Proses eKYC untuk keamanan & kepatuhan.",
     description:
-      "Validasi identitas penghadap via eKTP/face match, deteksi duplikasi, dan audit trail otomatis.",
+      "Validasi identitas penghadap menggunakan KTP, Kartu Keluarga dan yang lainnya.",
     video: "feature-1.mp4",
   },
   {
     id: "template",
     order: 2,
-    title: "Pilih atau Buat Template Akta",
+    title: "Pilih, Import, atau Buat Template Akta",
     icon: FileText,
-    brief: "Template dinamis agar pembuatan akta konsisten.",
+    brief: "Template dinamis untuk akta yang konsisten.",
     description:
-      "Kelola library template akta, merge field otomatis, dan versi dokumen yang bisa dilacak.",
+      "Pilih atau Import Word (.docx), edit dengan text editor, gunakan merge field, dan pratinjau dokumen sebelum disimpan.",
     video: "feature-2.mp4",
   },
+
   {
     id: "invite",
     order: 3,
     title: "Undang Penghadap",
     icon: UserPlus,
-    brief: "Kirim undangan dan atur peran/akses.",
+    brief: "Kirim undangan sebagai penghadap.",
     description:
-      "Undang penghadap dengan peran yang jelas, upload berkas pendukung, dan status hadir real-time.",
+      "Undang penghadap dengan notifikasi email, upload berkas pendukung, dan status hadir real-time.",
     video: "feature-3.mp4",
   },
   {
@@ -58,7 +59,7 @@ const steps = [
     icon: ActivitySquare,
     brief: "Pantau progres, aktivitas, dan SLA.",
     description:
-      "Timeline aktivitas, checklist kepatuhan, notifikasi, serta metrik SLA untuk tiap proyek.",
+      "Timeline aktivitas mulai dari verifikasi, pengisian data, penjadwalan, hingga penandatanganan.",
     video: "feature-5.mp4",
   },
   {
@@ -77,8 +78,7 @@ const steps = [
     title: "Tanda Tangan Digital",
     icon: PenLine,
     brief: "Legal & terverifikasi.",
-    description:
-      "Tanda tangan digital tersertifikasi, multi-penandatangan, dan bukti tanda tangan (eSeal/eCertificate).",
+    description: "Tanda tangan digital dilakukan oleh Notaris dan Penghadap",
     video: "feature-7.mp4",
   },
 ];

@@ -1,6 +1,5 @@
 // components/CTASection.jsx
 import { MessageCircle } from "lucide-react";
-
 export default function CTASection() {
   return (
     <section
@@ -49,10 +48,10 @@ export default function CTASection() {
         </div>
 
         {/* Info nomor WA */}
-        <p className="mt-6 text-[#0f1d3b] font-medium">
+        {/* <p className="mt-6 text-[#0f1d3b] font-medium">
           atau hubungi langsung:{" "}
           <span className="text-[#0256c4] font-bold">+62 895-3661-41915</span>
-        </p>
+        </p> */}
       </div>
     </section>
   );

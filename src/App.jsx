@@ -3,8 +3,9 @@ import { Route, Routes } from "react-router-dom";
 import LandingHomePage from "./pages/landing/LandingHomePage";
 import LandingBlogPage from "./pages/landing/LandingBlogPage";
 import LandingAboutPage from "./pages/landing/LandingAboutPage";
-import LandingFeaturePage from "./pages/landing/LandingFeaturePage";
 import LandingTrackPage from "./pages/landing/LandingTrackPage";
+import LandingFeaturePage from "./pages/landing/LandingFeaturePage";
+import LandingBlogDetailPage from "./pages/landing/LandingBlogDetailPage";
 import HomePage from "./pages/dashboard/HomePage";
 import AboutPage from "./pages/AboutPage";
 import ProfilePage from "./pages/dashboard/ProfilePage";
@@ -29,6 +30,7 @@ import RequirementNotarisPage from "./pages/dashboard/RequirementNotarisPage";
 import BlogPage from "./pages/dashboard/BlogPage";
 import BlogEditorPage from "./pages/dashboard/BlogEditorPage";
 import ActivityFlowPage from "./pages/dashboard/ActivityFlowPage";
+import CategoryBlogPage from "./pages/dashboard/CategoryBlogPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import { ToastContainer } from "react-toastify";
 import SignPage from "./pages/dashboard/SignPage";
@@ -113,6 +115,8 @@ export default function App() {
               <Route path="/app/blog" element={<BlogPage />} />
               <Route path="/app/blog/new" element={<BlogEditorPage />} />
               <Route path="/app/blog/:id/edit" element={<BlogEditorPage />} />
+
+              <Route path="/app/category-blog" element={<CategoryBlogPage />} />
             </Route>
 
             {/* ===== NOTARIS ONLY (role_id 3) ===== */}
@@ -137,6 +141,7 @@ export default function App() {
         <Route element={<LandingLayout />}>
           <Route path="/" element={<LandingHomePage />} />
           <Route path="/blog" element={<LandingBlogPage />} />
+          <Route path="/blog/:id" element={<LandingBlogDetailPage />} />
           <Route path="/about" element={<LandingAboutPage />} />
           <Route path="/feature" element={<LandingFeaturePage />} />
           <Route path="/track" element={<LandingTrackPage />} />

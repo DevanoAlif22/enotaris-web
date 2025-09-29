@@ -2,18 +2,19 @@
 import {
   DocumentTextIcon,
   IdentificationIcon,
-  ArchiveBoxIcon,
+  NewspaperIcon,
   ShieldCheckIcon,
   PencilSquareIcon,
   ChartBarIcon,
 } from "@heroicons/react/24/outline";
 import { CheckCircleIcon } from "@heroicons/react/24/solid";
+import { Link } from "react-router";
 
 export default function ENotarisIntroSection() {
   const services = [
     { label: "Pembuatan Akta", icon: DocumentTextIcon },
-    { label: "Balik Nama Sertifikat", icon: IdentificationIcon },
-    { label: "Pengelolaan Arsip Digital", icon: ArchiveBoxIcon },
+    { label: "Pendirian PT/CV", icon: IdentificationIcon },
+    { label: "Blog/Artikel Terbaru", icon: NewspaperIcon },
     { label: "Verifikasi Identitas", icon: ShieldCheckIcon },
     { label: "Tanda Tangan Digital", icon: PencilSquareIcon },
     { label: "Monitoring Proyek", icon: ChartBarIcon },
@@ -22,15 +23,15 @@ export default function ENotarisIntroSection() {
   const bullet = [
     {
       title: "Mudah & Efisien",
-      desc: "Semua proyek notaris dikelola dalam satu platform digital yang terarah.",
+      desc: "Semua praktik kenotariatan dikelola dalam satu platform digital yang terarah.",
     },
     {
       title: "Aman & Terpercaya",
-      desc: "Didukung enkripsi & penyimpanan cloud yang andal.",
+      desc: "Didukung proses verifikasi identitas & penyimpanan cloud yang andal.",
     },
     {
       title: "Kolaborasi Real-time",
-      desc: "Notaris, penghadap, dan klien terhubung dalam satu alur kerja.",
+      desc: "Notaris dan Penghadap terhubung dalam satu alur kerja.",
     },
     {
       title: "Dokumen Terintegrasi",
