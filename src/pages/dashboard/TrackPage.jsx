@@ -62,11 +62,11 @@ export default function TrackPage() {
   return (
     <div className="p-4 sm:p-6 space-y-4">
       {/* Header */}
-      <div className="bg-white dark:bg-[#003782] rounded-xl p-4 shadow-sm">
+      <div className="bg-white dark:bg-[#002d6a] rounded-xl p-4 shadow-sm">
         <h1 className="text-xl font-semibold dark:text-[#f5fefd]">
           Lacak Progres Aktivitas
         </h1>
-        <p className="text-sm text-gray-500 dark:text-[#cfe0ff]">
+        <p className="text-sm text-gray-500 dark:text-[#f5fefd]">
           Masukkan <span className="font-mono font-medium">tracking_code</span>{" "}
           untuk melihat status tiap langkah.
         </p>
@@ -92,7 +92,7 @@ export default function TrackPage() {
 
       {/* Result */}
       {res && (
-        <div className="bg-white dark:bg-[#003782] rounded-xl p-4 shadow-sm space-y-6">
+        <div className="bg-white dark:bg-[#002d6a] rounded-xl p-4 shadow-sm space-y-6">
           {/* Jika tidak ada track */}
           {Array.isArray(steps) && steps.length === 0 && (
             <div className="flex items-center gap-3 p-3 rounded-md bg-yellow-50 text-yellow-800">
@@ -188,7 +188,7 @@ export default function TrackPage() {
 
 function InfoCard({ icon, title, value, pill = false, pillColor }) {
   return (
-    <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl p-4">
+    <div className="bg-gray-50 dark:bg-[#01043c] rounded-2xl p-4">
       {title && (
         <div className="flex items-center gap-3 mb-1">
           {icon}

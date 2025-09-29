@@ -9,7 +9,7 @@ export default function InputField({
   disabled = false,
 }) {
   return (
-    <div className="mb-4 dark:text-[#f5fefd]">
+    <div className="mb-4">
       {label && (
         <label className="block text-sm font-medium text-gray-700 mb-2">
           {label}

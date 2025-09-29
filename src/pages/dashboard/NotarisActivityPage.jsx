@@ -354,7 +354,7 @@ export default function NotaryActivityPage() {
                     <StatusBadge status={r.status} />
                   </td> */}
                   <td className="py-4 px-5 whitespace-nowrap">
-                    <div className="flex items-center gap-2">
+                    <div className="flex justify-center gap-2">
                       <ActionButton variant="info">
                         <Link to={`/app/project-flow/${r.id}`}>Detail</Link>
                       </ActionButton>

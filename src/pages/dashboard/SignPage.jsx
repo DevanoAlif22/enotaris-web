@@ -463,16 +463,16 @@ export default function SignPage() {
       : null;
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-6 bg-gray-50 dark:bg-[#01043c] min-h-screen">
       <LoadingOverlay show={busy || isSubmitting || isMutating} />
 
-      <div className="max-w-6xl mx-auto bg-white rounded-lg shadow p-4">
+      <div className="max-w-6xl mx-auto bg-white dark:bg-[#002d6a] rounded-lg shadow p-4">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-xl font-semibold">
+            <h1 className="text-xl font-semibold dark:text-[#f5fefd]">
               Tanda Tangan: {activity?.name}
             </h1>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-300">
               Kode: {activity?.tracking_code}
             </p>
           </div>
@@ -512,7 +512,7 @@ export default function SignPage() {
             )}
 
             <button
-              className="px-3 py-1.5 rounded bg-blue-600 text-white text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1.5 rounded bg-gradient-to-r from-blue-500 to-[#0256c4] text-white text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleSaveApply}
               disabled={busy || !viewerUrl}
             >
@@ -521,9 +521,11 @@ export default function SignPage() {
           </div>
         </div>
 
-        <div className="mb-4 p-3 bg-gray-50 rounded border">
+        <div className="mb-4 p-3 bg-gray-50 dark:bg-[#01043c] rounded border">
           <div className="flex items-center gap-2 mb-2">
-            <div className="text-sm font-medium">Sumber TTD Anda:</div>
+            <div className="text-sm font-medium dark:text-[#f5fefd]">
+              Sumber TTD Anda:
+            </div>
             {signSources.length === 0 && (
               <div className="text-xs text-gray-500">
                 Tidak ada file tanda tangan pada profil Anda (identity).
@@ -565,7 +567,7 @@ export default function SignPage() {
             </div>
           </div>
 
-          <div className="text-xs text-gray-500 mt-2">
+          <div className="text-xs text-gray-500 dark:text-gray-300 mt-2">
             💡 Tips: klik gambar TTD (milik Anda) untuk menempel, gunakan Free
             Draw untuk menggambar, double-click objek untuk menghapus.
           </div>
@@ -584,7 +586,7 @@ export default function SignPage() {
             </Link>
           </div>
         ) : (
-          <div className="relative rounded-lg border bg-gray-50">
+          <div className="relative rounded-lg border bg-gray-50 dark:bg-[#01043c]">
             <div className="max-h-[80vh] overflow-y-auto overflow-x-hidden px-4 pt-6 pb-2">
               {/* kolom pusat tempat halaman di-append */}
               <div
