@@ -189,6 +189,15 @@
   transform: scale(1.05) !important;
 }
 
+/* globals.css */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

@@ -1,4 +1,3 @@
-// src/pages/dashboard/BlogPage.jsx
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +8,7 @@ import { blogService } from "../../services/blogService";
 import { showError, showSuccess } from "../../utils/toastConfig";
 
 export default function BlogPage() {
+  // ===== server data =====
   const [rows, setRows] = useState([]);
   const [meta, setMeta] = useState({
     current_page: 1,
@@ -16,18 +16,23 @@ export default function BlogPage() {
     total: 0,
     last_page: 1,
   });
+
+  // ===== UI state =====
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const perPage = 10;
 
+  // ===== modal confirm delete =====
   const [confirm, setConfirm] = useState({
     open: false,
     row: null,
     loading: false,
   });
+
   const navigate = useNavigate();
 
+  // ===== fetch & helpers =====
   const fetchRows = async (pg = page, search = query) => {
     try {
       setLoading(true);
@@ -36,30 +41,39 @@ export default function BlogPage() {
         per_page: perPage,
         search,
       });
+
       const list = res?.data || [];
       setRows(list);
-      setMeta(
-        res?.meta || {
-          current_page: pg,
-          per_page: perPage,
-          total: list.length,
-          last_page: 1,
-        }
-      );
+
+      const m = res?.meta || {
+        current_page: pg,
+        per_page: perPage,
+        total: list.length,
+        last_page: 1,
+      };
+      setMeta(m);
     } catch (e) {
       showError(e.message || "Gagal memuat blog.");
       setRows([]);
-      setMeta({ current_page: 1, per_page: perPage, total: 0, last_page: 1 });
+      setMeta({
+        current_page: 1,
+        per_page: perPage,
+        total: 0,
+        last_page: 1,
+      });
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchRows(page, query); /* eslint-disable-next-line */
+    fetchRows(page, query);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
+
   useEffect(() => setPage(1), [query]);
 
+  // ===== search (debounce) =====
   const debRef = useRef(null);
   const onChangeSearch = (e) => {
     const v = e.target.value;
@@ -71,6 +85,7 @@ export default function BlogPage() {
     }, 400);
   };
 
+  // ===== actions =====
   const openAdd = () => navigate("/app/blog/new");
   const openEdit = (row) => navigate(`/app/blog/${row.id}/edit`);
   const askDelete = (row) => setConfirm({ open: true, row, loading: false });
@@ -82,15 +97,20 @@ export default function BlogPage() {
       await blogService.destroy(row.id);
       showSuccess("Blog berhasil dihapus.");
       setConfirm({ open: false, row: null, loading: false });
+
       const remaining = rows.length - 1;
-      if (remaining === 0 && page > 1) setPage((p) => Math.max(1, p - 1));
-      else fetchRows(meta.current_page, query);
+      if (remaining === 0 && page > 1) {
+        setPage((p) => Math.max(1, p - 1));
+      } else {
+        fetchRows(meta.current_page, query);
+      }
     } catch (e) {
       setConfirm((c) => ({ ...c, loading: false }));
       showError(e.message || "Gagal menghapus blog.");
     }
   };
 
+  // ===== utils =====
   const fmtDate = (iso) =>
     new Date(iso).toLocaleDateString("id-ID", {
       day: "2-digit",
@@ -112,12 +132,13 @@ export default function BlogPage() {
         {/* Header */}
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-2xl font-semibold dark:text-[#f5fefd]">Blog</h1>
+
           <div className="flex items-center gap-3 w-full max-w-xl">
             <div className="relative flex-1">
               <input
                 defaultValue={query}
                 onChange={onChangeSearch}
-                placeholder="Cari judul atau deskripsi…"
+                placeholder="Cari judul/deskripsi…"
                 className="w-full h-11 pl-4 pr-10 rounded-lg border outline-none focus:ring-2 focus:ring-[#0256c4]/40 dark:text-[#f5fefd]"
               />
               <MagnifyingGlassIcon className="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-[#f5fefd]" />
@@ -161,24 +182,26 @@ export default function BlogPage() {
                     idx === 0 ? "border-t-0" : ""
                   }`}
                 >
-                  <td className="py-4 px-4 text-center">
+                  <td className="py-4 px-4 align-top text-center">
                     {row.image ? (
                       <img
                         src={row.image}
                         alt={row.title}
-                        className="w-16 h-16 object-cover rounded-md inline-block"
+                        className="w-14 h-14 object-cover rounded-md inline-block"
                       />
                     ) : (
-                      <div className="w-16 h-16 bg-gray-100 rounded-md inline-block" />
+                      <div className="w-14 h-14 bg-gray-100 rounded-md inline-flex items-center justify-center text-xs text-gray-400">
+                        No Img
+                      </div>
                     )}
                   </td>
-                  <td className="py-4 px-4 align-top text-center whitespace-nowrap font-semibold dark:text-white">
+                  <td className="py-4 px-4 align-top whitespace-nowrap font-semibold text-[#0e1528] dark:text-white text-center">
                     {row.title}
                   </td>
-                  <td className="py-4 px-4 align-top text-center whitespace-nowrap dark:text-white">
+                  <td className="py-4 px-4 align-top whitespace-nowrap text-[#0e1528] dark:text-white text-center">
                     {fmtDate(row.created_at)}
                   </td>
-                  <td className="py-4 px-4 align-top whitespace-nowrap">
+                  <td className="py-4 px-4 align-top">
                     <div className="flex justify-center gap-2">
                       <ActionButton
                         variant="warning"
@@ -210,11 +233,12 @@ export default function BlogPage() {
           </table>
         </div>
 
-        {/* Pagination */}
+        {/* Footer: pagination */}
         <div className="mt-6 flex items-center justify-between text-sm text-gray-600">
           <div className="dark:text-[#f5fefd]">
             <p>
-              Menampilkan {(meta.current_page - 1) * meta.per_page + 1 || 0}–
+              Menampilkan{" "}
+              {(meta.current_page - 1) * meta.per_page + (rows.length ? 1 : 0)}–
               {Math.min(meta.current_page * meta.per_page, meta.total) || 0}{" "}
               dari {meta.total || 0}
             </p>
@@ -241,6 +265,7 @@ export default function BlogPage() {
         </div>
       </div>
 
+      {/* Confirm Delete */}
       <ConfirmDeleteModal
         open={confirm.open}
         onClose={() => setConfirm({ open: false, row: null, loading: false })}
