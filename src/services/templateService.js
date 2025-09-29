@@ -63,4 +63,18 @@ export const templateService = {
       throw normalizeErr(err);
     }
   },
+
+  // services/templateService.js
+  async importDocx(file) {
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const { data } = await api.post(`${BASE}/import-docx`, form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return data; // { success, data:{ html } }
+    } catch (err) {
+      throw normalizeErr(err);
+    }
+  },
 };
