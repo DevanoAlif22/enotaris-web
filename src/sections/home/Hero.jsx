@@ -1,4 +1,4 @@
-import { Briefcase } from "lucide-react";
+import { FileText } from "lucide-react";
 
 const Hero = () => {
   return (
@@ -32,7 +32,7 @@ const Hero = () => {
             data-aos-delay="0"
           >
             <h4 className="text-primary-blackText text-[16px] font-medium flex">
-              <Briefcase size={18} className="mt-[3px] me-[5px]" />
+              <FileText size={18} className="mt-[3px] ms-[5px] me-[5px]" />
               Platform Proyek Notaris
             </h4>
           </div>
@@ -43,8 +43,8 @@ const Hero = () => {
             data-aos="fade-up"
             data-aos-delay="120"
           >
-            Pengerjaan Proyek Notaris Dalam{" "}
-            <span className="text-primary-greenText">Satu Website</span>
+            Praktik Kenotariatan Dalam{" "}
+            <span className="text-primary-greenText">Satu Platform</span>
           </h1>
 
           {/* Description */}
@@ -53,9 +53,10 @@ const Hero = () => {
             data-aos="fade-up"
             data-aos-delay="200"
           >
-            E-Notaris membantu Anda mengelola proyek notaris secara efisien
-            mulai dari pembuatan akta, penyimpanan dokumen, hingga pelacakan
-            aktivitas dalam satu platform digital yang aman dan terpercaya.
+            E-Notaris membantu Anda mengelola praktik notaris secara efisien.
+            Mulai dari pembuatan akta, penyimpanan dokumen, hingga pelacakan
+            aktivitas. Semua dalam satu platform digital yang aman dan
+            terpercaya.
           </p>
 
           {/* CTA */}

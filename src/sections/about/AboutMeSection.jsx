@@ -132,7 +132,7 @@ export default function AboutOfficeSection() {
               kepatuhan hukum dan efisiensi teknologi. Dengan sistem E-Notaris,
               proses pembuatan akta, verifikasi identitas, tanda tangan
               elektronik, hingga pengarsipan dapat dilakukan terukur dan
-              terdokumentasi rapi—memberikan pengalaman yang cepat dan
+              terdokumentasi rapi, memberikan pengalaman yang cepat dan
               transparan bagi klien.
             </p>
           </div>
@@ -180,7 +180,7 @@ export default function AboutOfficeSection() {
                   data-aos-delay={160 + i * 80}
                 >
                   <div className="absolute w-3 h-3 rounded-full -start-1.5 top-2 bg-gradient-to-r from-[#0256c4] to-[#002d6a]" />
-                  <time className="text-xs text-[#5172a3]">{t.year}</time>
+                  <time className="text-xs text-[#5172a3] ms-3">{t.year}</time>
                   <h5 className="text-[16px] font-bold text-[#0f1d3b]">
                     {t.title}
                   </h5>

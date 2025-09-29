@@ -1,8 +1,11 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
+import DOMPurify from "dompurify";
+import mammoth from "mammoth";
+
 import QuillEditor from "../../components/common/QuillEditor";
-import HtmlPreviewModal from "../../components/common/HtmlPreviewModal"; // ⬅️ baru
+import HtmlPreviewModal from "../../components/common/HtmlPreviewModal";
 import { templateService } from "../../services/templateService";
 import { showError, showSuccess } from "../../utils/toastConfig";
 
@@ -25,8 +28,11 @@ export default function TemplateEditorPage() {
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
 
-  const [showPreview, setShowPreview] = useState(false); // ⬅️ modal state
+  const [showPreview, setShowPreview] = useState(false);
   const quillRef = useRef(null);
+
+  // input file untuk import .docx (client-side)
+  const fileInputRef = useRef(null);
 
   // fetch awal (tanpa overwrite setelah user ngetik)
   useEffect(() => {
@@ -45,7 +51,7 @@ export default function TemplateEditorPage() {
         setLoading(false);
       }
     })();
-  }, [templateId]); // penting: jangan depend ke `dirty` supaya tidak re-fetch saat user ngetik
+  }, [templateId]); // jangan depend ke `dirty` supaya tidak re-fetch saat user ngetik
 
   const handleChange = (val, _delta, source) => {
     if (source === "user") setDirty(true);
@@ -56,6 +62,14 @@ export default function TemplateEditorPage() {
     try {
       setSaving(true);
       const payload = { name, custom_value: preserveSpaces(customValue) };
+      if (!name?.trim()) {
+        showError("Nama template wajib diisi.");
+        return;
+      }
+      if (!customValue || !String(customValue).trim()) {
+        showError("Isi template wajib diisi.");
+        return;
+      }
       if (templateId) {
         await templateService.update(templateId, payload);
         showSuccess("Template berhasil diperbarui.");
@@ -72,9 +86,74 @@ export default function TemplateEditorPage() {
               return Array.isArray(first) ? first[0] : String(first);
             })()
           : null;
-      showError(firstErr || e.message || "Gagal menyimpan akta.");
+      showError(firstErr || e.message || "Gagal menyimpan template.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  // === Import Word (.docx) — client-side pakai mammoth ===
+  const handleClickImport = () => fileInputRef.current?.click();
+
+  const handleImportDocxClient = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // validasi sederhana ekstensi
+    if (!/\.docx$/i.test(file.name)) {
+      showError("Format harus .docx");
+      e.target.value = "";
+      return;
+    }
+
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+
+      const { value: rawHtml } = await mammoth.convertToHtml(
+        { arrayBuffer },
+        {
+          // mapping style agar rapi
+          styleMap: [
+            "p[style-name='Normal'] => p",
+            "u => u",
+            "b => strong",
+            "i => em",
+            "h1 => h1",
+            "h2 => h2",
+            "h3 => h3",
+            "table => table.table",
+          ].join("\n"),
+          convertImage: mammoth.images.inline(async (elem) => {
+            // default: inline base64 supaya langsung tampil
+            const buffer = await elem.read("base64");
+            const contentType = elem.contentType || "image/png";
+            return { src: `data:${contentType};base64,${buffer}` };
+
+            // ⬇️ Kalau mau upload ke Cloudinary, ganti dengan logic upload:
+            // const blob = await elem.read("blob");
+            // const upFile = new File([blob], `docx_${Date.now()}.png`, { type: elem.contentType });
+            // const res = await draftService.uploadEditorImage(upFile);
+            // return { src: res?.data?.url };
+          }),
+        }
+      );
+
+      // Sanitasi HTML sebelum masuk editor
+      const safeHtml = DOMPurify.sanitize(rawHtml, {
+        USE_PROFILES: { html: true },
+        ALLOWED_URI_REGEXP:
+          /^(?:(?:https?|data):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i,
+      });
+
+      setCustomValue(safeHtml);
+      setDirty(true);
+      showSuccess("Berhasil import dari Word (.docx).");
+    } catch (err) {
+      console.error(err);
+      showError("Gagal import file .docx. Pastikan formatnya benar.");
+    } finally {
+      // reset supaya bisa pilih file yang sama lagi jika perlu
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
@@ -86,9 +165,31 @@ export default function TemplateEditorPage() {
       >
         <span aria-hidden>←</span> Kembali
       </Link>
-      <h1 className="text-2xl font-semibold dark:text-white">
-        {templateId ? "Edit Template" : "Tambah Template"}
-      </h1>
+
+      <div className="flex items-start justify-between">
+        <h1 className="text-2xl font-semibold dark:text-white">
+          {templateId ? "Edit Template" : "Tambah Template"}
+        </h1>
+
+        {/* Tombol Import Word */}
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleClickImport}
+            className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 transition-colors"
+            title="Import dari Microsoft Word (.docx)"
+          >
+            Import Word (.docx)
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".docx"
+            className="hidden"
+            onChange={handleImportDocxClient}
+          />
+        </div>
+      </div>
 
       {loading ? (
         <div>Memuat…</div>
@@ -139,7 +240,7 @@ export default function TemplateEditorPage() {
 
                 <button
                   type="button"
-                  onClick={() => setShowPreview(true)} // ⬅️ buka modal
+                  onClick={() => setShowPreview(true)}
                   className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 transition-colors"
                 >
                   Lihat Preview
@@ -164,6 +265,19 @@ export default function TemplateEditorPage() {
           />
         </>
       )}
+
+      <style>{`
+        /* opsional: sedikit penyesuaian tampilan */
+        .quill-wrap .ql-container {
+          min-height: 360px;
+          max-height: 60vh;
+          overflow-y: auto;
+        }
+        .quill-wrap .ql-editor {
+          white-space: break-spaces;
+          tab-size: 4;
+        }
+      `}</style>
     </div>
   );
 }

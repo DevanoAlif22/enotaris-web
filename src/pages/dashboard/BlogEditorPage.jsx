@@ -2,8 +2,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import QuillEditor from "../../components/common/QuillEditor";
-import FileInput from "../../components/input/FileInput"; // gunakan komponenmu
+import FileInput from "../../components/input/FileInput";
 import { blogService } from "../../services/blogService";
+import { categoryBlogService } from "../../services/categoryBlogService";
 import { showError, showSuccess } from "../../utils/toastConfig";
 
 export default function BlogEditorPage() {
@@ -18,25 +19,46 @@ export default function BlogEditorPage() {
   const [dirty, setDirty] = useState(false);
 
   // image states
-  const [imageLocal, setImageLocal] = useState(null); // File dari input
-  const [imageUrl, setImageUrl] = useState(""); // URL dari server (Cloudinary)
-  const [clearImage, setClearImage] = useState(false); // flag hapus gambar saat simpan
+  const [imageLocal, setImageLocal] = useState(null);
+  const [imageUrl, setImageUrl] = useState("");
+  const [clearImage, setClearImage] = useState(false);
+
+  // categories
+  const [allCats, setAllCats] = useState([]); // [{id,name}]
+  const [selectedCatIds, setSelectedCatIds] = useState([]); // [id,...]
 
   const quillRef = useRef(null);
 
-  // fetch awal (hindari overwrite setelah user ngetik)
+  // Load categories
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await categoryBlogService.all({ min: true });
+        setAllCats(res?.data || []);
+      } catch (e) {
+        showError(e.message || "Gagal memuat kategori.");
+      }
+    })();
+  }, []);
+
+  // Load blog when editing
   useEffect(() => {
     if (!blogId) return;
     if (dirty) return;
     (async () => {
       try {
         setLoading(true);
-        const res = await blogService.get(blogId);
+        const res = await blogService.get(blogId, { withCategories: true });
         const item = res?.data;
         setTitle(item?.title || "");
         setDescription(String(item?.description || ""));
-        setImageUrl(item?.image || ""); // tampilkan sebagai defaultPreviewUrl
+        setImageUrl(item?.image || "");
         setClearImage(false);
+        // prefill categories
+        const ids = Array.isArray(item?.categories)
+          ? item.categories.map((c) => c.id)
+          : [];
+        setSelectedCatIds(ids);
       } catch (e) {
         showError(e.message || "Gagal memuat blog.");
       } finally {
@@ -51,18 +73,26 @@ export default function BlogEditorPage() {
     setDescription(val);
   };
 
-  // Sinkron dengan FileInput → updateType: "image"
+  // File input
   const handleFileChange = ({ updateType, value }) => {
     if (updateType !== "image") return;
     const { file, previewUrl } = value;
-
     if (file) {
       setImageLocal(file);
       setClearImage(false);
     } else {
       setImageLocal(null);
     }
-    setImageUrl(previewUrl); // bisa kosong "" kalau user remove file lokal
+    setImageUrl(previewUrl);
+  };
+
+  // Category toggle (checkbox)
+  const toggleCategory = (catId) => {
+    setSelectedCatIds((prev) =>
+      prev.includes(catId)
+        ? prev.filter((id) => id !== catId)
+        : [...prev, catId]
+    );
   };
 
   const handleSave = async () => {
@@ -73,7 +103,8 @@ export default function BlogEditorPage() {
         title,
         description,
         imageFile: imageLocal || null,
-        clear_image: !!clearImage && !imageLocal, // kalau ada file baru, abaikan clear_image
+        clear_image: !!clearImage && !imageLocal,
+        category_blog_ids: selectedCatIds, // ⬅️ kirim ke server
       };
 
       if (blogId) {
@@ -115,7 +146,7 @@ export default function BlogEditorPage() {
         <div>Memuat…</div>
       ) : (
         <>
-          {/* === Judul === */}
+          {/* Judul */}
           <div className="mb-4">
             <label className="block text-sm font-medium mb-1 dark:text-[#f5fefd]">
               Judul
@@ -129,7 +160,7 @@ export default function BlogEditorPage() {
             />
           </div>
 
-          {/* === Gambar (di bawah judul) === */}
+          {/* Gambar */}
           <div>
             <FileInput
               labelTitle={
@@ -149,7 +180,7 @@ export default function BlogEditorPage() {
                 className="checkbox checkbox-sm"
                 checked={clearImage}
                 onChange={(e) => setClearImage(e.target.checked)}
-                disabled={!!imageLocal} // jika upload baru, tidak perlu clear
+                disabled={!!imageLocal}
               />
               <label
                 htmlFor="clearImage"
@@ -165,7 +196,47 @@ export default function BlogEditorPage() {
             </p>
           </div>
 
-          {/* === Deskripsi / Konten === */}
+          {/* Kategori */}
+          <div className="mt-6">
+            <div className="text-sm font-medium mb-2 dark:text-[#f5fefd]">
+              Kategori
+            </div>
+            {allCats.length === 0 ? (
+              <p className="text-sm text-gray-500 dark:text-gray-300">
+                Belum ada kategori.
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {allCats.map((cat) => {
+                  const checked = selectedCatIds.includes(cat.id);
+                  return (
+                    <label
+                      key={cat.id}
+                      className={`px-3 py-1.5 rounded-lg border cursor-pointer text-sm select-none
+                        ${
+                          checked
+                            ? "bg-[#0256c4] text-white border-[#0256c4]"
+                            : "bg-white dark:bg-[#002d6a] text-gray-700 dark:text-[#f5fefd] border-gray-300"
+                        }`}
+                    >
+                      <input
+                        type="checkbox"
+                        className="hidden"
+                        checked={checked}
+                        onChange={() => toggleCategory(cat.id)}
+                      />
+                      {cat.name}
+                    </label>
+                  );
+                })}
+              </div>
+            )}
+            <p className="mt-2 text-xs text-gray-500 dark:text-gray-300">
+              Kamu bisa memilih lebih dari satu kategori.
+            </p>
+          </div>
+
+          {/* Konten */}
           <div className="mt-6">
             <div className="text-sm font-medium mb-2 dark:text-[#f5fefd]">
               Deskripsi / Konten
@@ -184,7 +255,7 @@ export default function BlogEditorPage() {
             </div>
           </div>
 
-          {/* === Tombol Aksi === */}
+          {/* Aksi */}
           <div className="mt-8 flex flex-wrap gap-4 items-center">
             <button
               type="button"

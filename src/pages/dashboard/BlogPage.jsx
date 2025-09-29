@@ -5,6 +5,7 @@ import MagnifyingGlassIcon from "@heroicons/react/24/outline/MagnifyingGlassIcon
 import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 import ActionButton from "../../components/ActionButton";
 import { blogService } from "../../services/blogService";
+import { categoryBlogService } from "../../services/categoryBlogService";
 import { showError, showSuccess } from "../../utils/toastConfig";
 
 export default function BlogPage() {
@@ -23,6 +24,10 @@ export default function BlogPage() {
   const [page, setPage] = useState(1);
   const perPage = 10;
 
+  // ===== categories =====
+  const [cats, setCats] = useState([]); // [{id,name}]
+  const [catFilter, setCatFilter] = useState(""); // string id or ""
+
   // ===== modal confirm delete =====
   const [confirm, setConfirm] = useState({
     open: false,
@@ -32,14 +37,32 @@ export default function BlogPage() {
 
   const navigate = useNavigate();
 
+  // ===== fetch categories (once) =====
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await categoryBlogService.all({ min: true });
+        setCats(res?.data || []);
+      } catch (e) {
+        showError(e.message || "Gagal memuat kategori.");
+      }
+    })();
+  }, []);
+
   // ===== fetch & helpers =====
-  const fetchRows = async (pg = page, search = query) => {
+  const fetchRows = async (
+    pg = page,
+    search = query,
+    categoryId = catFilter
+  ) => {
     try {
       setLoading(true);
       const res = await blogService.list({
         page: pg,
         per_page: perPage,
         search,
+        category_blog_id: categoryId || undefined, // kosong = semua
+        withCategories: true, // ⬅️ penting: ambil relasi kategori
       });
 
       const list = res?.data || [];
@@ -66,12 +89,21 @@ export default function BlogPage() {
     }
   };
 
+  // perubahan page → fetch
   useEffect(() => {
-    fetchRows(page, query);
+    fetchRows(page, query, catFilter);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
+  // perubahan query → reset ke page 1 (fetch via debounce)
   useEffect(() => setPage(1), [query]);
+
+  // perubahan category filter → reset page + fetch
+  useEffect(() => {
+    setPage(1);
+    fetchRows(1, query, catFilter);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [catFilter]);
 
   // ===== search (debounce) =====
   const debRef = useRef(null);
@@ -81,7 +113,7 @@ export default function BlogPage() {
     if (debRef.current) clearTimeout(debRef.current);
     debRef.current = setTimeout(() => {
       setPage(1);
-      fetchRows(1, v);
+      fetchRows(1, v, catFilter);
     }, 400);
   };
 
@@ -102,7 +134,7 @@ export default function BlogPage() {
       if (remaining === 0 && page > 1) {
         setPage((p) => Math.max(1, p - 1));
       } else {
-        fetchRows(meta.current_page, query);
+        fetchRows(meta.current_page, query, catFilter);
       }
     } catch (e) {
       setConfirm((c) => ({ ...c, loading: false }));
@@ -120,6 +152,42 @@ export default function BlogPage() {
 
   const totalPages = meta?.last_page || 1;
 
+  const renderBadges = (cats = []) => {
+    if (!Array.isArray(cats) || cats.length === 0) {
+      return (
+        <span className="inline-flex items-center justify-center w-8 h-6 rounded-full bg-gray-100 text-gray-600 text-sm">
+          -
+        </span>
+      );
+    }
+    const shown = cats.slice(0, 3);
+    const more = cats.length - shown.length;
+
+    return (
+      <div className="flex flex-wrap gap-1 justify-center">
+        {shown.map((c) => (
+          <span
+            key={c.id}
+            className="px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-700 dark:bg-[#01043c] dark:text-[#f5fefd]"
+          >
+            {c.name}
+          </span>
+        ))}
+        {more > 0 && (
+          <span
+            title={cats
+              .slice(3)
+              .map((c) => c.name)
+              .join(", ")}
+            className="px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-[#f5fefd]"
+          >
+            +{more}
+          </span>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="p-4 md:p-6">
       <div className="bg-white dark:bg-[#002d6a] rounded-2xl shadow-sm p-5 md:p-6 relative">
@@ -130,11 +198,26 @@ export default function BlogPage() {
         )}
 
         {/* Header */}
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <h1 className="text-2xl font-semibold dark:text-[#f5fefd]">Blog</h1>
 
-          <div className="flex items-center gap-3 w-full max-w-xl">
-            <div className="relative flex-1">
+          <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 w-full md:w-auto">
+            {/* Filter kategori */}
+            <select
+              value={catFilter}
+              onChange={(e) => setCatFilter(e.target.value)}
+              className="h-11 px-3 rounded-lg border bg-white dark:bg-[#002d6a] dark:text-[#f5fefd] outline-none focus:ring-2 focus:ring-[#0256c4]/40"
+            >
+              <option value="">Semua Kategori</option>
+              {cats.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+
+            {/* Search */}
+            <div className="relative flex-1 md:w-80">
               <input
                 defaultValue={query}
                 onChange={onChangeSearch}
@@ -143,6 +226,8 @@ export default function BlogPage() {
               />
               <MagnifyingGlassIcon className="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-[#f5fefd]" />
             </div>
+
+            {/* Tambah */}
             <button
               onClick={openAdd}
               className="h-11 px-4 rounded-lg font-semibold bg-[#0256c4] text-white hover:opacity-90 transition-colors"
@@ -165,6 +250,9 @@ export default function BlogPage() {
                 </th>
                 <th className="py-3 px-4 font-semibold whitespace-nowrap">
                   Judul
+                </th>
+                <th className="py-3 px-4 font-semibold whitespace-nowrap">
+                  Kategori
                 </th>
                 <th className="py-3 px-4 font-semibold whitespace-nowrap">
                   Dibuat
@@ -198,6 +286,12 @@ export default function BlogPage() {
                   <td className="py-4 px-4 align-top whitespace-nowrap font-semibold text-[#0e1528] dark:text-white text-center">
                     {row.title}
                   </td>
+
+                  {/* Badges kategori */}
+                  <td className="py-4 px-4 align-top text-center">
+                    {renderBadges(row.categories)}
+                  </td>
+
                   <td className="py-4 px-4 align-top whitespace-nowrap text-[#0e1528] dark:text-white text-center">
                     {fmtDate(row.created_at)}
                   </td>
@@ -222,7 +316,7 @@ export default function BlogPage() {
               {rows.length === 0 && !loading && (
                 <tr>
                   <td
-                    colSpan={4}
+                    colSpan={5}
                     className="py-8 px-4 text-center text-gray-500 whitespace-nowrap"
                   >
                     Tidak ada data.
