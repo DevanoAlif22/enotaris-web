@@ -130,7 +130,7 @@ export default function BlogEditorPage() {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6 dark:bg-[#002d6a] rounded-lg">
       <Link
         to={`/app/blog`}
         className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded mb-4 bg-gray-100 hover:bg-gray-200 text-gray-700 transition"
@@ -138,7 +138,7 @@ export default function BlogEditorPage() {
         <span aria-hidden>←</span> Kembali
       </Link>
 
-      <h1 className="text-2xl font-semibold dark:text-white">
+      <h1 className="text-2xl font-semibold dark:text-[#f5fefd]">
         {blogId ? "Edit Blog" : "Tambah Blog"}
       </h1>
 
