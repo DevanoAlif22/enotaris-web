@@ -81,7 +81,7 @@ export default function CalendarPage() {
     () => async () => {
       try {
         setLoading(true);
-        const res = await scheduleUserService.index({ per_page: 1000 });
+        const res = await scheduleUserService.index({ per_page: 200 });
         const rows = Array.isArray(res?.data) ? res.data : [];
         setEvents(rows.map(toCalendarEvent));
       } catch (e) {
@@ -102,7 +102,7 @@ export default function CalendarPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0256c4] dark:bg-[#01043c] p-4 sm:p-6">
+    <div className="min-h-screen dark:bg-[#01043c] p-4 sm:p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="bg-white/80 dark:bg-[#002d6a] backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20 dark:border-gray-700/30">

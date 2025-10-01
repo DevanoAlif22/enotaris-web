@@ -1,18 +1,17 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
 import MagnifyingGlassIcon from "@heroicons/react/24/outline/MagnifyingGlassIcon";
 
 import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 import ActionButton from "../../components/ActionButton";
-import { templateService } from "../../services/templateService";
+import { partnerService } from "../../services/partnerService";
 import { showError, showSuccess } from "../../utils/toastConfig";
-import { getAuthUser } from "../../utils/authUser";
+import PartnerFormModal from "../../components/partner/PartnerFormModal";
+import PartnerDetailModal from "../../components/partner/PartnerDetailModal";
 
-export default function TemplatePage() {
+export default function PartnerPage() {
   // ===== server data =====
   const [rows, setRows] = useState([]);
-  const [me, setMe] = useState(null);
   const [meta, setMeta] = useState({
     current_page: 1,
     per_page: 10,
@@ -21,69 +20,20 @@ export default function TemplatePage() {
   });
 
   // ===== UI state =====
-  const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const perPage = 10;
+  const [loading, setLoading] = useState(false);
 
-  // ===== modal confirm delete =====
+  // ===== modal states =====
+  const [modal, setModal] = useState({ type: null, payload: null });
   const [confirm, setConfirm] = useState({
     open: false,
     row: null,
     loading: false,
   });
 
-  const navigate = useNavigate();
-
-  // ===== auth from localStorage =====
-  useEffect(() => {
-    const user = getAuthUser();
-    setMe(user);
-  }, []);
-
-  // ===== fetch & helpers =====
-  const fetchRows = async (pg = page, search = query) => {
-    try {
-      setLoading(true);
-      const res = await templateService.list({
-        page: pg,
-        per_page: perPage,
-        search,
-      });
-
-      // Pastikan BE mengirim "user": { id, name, role_id }
-      const list = res?.data || [];
-      setRows(list);
-
-      const m = res?.meta || {
-        current_page: pg,
-        per_page: perPage,
-        total: list.length,
-        last_page: 1,
-      };
-      setMeta(m);
-    } catch (e) {
-      showError(e?.message || "Gagal memuat template.");
-      setRows([]);
-      setMeta({
-        current_page: 1,
-        per_page: perPage,
-        total: 0,
-        last_page: 1,
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchRows(page, query);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page]);
-
-  useEffect(() => setPage(1), [query]);
-
-  // ===== search (debounce) =====
+  // debounced search
   const debRef = useRef(null);
   const onChangeSearch = (e) => {
     const v = e.target.value;
@@ -91,41 +41,51 @@ export default function TemplatePage() {
     if (debRef.current) clearTimeout(debRef.current);
     debRef.current = setTimeout(() => {
       setPage(1);
-      fetchRows(1, v);
+      fetchRows(1, perPage, v);
     }, 400);
   };
-  useEffect(() => {
-    return () => {
-      if (debRef.current) clearTimeout(debRef.current);
-    };
-  }, []);
 
-  // ===== actions =====
-  const openAdd = () => navigate("/app/template/new");
-  const openEdit = (row) => navigate(`/app/template/${row.id}/edit`);
-  const askDelete = (row) => setConfirm({ open: true, row, loading: false });
+  const mapRow = (d) => ({
+    id: d.id,
+    name: d.name,
+    link: d.link,
+    image: d.image,
+    image_path: d.image_path,
+    created_at: d.created_at,
+  });
 
-  const doDelete = async () => {
-    const row = confirm.row;
+  const fetchRows = async (pg = page, pp = perPage, search = query) => {
     try {
-      setConfirm((c) => ({ ...c, loading: true }));
-      await templateService.destroy(row.id);
-      showSuccess("Template berhasil dihapus.");
-      setConfirm({ open: false, row: null, loading: false });
-
-      const remaining = rows.length - 1;
-      if (remaining === 0 && page > 1) {
-        setPage((p) => Math.max(1, p - 1));
-      } else {
-        fetchRows(meta.current_page, query);
-      }
+      setLoading(true);
+      const res = await partnerService.list({ page: pg, per_page: pp, search });
+      const mapped = (res?.data || []).map(mapRow);
+      setRows(mapped);
+      setMeta(
+        res?.meta || {
+          current_page: pg,
+          per_page: pp,
+          total: mapped.length,
+          last_page: 1,
+        }
+      );
     } catch (e) {
-      setConfirm((c) => ({ ...c, loading: false }));
-      showError(e?.message || "Gagal menghapus template.");
+      showError(e.message || "Gagal mengambil daftar partner.");
+      setRows([]);
+      setMeta({ current_page: 1, per_page: perPage, total: 0, last_page: 1 });
+    } finally {
+      setLoading(false);
     }
   };
 
-  // ===== utils =====
+  useEffect(() => {
+    fetchRows(page, perPage, query);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
+
+  useEffect(() => setPage(1), [query]);
+
+  const totalPages = meta?.last_page || 1;
+
   const fmtDate = (iso) =>
     new Date(iso).toLocaleDateString("id-ID", {
       day: "2-digit",
@@ -133,30 +93,78 @@ export default function TemplatePage() {
       year: "numeric",
     });
 
-  const getCreatorLabel = (ownerUser, viewerUser) => {
-    const ownerRole = ownerUser?.role_id ?? null;
-    const ownerName = ownerUser?.name ?? "Pengguna";
-    const viewerRole = viewerUser?.role_id ?? null;
+  // ===== open/close modal helpers =====
+  const openAdd = () => setModal({ type: "form", payload: null });
+  const openEdit = (row) => setModal({ type: "form", payload: row });
+  const openDetail = async (row) => {
+    try {
+      const res = await partnerService.get(row.id);
+      setModal({ type: "detail", payload: mapRow(res?.data || row) });
+    } catch {
+      setModal({ type: "detail", payload: row });
+    }
+  };
+  const closeModal = () => setModal({ type: null, payload: null });
 
-    // Viewer Admin
-    if (viewerRole === 1) {
-      return ownerRole === 1 ? "Admin" : ownerName;
+  // ===== CRUD Handlers =====
+  const handleFormSubmit = async (payload) => {
+    // payload: { id?, name, link, imageFile?, clear_image? }
+    try {
+      if (payload.id) {
+        await partnerService.update(payload.id, {
+          name: payload.name,
+          link: payload.link,
+          imageFile: payload.imageFile,
+          clear_image: payload.clear_image,
+        });
+        showSuccess("Partner berhasil diperbarui.");
+      } else {
+        await partnerService.create({
+          name: payload.name,
+          link: payload.link,
+          imageFile: payload.imageFile,
+        });
+        showSuccess("Partner berhasil dibuat.");
+      }
+      closeModal();
+      fetchRows(page, perPage, query);
+    } catch (e) {
+      const firstErr =
+        e?.errors && typeof e.errors === "object"
+          ? (() => {
+              const first = Object.values(e.errors)[0];
+              return Array.isArray(first) ? first[0] : String(first);
+            })()
+          : null;
+      showError(firstErr || e.message || "Gagal menyimpan partner.");
     }
-    // Viewer Notaris
-    if (viewerRole === 3) {
-      return ownerRole === 1 ? "Admin" : "Anda";
-    }
-    // Fallback
-    return ownerRole === 1 ? "Admin" : ownerName;
   };
 
-  const totalPages = meta?.last_page || 1;
-  const start =
-    meta.total > 0 ? (meta.current_page - 1) * meta.per_page + 1 : 0;
-  const end =
-    meta.total > 0
-      ? Math.min(meta.current_page * meta.per_page, meta.total)
-      : 0;
+  const askDelete = (row) => setConfirm({ open: true, row, loading: false });
+
+  const doDelete = async () => {
+    const row = confirm.row;
+    try {
+      setConfirm((c) => ({ ...c, loading: true }));
+      await partnerService.destroy(row.id);
+      showSuccess("Partner berhasil dihapus.");
+      setConfirm({ open: false, row: null, loading: false });
+
+      // refresh page sekarang; kalau halaman jadi kosong, mundurkan page
+      const remaining = rows.length - 1;
+      if (remaining === 0 && page > 1) {
+        setPage((p) => Math.max(1, p - 1));
+      } else {
+        fetchRows(page, perPage, query);
+      }
+    } catch (e) {
+      setConfirm((c) => ({ ...c, loading: false }));
+      showError(e.message || "Gagal menghapus partner.");
+    }
+  };
+
+  const filtered = rows;
+  const paged = filtered;
 
   return (
     <div className="p-4 md:p-6">
@@ -170,16 +178,15 @@ export default function TemplatePage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <h1 className="text-2xl font-semibold dark:text-[#f5fefd]">
-            Template Akta
+            Partner Kami
           </h1>
 
-          {/* Search + Tambah */}
           <div className="flex w-full sm:max-w-xl gap-3">
             <div className="relative flex-1">
               <input
-                value={query}
+                defaultValue={query}
                 onChange={onChangeSearch}
-                placeholder="Cari nama template…"
+                placeholder="Cari nama atau link…"
                 className="w-full h-11 pl-4 pr-10 rounded-lg border outline-none focus:ring-2 focus:ring-[#0256c4]/40 dark:text-[#f5fefd]"
               />
               <MagnifyingGlassIcon className="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-[#f5fefd]" />
@@ -202,13 +209,16 @@ export default function TemplatePage() {
             <thead>
               <tr className="text-center text-gray-500 border-b border-gray-200/80 dark:text-[#f5fefd]">
                 <th className="py-3 px-4 font-semibold whitespace-nowrap">
+                  Logo
+                </th>
+                <th className="py-3 px-4 font-semibold whitespace-nowrap">
                   Nama
                 </th>
                 <th className="py-3 px-4 font-semibold whitespace-nowrap">
-                  Dibuat
+                  Link
                 </th>
                 <th className="py-3 px-4 font-semibold whitespace-nowrap">
-                  Tanggal
+                  Dibuat
                 </th>
                 <th className="py-3 px-4 font-semibold whitespace-nowrap">
                   Aksi
@@ -216,27 +226,55 @@ export default function TemplatePage() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((row, idx) => (
+              {paged.map((row, idx) => (
                 <tr
                   key={row.id}
                   className={`border-t border-gray-200/80 ${
                     idx === 0 ? "border-t-0" : ""
                   }`}
                 >
+                  <td className="py-4 px-4 align-top text-center whitespace-nowrap">
+                    {row.image ? (
+                      <img
+                        src={row.image}
+                        alt={row.name}
+                        className="inline-block w-10 h-10 object-contain rounded"
+                      />
+                    ) : (
+                      <span className="inline-flex items-center justify-center w-10 h-10 rounded bg-gray-100 text-gray-600">
+                        -
+                      </span>
+                    )}
+                  </td>
                   <td className="py-4 px-4 align-top text-center whitespace-nowrap font-semibold text-[#0e1528] dark:text-white">
                     {row.name}
                   </td>
-
-                  {/* ==== KOLOM DIBUAT ==== */}
-                  <td className="py-4 px-4 align-top text-center whitespace-nowrap text-[#0e1528] dark:text-white">
-                    {getCreatorLabel(row.user, me)}
+                  <td className="py-4 px-4 align-top text-center whitespace-nowrap text-[#6b7280] dark:text-[#f5fefd]">
+                    {row.link ? (
+                      <a
+                        href={row.link}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[#0256c4] underline"
+                      >
+                        Link
+                      </a>
+                    ) : (
+                      "-"
+                    )}
                   </td>
 
-                  <td className="py-4 px-4 align-top text-center whitespace-nowrap text-[#0e1528] dark:text-white">
+                  <td className="py-4 px-4 align-top items-center text-center whitespace-nowrap text-[#0e1528] dark:text-white">
                     {fmtDate(row.created_at)}
                   </td>
-                  <td className="py-4 px-4 align-top whitespace-nowrap">
+                  <td className="py-4 px-4 align-top items-center whitespace-nowrap">
                     <div className="flex justify-center gap-2">
+                      <ActionButton
+                        variant="info"
+                        onClick={() => openDetail(row)}
+                      >
+                        Detail
+                      </ActionButton>
                       <ActionButton
                         variant="warning"
                         onClick={() => openEdit(row)}
@@ -253,10 +291,10 @@ export default function TemplatePage() {
                   </td>
                 </tr>
               ))}
-              {rows.length === 0 && !loading && (
+              {paged.length === 0 && !loading && (
                 <tr>
                   <td
-                    colSpan={4}
+                    colSpan={6}
                     className="py-8 px-4 text-center text-gray-500 whitespace-nowrap"
                   >
                     Tidak ada data.
@@ -267,11 +305,13 @@ export default function TemplatePage() {
           </table>
         </div>
 
-        {/* Footer: pagination */}
+        {/* Footer: server-side pagination */}
         <div className="mt-6 flex items-center justify-between text-sm text-gray-600">
           <div className="dark:text-[#f5fefd]">
             <p>
-              Menampilkan {start}–{end} dari {meta.total || 0}
+              Menampilkan {(meta.current_page - 1) * meta.per_page + 1 || 0}–
+              {Math.min(meta.current_page * meta.per_page, meta.total) || 0}{" "}
+              dari {meta.total || 0}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -299,7 +339,29 @@ export default function TemplatePage() {
         </div>
       </div>
 
-      {/* ======= Confirm Delete Modal ======= */}
+      {/* ======= Modals ======= */}
+      <PartnerFormModal
+        open={modal.type === "form"}
+        onClose={closeModal}
+        onSubmit={handleFormSubmit}
+        initialData={
+          modal.payload
+            ? {
+                id: modal.payload.id,
+                name: modal.payload.name,
+                link: modal.payload.link,
+                image: modal.payload.image,
+              }
+            : null
+        }
+      />
+
+      <PartnerDetailModal
+        open={modal.type === "detail"}
+        onClose={closeModal}
+        data={modal.payload}
+      />
+
       <ConfirmDeleteModal
         open={confirm.open}
         onClose={() => setConfirm({ open: false, row: null, loading: false })}
