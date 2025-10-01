@@ -16,6 +16,7 @@ import {
   XMarkIcon,
   UserCircleIcon, // Profile
   ChevronDownIcon,
+  BuildingOffice2Icon,
 } from "@heroicons/react/24/outline";
 import { authService } from "../services/authService";
 
@@ -79,7 +80,12 @@ function getMenuByRole(roleId) {
           },
         ],
       },
-
+      {
+        id: "partner",
+        label: "Partner Kami",
+        icon: BuildingOffice2Icon,
+        to: "/app/partner",
+      },
       ...common,
       {
         id: "setting",
@@ -99,6 +105,12 @@ function getMenuByRole(roleId) {
         label: "Akta Otentik",
         icon: DocumentTextIcon,
         to: "/app/deed",
+      },
+      {
+        id: "template-akta",
+        label: "Template Akta",
+        icon: ClipboardDocumentListIcon,
+        to: "/app/template",
       },
       {
         id: "project-notaris",

@@ -39,6 +39,8 @@ import TrackPage from "./pages/dashboard/TrackPage";
 import ProtectedRoute from "./components/routing/ProtectedRoute";
 import useAOSInit from "./hooks/useAOSinit";
 import ScrollToTop from "./components/ScrollToTop";
+import PartnerPage from "./pages/dashboard/PartnerPage";
+import SettingPage from "./pages/dashboard/SettingPage";
 
 export default function App() {
   useAOSInit(); // init sekali di sini
@@ -85,6 +87,15 @@ export default function App() {
 
             {/* ===== ADMIN + NOTARIS (role_id 1 atau 3) ===== */}
             <Route element={<ProtectedRoute allow={[1, 3]} />}>
+              <Route path="/app/template" element={<TemplatePage />} />
+              <Route
+                path="/app/template/new"
+                element={<TemplateEditorPage />}
+              />
+              <Route
+                path="/app/template/:id/edit"
+                element={<TemplateEditorPage />}
+              />
               {/* Akta Otentik untuk Admin & Notaris */}
               <Route path="/app/deed" element={<DeedPage />} />
               {/* Proyek Notaris untuk Admin & Notaris */}
@@ -96,15 +107,6 @@ export default function App() {
 
             {/* ===== ADMIN ONLY (role_id 1) ===== */}
             <Route element={<ProtectedRoute allow={[1]} />}>
-              <Route path="/app/template" element={<TemplatePage />} />
-              <Route
-                path="/app/template/new"
-                element={<TemplateEditorPage />}
-              />
-              <Route
-                path="/app/template/:id/edit"
-                element={<TemplateEditorPage />}
-              />
               <Route path="/app/user" element={<UserPage />} />
               <Route
                 path="/app/verification-user"
@@ -116,6 +118,8 @@ export default function App() {
               <Route path="/app/blog/new" element={<BlogEditorPage />} />
               <Route path="/app/blog/:id/edit" element={<BlogEditorPage />} />
 
+              <Route path="/app/partner" element={<PartnerPage />} />
+              <Route path="/app/setting" element={<SettingPage />} />
               <Route path="/app/category-blog" element={<CategoryBlogPage />} />
             </Route>
 
