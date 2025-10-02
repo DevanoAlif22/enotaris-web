@@ -1,16 +1,15 @@
-// app/notary/NotaryActivityPage.jsx
+// app/notary/AdminActivityPage.jsx
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom"; // jika pakai Next.js ganti ke next/link
+import { Link } from "react-router-dom";
 import MagnifyingGlassIcon from "@heroicons/react/24/outline/MagnifyingGlassIcon";
-import StatusBadge from "../../utils/StatusBadge";
 import ActionButton from "../../components/ActionButton";
 import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 import ScheduleModal from "../../components/activitynotaris/ScheduleModal";
 import ActivityFormModal from "../../components/activitynotaris/ActivityFormModal";
 import { activityService } from "../../services/activityService";
 import { showError, showSuccess } from "../../utils/toastConfig";
-import { getAuthUser } from "../../utils/authUser"; // ⬅️ ambil role dari localStorage
+import { getAuthUser } from "../../utils/authUser";
 
 // ==== helpers ====
 const mapStatusToBadge = (s) => {
@@ -40,7 +39,6 @@ const mapRow = (a) => {
     id: a.id,
     code: a.tracking_code,
     name: a.name,
-    notaris_name: a.notaris.name,
     deed_type: a.deed?.name || "-",
     parties,
     status: mapStatusToBadge(statusRaw),
@@ -48,19 +46,15 @@ const mapRow = (a) => {
   };
 };
 
-// ==== component ====
-export default function NotaryActivityPage() {
-  // auth user
+export default function AdminActivityPage() {
+  // auth
   const [me, setMe] = useState(null);
   useEffect(() => {
-    const u = getAuthUser(); // {role_id: 1|3, ...}
-    setMe(u || null);
+    setMe(getAuthUser() || null); // { role_id: 1, ... }
   }, []);
-  const roleId = Number(me?.role_id || 0);
-  const isAdmin = roleId === 1;
-  const isNotaris = roleId === 3;
+  const isAdmin = Number(me?.role_id) === 1;
 
-  // server data
+  // data & ui state
   const [rows, setRows] = useState([]);
   const [meta, setMeta] = useState({
     current_page: 1,
@@ -73,7 +67,6 @@ export default function NotaryActivityPage() {
   const [loading, setLoading] = useState(false);
   const totalPages = meta?.last_page || 1;
 
-  // filter/search/pagination
   const TABS = [
     { label: "Semua", value: "" },
     { label: "Menunggu", value: "pending" },
@@ -85,7 +78,6 @@ export default function NotaryActivityPage() {
   const [page, setPage] = useState(1);
   const perPage = 10;
 
-  // modals
   const [schedule, setSchedule] = useState({ open: false, row: null });
   const [form, setForm] = useState({ open: false, initial: null });
   const [confirm, setConfirm] = useState({
@@ -106,7 +98,7 @@ export default function NotaryActivityPage() {
     }, 400);
   };
 
-  // fetch list
+  // fetch list — pakai endpoint indexAdmin (proyek milik admin sendiri)
   const fetchRows = async (
     pg = page,
     pp = perPage,
@@ -115,7 +107,8 @@ export default function NotaryActivityPage() {
   ) => {
     try {
       setLoading(true);
-      const res = await activityService.list({
+      // pastikan kamu punya activityService.listMineAdmin() yang hit GET /notaris/activity/admin/activity
+      const res = await activityService.listMineAdmin({
         page: pg,
         per_page: pp,
         search,
@@ -150,29 +143,17 @@ export default function NotaryActivityPage() {
   };
 
   useEffect(() => {
+    if (!isAdmin) return;
     fetchRows(page, perPage, activeTab.value, query);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, activeTab]);
+  }, [page, activeTab, isAdmin]);
 
   useEffect(() => setPage(1), [activeTab]);
 
-  // guards (UI): admin tidak boleh CRUD
-  const guardNotaris = () => {
-    if (!isNotaris) {
-      showError("Aksi ini hanya untuk Notaris.");
-      return false;
-    }
-    return true;
-  };
-
-  // handlers
-  const openAdd = () => {
-    if (!guardNotaris()) return;
-    setForm({ open: true, initial: null });
-  };
+  // admin boleh CRUD di halaman ini
+  const openAdd = () => setForm({ open: true, initial: null });
 
   const openEdit = async (row) => {
-    if (!guardNotaris()) return;
     try {
       const res = await activityService.detail(row.id);
       const a = res?.data;
@@ -208,13 +189,9 @@ export default function NotaryActivityPage() {
     }
   };
 
-  const askDelete = (row) => {
-    if (!guardNotaris()) return;
-    setConfirm({ open: true, row, loading: false });
-  };
+  const askDelete = (row) => setConfirm({ open: true, row, loading: false });
 
   const doDelete = async () => {
-    if (!guardNotaris()) return;
     try {
       setConfirm((c) => ({ ...c, loading: true }));
       await activityService.destroy(confirm.row.id);
@@ -235,7 +212,6 @@ export default function NotaryActivityPage() {
 
   // submit dari ActivityFormModal
   const onSaveForm = async (payload) => {
-    if (!guardNotaris()) return;
     try {
       const client_ids = (payload.parties || [])
         .map((p) => {
@@ -273,6 +249,16 @@ export default function NotaryActivityPage() {
     }
   };
 
+  if (!isAdmin) {
+    return (
+      <div className="p-6">
+        <div className="bg-white rounded-xl p-6 shadow">
+          Halaman ini khusus admin.
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 md:p-6">
       <div className="bg-white dark:bg-[#002d6a] rounded-2xl shadow-sm p-5 md:p-8 relative">
@@ -285,7 +271,7 @@ export default function NotaryActivityPage() {
         {/* Header */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
           <h1 className="text-2xl font-semibold dark:text-[#f5fefd]">
-            Proyek Notaris
+            Proyek Admin
           </h1>
 
           <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-3 w-full max-w-3xl relative">
@@ -321,15 +307,13 @@ export default function NotaryActivityPage() {
               <MagnifyingGlassIcon className="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 dark:text-[#f5fefd]" />
             </div>
 
-            {/* Tombol Tambah: HANYA NOTARIS */}
-            {isNotaris && (
-              <button
-                onClick={openAdd}
-                className="h-11 px-4 rounded-lg font-semibold bg-[#0256c4] text-white hover:opacity-90 transition-colors"
-              >
-                Tambah
-              </button>
-            )}
+            {/* Admin BOLEH tambah di halaman miliknya */}
+            <button
+              onClick={openAdd}
+              className="h-11 px-4 rounded-lg font-semibold bg-[#0256c4] text-white hover:opacity-90 transition-colors"
+            >
+              Tambah
+            </button>
           </div>
         </div>
 
@@ -344,11 +328,6 @@ export default function NotaryActivityPage() {
                 <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
                   Kode
                 </th>
-                {isAdmin && (
-                  <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
-                    Notaris
-                  </th>
-                )}
                 <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
                   Nama
                 </th>
@@ -372,11 +351,6 @@ export default function NotaryActivityPage() {
                   }`}
                 >
                   <td className="py-4 px-5 whitespace-nowrap">{r.code}</td>
-                  {isAdmin && (
-                    <td className="py-4 px-5 whitespace-nowrap">
-                      {r.notaris_name}
-                    </td>
-                  )}
                   <td className="py-4 px-5 whitespace-nowrap font-semibold">
                     {r.name}
                   </td>
@@ -386,28 +360,23 @@ export default function NotaryActivityPage() {
                   </td>
                   <td className="py-4 px-5 whitespace-nowrap">
                     <div className="flex justify-center gap-2">
-                      {/* Detail selalu boleh */}
                       <ActionButton variant="info">
                         <Link to={`/app/project-flow/${r.id}`}>Detail</Link>
                       </ActionButton>
 
-                      {/* Edit/Hapus hanya Notaris */}
-                      {isNotaris && (
-                        <>
-                          <ActionButton
-                            variant="success"
-                            onClick={() => openEdit(r)}
-                          >
-                            Edit
-                          </ActionButton>
-                          <ActionButton
-                            variant="danger"
-                            onClick={() => askDelete(r)}
-                          >
-                            Hapus
-                          </ActionButton>
-                        </>
-                      )}
+                      {/* Admin BOLEH edit & hapus di halaman miliknya */}
+                      <ActionButton
+                        variant="success"
+                        onClick={() => openEdit(r)}
+                      >
+                        Edit
+                      </ActionButton>
+                      <ActionButton
+                        variant="danger"
+                        onClick={() => askDelete(r)}
+                      >
+                        Hapus
+                      </ActionButton>
                     </div>
                   </td>
                 </tr>

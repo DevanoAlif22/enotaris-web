@@ -1,5 +1,8 @@
+// sections/blog/LatestVacanciesSection.jsx
+"use client";
 import { CalendarDays, UserRound, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 const LatestVacanciesSection = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -15,7 +18,7 @@ const LatestVacanciesSection = () => {
         "Berapa biaya balik nama sertifikat tanah di kantor Badan Pertanahan Nasional (BPN), termasuk…",
       categories: ["Informasi", "Tutorial"],
       cover: "/images/blog-1.png",
-      href: "/blog/prosedur-dan-biaya-balik-nama-sertifikat-bpn",
+      to: "/blog/prosedur-dan-biaya-balik-nama-sertifikat-bpn",
     },
     {
       id: 2,
@@ -26,7 +29,7 @@ const LatestVacanciesSection = () => {
         "Profesi seorang notaris menuntut pengelolaan dokumen dan arsip yang rapi agar…",
       categories: ["Tutorial"],
       cover: "/images/blog-2.png",
-      href: "/blog/penataan-arsip-kantor-notaris",
+      to: "/blog/penataan-arsip-kantor-notaris",
     },
     {
       id: 3,
@@ -37,40 +40,7 @@ const LatestVacanciesSection = () => {
         "Memilih printer laser A3 untuk kebutuhan tugas seringkali membingungkan. Berikut tips…",
       categories: ["Tutorial"],
       cover: "/images/blog-3.png",
-      href: "/blog/tips-memilih-printer-a3",
-    },
-    {
-      id: 1,
-      title: "Prosedur dan Biaya Balik Nama Sertifikat Tanah di BPN Terbaru",
-      date: "27 Dec 2021",
-      author: "enotaris",
-      excerpt:
-        "Berapa biaya balik nama sertifikat tanah di kantor Badan Pertanahan Nasional (BPN), termasuk…",
-      categories: ["Informasi", "Tutorial"],
-      cover: "/images/blog-1.png",
-      href: "/blog/prosedur-dan-biaya-balik-nama-sertifikat-bpn",
-    },
-    {
-      id: 2,
-      title: "Penataan Arsip Kantor Notaris",
-      date: "21 Jan 2021",
-      author: "enotaris",
-      excerpt:
-        "Profesi seorang notaris menuntut pengelolaan dokumen dan arsip yang rapi agar…",
-      categories: ["Tutorial"],
-      cover: "/images/blog-2.png",
-      href: "/blog/penataan-arsip-kantor-notaris",
-    },
-    {
-      id: 3,
-      title: "Tips Memilih Printer Ukuran A3",
-      date: "21 Jan 2021",
-      author: "enotaris",
-      excerpt:
-        "Memilih printer laser A3 untuk kebutuhan tugas seringkali membingungkan. Berikut tips…",
-      categories: ["Tutorial"],
-      cover: "/images/blog-3.png",
-      href: "/blog/tips-memilih-printer-a3",
+      to: "/blog/tips-memilih-printer-a3",
     },
   ];
 
@@ -92,16 +62,18 @@ const LatestVacanciesSection = () => {
       id="latest-blogs"
       className="w-full bg-[#edf4ff] relative px-6 md:px-20 py-20 overflow-hidden"
     >
+      {/* dekorasi */}
       <img
         src="/images/geometri.png"
         alt="Office"
-        class="h-150 absolute left-0 top-0 hidden md:block"
-      ></img>
+        className="h-150 absolute left-0 top-0 hidden md:block"
+      />
       <img
         src="/images/geometri-2.png"
         alt="Office"
-        class="h-150 absolute right-0 top-0 hidden md:block"
-      ></img>
+        className="h-150 absolute right-0 top-0 hidden md:block"
+      />
+
       {/* Header */}
       <div className="text-center mb-12">
         <div
@@ -179,12 +151,12 @@ const LatestVacanciesSection = () => {
                 {post.excerpt}
               </p>
 
-              <a
-                href={post.href}
+              <Link
+                to={post.to}
                 className="inline-flex items-center gap-1 text-[#0256c4] hover:text-[#002d6a] font-semibold"
               >
                 Baca Lebih Lanjut <ChevronRight size={18} />
-              </a>
+              </Link>
             </div>
           </article>
         ))}
@@ -192,8 +164,8 @@ const LatestVacanciesSection = () => {
 
       {/* Tombol lihat selengkapnya */}
       <div className="text-center mt-12">
-        <a
-          href="/blog"
+        <Link
+          to="/blog"
           className="inline-flex items-center gap-2 text-white font-semibold px-8 py-4 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
           style={{
             background:
@@ -206,7 +178,7 @@ const LatestVacanciesSection = () => {
         >
           <span>Lihat Selengkapnya</span>
           <ChevronRight size={18} />
-        </a>
+        </Link>
       </div>
     </section>
   );
