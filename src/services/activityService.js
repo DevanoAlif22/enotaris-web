@@ -21,6 +21,17 @@ export const activityService = {
       throw normErr(e);
     }
   },
+  async listMineAdmin({
+    page = 1,
+    per_page = 10,
+    search = "",
+    status = "",
+  } = {}) {
+    const { data } = await api.get("/notaris/activity/admin/activity", {
+      params: { page, per_page, search, status },
+    });
+    return data; // { success, data: [...], meta: {...} }
+  },
 
   async detail(id) {
     try {
