@@ -224,7 +224,7 @@ export default function TemplateEditorPage() {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6 dark:bg-[#002d6a] rounded-lg">
       <Link
         to={`/app/template`}
         className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded mb-4 bg-gray-100 hover:bg-gray-200 text-gray-700 transition"
@@ -242,7 +242,7 @@ export default function TemplateEditorPage() {
           <button
             type="button"
             onClick={handleClickImport}
-            className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 transition-colors"
+            className="px-4 py-2 rounded bg-gradient-to-r from-blue-500 to-[#0256c4] text-[#f5fefd] transition-transform hover:scale-[1.03] shadow hover:shadow-lg"
             title="Import dari Microsoft Word (.docx)"
           >
             Import Word (.docx)
