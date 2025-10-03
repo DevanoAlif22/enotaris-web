@@ -9,7 +9,7 @@ import TextAreaField from "../../components/input/TextAreaField";
  * Props:
  * - open: boolean
  * - onClose: () => void
- * - activity: { code?: string, deed_type?: string, parties?: string[] }
+ * - activity: { code?: string, deed_type?: string, parties?: string[], activityClients?: any[] }
  * - initial?: { id?: number|string, datetime?: string, place?: string, note?: string }
  * - onSave?: ({ datetime, place, note }) => Promise|void
  * - onDelete?: () => Promise|void
@@ -28,6 +28,10 @@ export default function ScheduleModal({
   const [note, setNote] = useState("");
   const [errs, setErrs] = useState({ date: "", time: "", place: "" });
 
+  const isEdit = Boolean(initial?.id || initial?.datetime);
+  const hasSaveHandler = typeof onSave === "function";
+  const hasDeleteHandler = typeof onDelete === "function";
+
   const parties = useMemo(() => {
     if (Array.isArray(activity?.parties) && activity.parties.length)
       return activity.parties;
@@ -42,11 +46,8 @@ export default function ScheduleModal({
     return [];
   }, [activity]);
 
-  const isEdit = Boolean(initial?.id || initial?.datetime);
-  const hasSaveHandler = typeof onSave === "function";
-  const hasDeleteHandler = typeof onDelete === "function";
-
-  const minDate = useMemo(() => {
+  // Today (local) as YYYY-MM-DD
+  const todayStr = useMemo(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
     return d.toISOString().slice(0, 10);
@@ -59,14 +60,24 @@ export default function ScheduleModal({
     return day >= 1 && day <= 5;
   };
 
+  const toLocalParts = (isoString) => {
+    if (!isoString) return { d: "", t: "" };
+    const src = new Date(isoString);
+    const local = new Date(src.getTime() - src.getTimezoneOffset() * 60000);
+    const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
+    return {
+      d: local.toISOString().slice(0, 10),
+      t: `${pad(local.getHours())}:${pad(local.getMinutes())}`,
+    };
+  };
+
+  // Initialize from initial when modal opened
   useEffect(() => {
     if (!open) return;
     if (initial?.datetime) {
-      const d = new Date(initial.datetime);
-      const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
-      const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
-      setDate(local.toISOString().slice(0, 10));
-      setTime(`${pad(local.getHours())}:${pad(local.getMinutes())}`);
+      const { d, t } = toLocalParts(initial.datetime);
+      setDate(d);
+      setTime(t);
     } else {
       setDate("");
       setTime("");
@@ -76,20 +87,47 @@ export default function ScheduleModal({
     setErrs({ date: "", time: "", place: "" });
   }, [open, initial]);
 
+  // Initial values for dirty check
+  const initialDate = useMemo(() => {
+    if (!initial?.datetime) return "";
+    return toLocalParts(initial.datetime).d;
+  }, [initial]);
+
+  const initialTime = useMemo(() => {
+    if (!initial?.datetime) return "";
+    return toLocalParts(initial.datetime).t;
+  }, [initial]);
+
+  const isDirty = useMemo(() => {
+    if (!isEdit) return true; // create mode: cukup valid saja
+    return (
+      date !== initialDate ||
+      time !== initialTime ||
+      place.trim() !== (initial?.place ?? "") ||
+      note.trim() !== (initial?.note ?? "")
+    );
+  }, [isEdit, date, time, place, note, initialDate, initialTime, initial]);
+
   const validate = () => {
     const next = { date: "", time: "", place: "" };
+
     if (!date) next.date = "Tanggal wajib diisi.";
-    else if (!isWeekday(date))
-      next.date = "Tanggal harus hari kerja (Senin–Jumat).";
-    else if (date < minDate) next.date = "Tanggal tidak boleh di masa lalu.";
     if (!time) next.time = "Waktu wajib diisi.";
     if (!place.trim()) next.place = "Lokasi pertemuan wajib diisi.";
+
+    // Saat BUAT: wajib weekday & >= hari ini; Saat EDIT: longgar
+    if (!isEdit && date) {
+      if (!isWeekday(date))
+        next.date = "Tanggal harus hari kerja (Senin–Jumat).";
+      else if (date < todayStr) next.date = "Tanggal tidak boleh di masa lalu.";
+    }
+
     setErrs(next);
     return !next.date && !next.time && !next.place;
   };
 
   const handleSave = () => {
-    if (!hasSaveHandler) return; // guard
+    if (!hasSaveHandler) return;
     if (!validate()) return;
     const dt = new Date(`${date}T${time}:00`);
     const iso = new Date(
@@ -101,10 +139,19 @@ export default function ScheduleModal({
 
   const canSave = useMemo(() => {
     if (!hasSaveHandler) return false;
-    return Boolean(
-      date && time && place.trim() && isWeekday(date) && date >= minDate
-    );
-  }, [date, time, place, minDate, hasSaveHandler]);
+    if (!date || !time || !place.trim()) return false;
+
+    // create vs edit rules
+    if (!isEdit) {
+      if (!isWeekday(date)) return false;
+      if (date < todayStr) return false;
+    }
+
+    // hanya aktif bila ada perubahan saat edit
+    if (!isDirty) return false;
+
+    return true;
+  }, [hasSaveHandler, date, time, place, todayStr, isEdit, isDirty]);
 
   return (
     <Modal
@@ -121,7 +168,7 @@ export default function ScheduleModal({
           {!!initial?.id && hasDeleteHandler && (
             <button
               onClick={onDelete}
-              className="px-4 py-2 rounded-lg  bg-red-50 text-red-600 mr-auto"
+              className="px-4 py-2 rounded-lg bg-red-50 text-red-600 mr-auto"
             >
               Hapus
             </button>
@@ -150,7 +197,7 @@ export default function ScheduleModal({
       }
     >
       <div className="space-y-6">
-        {/* Detail Aktivitas (dinamis) */}
+        {/* Detail Aktivitas */}
         <div className="bg-gray-100 dark:bg-[#01043c] rounded-xl p-4">
           <div className="text-lg font-semibold dark:text-[#f5fefd] mb-2">
             Detail Aktivitas
@@ -196,11 +243,13 @@ export default function ScheduleModal({
             </label>
             <input
               type="date"
-              min={minDate}
+              // Saat create: batasi minimal hari ini; saat edit: bebas untuk koreksi jadwal lampau
+              min={!isEdit ? todayStr : undefined}
               value={date}
               onChange={(e) => setDate(e.target.value)}
               onBlur={() =>
                 !errs.date &&
+                !isEdit &&
                 !isWeekday(date) &&
                 setErrs((x) => ({
                   ...x,
@@ -218,7 +267,10 @@ export default function ScheduleModal({
                 errs.date ? "text-red-600" : "text-gray-500"
               }`}
             >
-              {errs.date || "Hanya hari kerja (Senin–Jumat)."}
+              {errs.date ||
+                (!isEdit
+                  ? "Hanya hari kerja (Senin–Jumat)."
+                  : "Anda dapat mengubah tanggal lampau saat mengedit.")}
             </p>
           </div>
 
