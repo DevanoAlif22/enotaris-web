@@ -264,9 +264,9 @@ export default function NotaryActivityPage() {
             Proyek Notaris
           </h1>
 
-          <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-3 w-full max-w-3xl relative">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
             {/* Tabs */}
-            <div className="flex rounded-lg border border-[#f5fefd] overflow-hidden">
+            <div className="flex rounded-lg border dark:border-[#f5fefd] overflow-hidden w-full sm:w-auto">
               {TABS.map((t) => {
                 const active = activeTab.value === t.value;
                 return (
@@ -274,7 +274,7 @@ export default function NotaryActivityPage() {
                     key={t.label}
                     onClick={() => setActiveTab(t)}
                     className={
-                      "px-3 py-2 flex-1 text-sm font-semibold " +
+                      "px-3 py-2 text-sm font-semibold flex-1 sm:flex-none " +
                       (active
                         ? "bg-gradient-to-r from-blue-500 to-[#0256c4] text-[#f5fefd]"
                         : "bg-[#f5fefd] text-gray-800")

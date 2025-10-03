@@ -333,7 +333,7 @@ export default function HomePage() {
                 <tr>
                   <td
                     colSpan={5}
-                    className="text-center text-sm py-6 opacity-70"
+                    className="text-center text-sm py-6 opacity-70 dark:text-[#f5fefd]"
                   >
                     Belum ada aktivitas
                   </td>
