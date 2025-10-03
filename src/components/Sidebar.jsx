@@ -3,25 +3,25 @@ import { NavLink, useLocation } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import {
   Squares2X2Icon, // Dashboard
-  DocumentTextIcon, // Akta Otentik
-  ClipboardDocumentListIcon, // Template Akta
-  UserGroupIcon, // Pengguna
+  DocumentTextIcon, // Akta (group)
+  ClipboardDocumentListIcon, // Template Akta (child icon kalau mau dipakai terpisah)
+  UserGroupIcon, // Pengguna (group)
   IdentificationIcon, // Verifikasi Identitas
-  DocumentDuplicateIcon, // Proyek Notaris
+  DocumentDuplicateIcon, // Proyek (group)
   FolderIcon, // Proyek Penghadap
   CalendarDaysIcon, // Kalender
   ChartBarIcon, // Tracking
   PencilSquareIcon, // Blog (group)
   Cog6ToothIcon, // Setting
   XMarkIcon,
-  UserCircleIcon, // Profile
   ChevronDownIcon,
-  BuildingOffice2Icon,
+  BuildingOffice2Icon, // Partner
 } from "@heroicons/react/24/outline";
 import { authService } from "../services/authService";
 
+/** Susun menu berdasarkan role */
 function getMenuByRole(roleId) {
-  const common = [
+  const commonTail = [
     {
       id: "calendar",
       label: "Kalender",
@@ -32,43 +32,58 @@ function getMenuByRole(roleId) {
   ];
 
   if (roleId === 1) {
+    // ===== ADMIN =====
     return [
       { id: "dashboard", label: "Dashboard", icon: Squares2X2Icon, to: "/app" },
-      { id: "profile", label: "Profile", icon: UserCircleIcon, to: "/profile" },
+
+      // Group: Akta
       {
-        id: "akta-otentik",
-        label: "Akta Otentik",
+        id: "group-akta",
+        label: "Akta",
         icon: DocumentTextIcon,
-        to: "/app/deed",
-      },
-      {
-        id: "template-akta",
-        label: "Template Akta",
-        icon: ClipboardDocumentListIcon,
-        to: "/app/template",
-      },
-      {
-        id: "pengguna",
-        label: "Pengguna",
-        icon: UserGroupIcon,
-        to: "/app/user",
-      },
-      {
-        id: "verifikasi-identitas",
-        label: "Verifikasi Identitas",
-        icon: IdentificationIcon,
-        to: "/app/verification-user",
-      },
-      {
-        id: "project-notaris",
-        label: "Proyek Notaris",
-        icon: DocumentDuplicateIcon,
-        to: "/app/project-notaris",
+        children: [
+          { id: "deed", label: "Akta Otentik", to: "/app/deed" },
+          { id: "template", label: "Template Akta", to: "/app/template" },
+        ],
       },
 
-      // ==== BLOG GROUP (dropdown)
+      // Group: Pengguna (admin only)
       {
-        id: "blog-group",
+        id: "group-pengguna",
+        label: "Pengguna",
+        icon: UserGroupIcon,
+        children: [
+          { id: "user", label: "Pengguna", to: "/app/user" },
+          {
+            id: "verifikasi-user",
+            label: "Verifikasi Identitas",
+            to: "/app/verification-user",
+          },
+        ],
+      },
+
+      // Group: Proyek
+      {
+        id: "group-proyek",
+        label: "Proyek",
+        icon: DocumentDuplicateIcon,
+        children: [
+          {
+            id: "project-notaris",
+            label: "Proyek Notaris",
+            to: "/app/project-notaris",
+          },
+          {
+            id: "project-admin",
+            label: "Proyek Admin",
+            to: "/app/project-admin",
+          },
+        ],
+      },
+
+      // Blog (tetap group)
+      {
+        id: "group-blog",
         label: "Blog",
         icon: PencilSquareIcon,
         children: [
@@ -80,13 +95,16 @@ function getMenuByRole(roleId) {
           },
         ],
       },
+
       {
         id: "partner",
         label: "Partner Kami",
         icon: BuildingOffice2Icon,
         to: "/app/partner",
       },
-      ...common,
+
+      ...commonTail,
+
       {
         id: "setting",
         label: "Setting",
@@ -97,42 +115,49 @@ function getMenuByRole(roleId) {
   }
 
   if (roleId === 3) {
+    // ===== NOTARIS =====
     return [
       { id: "dashboard", label: "Dashboard", icon: Squares2X2Icon, to: "/app" },
-      { id: "profile", label: "Profile", icon: UserCircleIcon, to: "/profile" },
+
+      // Group: Akta
       {
-        id: "akta-otentik",
-        label: "Akta Otentik",
+        id: "group-akta",
+        label: "Akta",
         icon: DocumentTextIcon,
-        to: "/app/deed",
+        children: [
+          { id: "deed", label: "Akta Otentik", to: "/app/deed" },
+          { id: "template", label: "Template Akta", to: "/app/template" },
+        ],
       },
+
+      // Group: Proyek (hanya notaris)
       {
-        id: "template-akta",
-        label: "Template Akta",
-        icon: ClipboardDocumentListIcon,
-        to: "/app/template",
-      },
-      {
-        id: "project-notaris",
-        label: "Proyek Notaris",
+        id: "group-proyek",
+        label: "Proyek",
         icon: DocumentDuplicateIcon,
-        to: "/app/project-notaris",
+        children: [
+          {
+            id: "project-notaris",
+            label: "Proyek Notaris",
+            to: "/app/project-notaris",
+          },
+        ],
       },
-      ...common,
+
+      ...commonTail,
     ];
   }
 
-  // Penghadap (2)
+  // ===== PENGHADAP (DEFAULT) =====
   return [
     { id: "dashboard", label: "Dashboard", icon: Squares2X2Icon, to: "/app" },
-    { id: "profile", label: "Profile", icon: UserCircleIcon, to: "/profile" },
     {
       id: "project-client",
       label: "Proyek Penghadap",
       icon: FolderIcon,
       to: "/app/project-client-notaris",
     },
-    ...common,
+    ...commonTail,
   ];
 }
 
@@ -140,16 +165,11 @@ export default function Sidebar({ className = "", open, onClose }) {
   const { pathname } = useLocation();
   const user = authService.getLocalUser(); // { id, role_id, ... }
   const roleId = user?.role_id;
+
   const menuItems = useMemo(() => getMenuByRole(roleId), [roleId]);
 
-  // track group open states
-  // const groupIds = useMemo(
-  //   () => menuItems.filter((m) => m.children?.length).map((m) => m.id),
-  //   [menuItems]
-  // );
-
+  // auto-buka group yang berisi current path
   const defaultOpen = useMemo(() => {
-    // auto buka group yang mengandung current path
     const openObj = {};
     for (const m of menuItems) {
       if (m.children?.length) {
@@ -160,7 +180,6 @@ export default function Sidebar({ className = "", open, onClose }) {
   }, [menuItems, pathname]);
 
   const [openGroups, setOpenGroups] = useState(defaultOpen);
-
   useEffect(() => setOpenGroups(defaultOpen), [defaultOpen]);
 
   useEffect(() => {
@@ -169,9 +188,7 @@ export default function Sidebar({ className = "", open, onClose }) {
     return () => (document.body.style.overflow = "");
   }, [open]);
 
-  const toggleGroup = (id) => {
-    setOpenGroups((s) => ({ ...s, [id]: !s[id] }));
-  };
+  const toggleGroup = (id) => setOpenGroups((s) => ({ ...s, [id]: !s[id] }));
 
   const base =
     "fixed inset-y-0 left-0 z-40 w-72 bg-[#0256c4] dark:bg-[#002d6a] text-white flex flex-col transition-transform duration-200 h-screen overflow-y-auto";
@@ -217,7 +234,7 @@ export default function Sidebar({ className = "", open, onClose }) {
         {/* Menu */}
         <nav className="flex-1 px-2 pb-6 mt-5">
           {menuItems.map((item) => {
-            // simple link item
+            // simple link
             if (!item.children?.length) {
               const Icon = item.icon;
               return (

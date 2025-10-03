@@ -93,12 +93,25 @@ export default function ActivityFlowPage() {
     fetchActivity,
   } = useActivityData(activityId);
 
-  // ===================== READ-ONLY ADMIN GUARD =====================
+  // ========= ADMIN OWNER GUARDING =========
   const isAdmin = Number(me?.role_id) === 1;
-  const canManage = !isAdmin && isNotary;
-  const canEditSchedule = !isAdmin && isNotary;
-  const canUploadDraft = !isAdmin && (isNotary || isClient);
-  const canDownloadDraft = !isAdmin;
+  // anggap activity.user_notaris_id adalah owner notaris yg membuat proyek.
+  const ownerNotarisId =
+    activity?.user_notaris_id ?? activity?.notaris?.id ?? null;
+  const isAdminOwner =
+    isAdmin &&
+    me?.id &&
+    ownerNotarisId &&
+    Number(me.id) === Number(ownerNotarisId);
+
+  // izin final:
+  // - Notaris: penuh
+  // - Admin Owner: penuh
+  // - Admin (bukan owner): read-only
+  const canManage = isNotary || isAdminOwner;
+  const canEditSchedule = isNotary || isAdminOwner;
+  const canUploadDraft = isNotary || isClient || isAdminOwner;
+  const canDownloadDraft = true; // admin pun boleh lihat/download
   const canDownloadFinal = true;
   const canViewSchedule = true;
   const canViewESignFile = true;
@@ -138,8 +151,9 @@ export default function ActivityFlowPage() {
     setExpandedStep(expandedStep === id ? null : id);
 
   const markDone = async (id) => {
+    // admin non-owner read-only
+    if (isAdmin && !isAdminOwner) return;
     try {
-      if (isAdmin) return; // admin read-only
       if (id === "sign") {
         setIsMutating(true);
         await signService.markDone(activityId);
@@ -157,7 +171,7 @@ export default function ActivityFlowPage() {
   };
 
   const onMarkDocsDone = async () => {
-    if (isAdmin) return;
+    if (isAdmin && !isAdminOwner) return;
     try {
       setIsMutating(true);
       const { activityService } = await import(
@@ -179,7 +193,7 @@ export default function ActivityFlowPage() {
   const myDraftStatus = (myDraftPivot?.status_approval || "").toLowerCase();
 
   const onApproveDraft = async () => {
-    if (isAdmin) return;
+    if (isAdmin && !isAdminOwner) return;
     try {
       setIsMutating(true);
       const { clientDraftService } = await import(
@@ -202,7 +216,7 @@ export default function ActivityFlowPage() {
   };
 
   const onRejectDraft = async () => {
-    if (isAdmin) return;
+    if (isAdmin && !isAdminOwner) return;
     try {
       setIsMutating(true);
       const { clientDraftService } = await import(
@@ -223,7 +237,7 @@ export default function ActivityFlowPage() {
 
   // ===== Upload Draft =====
   const onUploadDraft = async (file) => {
-    if (!file || !canUploadDraft) return;
+    if (!file || !(isNotary || isClient || isAdminOwner)) return;
     try {
       setIsMutating(true);
       const draftId = activity?.draft?.id;
@@ -254,8 +268,8 @@ export default function ActivityFlowPage() {
 
   // ===== Create/Update/Delete schedule =====
   const handleScheduleSave = async ({ datetime, place, note }) => {
+    if (!(isNotary || isAdminOwner)) return; // admin non-owner read-only
     try {
-      if (!canEditSchedule) return; // admin read-only
       setIsMutating(true);
 
       const d = new Date(datetime);
@@ -287,8 +301,8 @@ export default function ActivityFlowPage() {
   };
 
   const handleScheduleDelete = async () => {
+    if (!(isNotary || isAdminOwner)) return; // admin non-owner read-only
     try {
-      if (!canEditSchedule) return; // admin read-only
       setIsMutating(true);
 
       const existingId = activity?.schedules?.[0]?.id;
@@ -421,7 +435,10 @@ export default function ActivityFlowPage() {
                 {renderStepContent(step.id, status, {
                   activity,
                   deed: activity?.deed,
-                  draftApprovals,
+                  draftApprovals:
+                    activity?.draft?.clientDrafts ??
+                    activity?.draft?.client_drafts ??
+                    [],
                   clients: activity?.clients || [],
                   track: activity?.track,
                   permissions: {
@@ -436,8 +453,9 @@ export default function ActivityFlowPage() {
                     canViewESignFile,
                     canDownloadFinal,
                   },
-                  markDone: !isAdmin ? markDone : undefined,
-                  onMarkDocsDone: !isAdmin ? onMarkDocsDone : undefined,
+                  markDone: isAdmin && !isAdminOwner ? undefined : markDone,
+                  onMarkDocsDone:
+                    isAdmin && !isAdminOwner ? undefined : onMarkDocsDone,
 
                   onSchedule: canEditSchedule
                     ? () => setSchedule({ open: true, row: activity })
@@ -457,13 +475,13 @@ export default function ActivityFlowPage() {
                     ? handleDeleteRequirement
                     : undefined,
 
-                  isNotary: !isAdmin && isNotary,
-                  isClient: !isAdmin && isClient,
+                  isNotary: isNotary || isAdminOwner, // izinkan fitur notaris untuk admin-owner
+                  isClient: (!isAdmin || isAdminOwner) && isClient,
                   myDraftStatus,
                   onApproveDraft:
-                    !isAdmin && isClient ? onApproveDraft : undefined,
+                    isAdmin && !isAdminOwner ? undefined : onApproveDraft,
                   onRejectDraft:
-                    !isAdmin && isClient ? onRejectDraft : undefined,
+                    isAdmin && !isAdminOwner ? undefined : onRejectDraft,
                   onUploadDraft: canUploadDraft ? onUploadDraft : undefined,
 
                   onOpenSignPage: () => {
@@ -504,8 +522,8 @@ export default function ActivityFlowPage() {
           place: activity?.schedules?.[0]?.location ?? "",
           note: activity?.schedules?.[0]?.notes ?? "",
         }}
-        onSave={canEditSchedule ? handleScheduleSave : undefined}
-        onDelete={canEditSchedule ? handleScheduleDelete : undefined}
+        onSave={isNotary || isAdminOwner ? handleScheduleSave : undefined}
+        onDelete={isNotary || isAdminOwner ? handleScheduleDelete : undefined}
       />
 
       <ScheduleViewModal

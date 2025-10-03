@@ -20,6 +20,7 @@ import VerifyCodePage from "./pages/auth/VerifyCode";
 import UserPage from "./pages/dashboard/UserPage";
 import VerificationUserPage from "./pages/dashboard/VerificationUserPage";
 import NotaryActivityPage from "./pages/dashboard/NotarisActivityPage";
+import AdminActivityPage from "./pages/dashboard/AdminActivityPage";
 import NotarisClientActivityPage from "./pages/dashboard/NotarisClientActivityPage";
 import DraftPage from "./pages/dashboard/DraftPage";
 import ForgotPage from "./pages/auth/ForgotPage";
@@ -102,6 +103,10 @@ export default function App() {
               <Route
                 path="/app/project-notaris"
                 element={<NotaryActivityPage />}
+              />
+              <Route
+                path="/app/project-admin"
+                element={<AdminActivityPage />}
               />
             </Route>
 
