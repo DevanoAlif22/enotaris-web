@@ -37,6 +37,25 @@ export const authService = {
       throw normalizeErr(err);
     }
   },
+  async loginWithGoogle({ idToken, role }) {
+    try {
+      console.log("Login with Google:", { idToken, role });
+      const role_id = mapRoleToId(role);
+      const { data } = await api.post("/auth/google/token-login", {
+        id_token: idToken,
+        role_id,
+      });
+
+      // Simpan token & user
+      const token = data?.data?.token;
+      tokenStore.set(token);
+      localStorage.setItem("auth_user", JSON.stringify(data?.data?.user || {}));
+
+      return data;
+    } catch (err) {
+      throw normalizeErr(err);
+    }
+  },
 
   async verify({ email, kode }) {
     try {
@@ -96,6 +115,30 @@ export const authService = {
       return data;
     } catch (err) {
       throw normalizeErr(err);
+    }
+  },
+  async forgot({ email }) {
+    try {
+      const { data } = await api.post("/auth/forgot", { email });
+      return data; // { success, message }
+    } catch (err) {
+      const e = normalizeErr(err);
+      throw e;
+    }
+  },
+
+  async resetPassword({ email, token, password, confirmPassword }) {
+    try {
+      const { data } = await api.post("/auth/reset", {
+        email,
+        token,
+        password,
+        password_confirmation: confirmPassword, // Laravel confirmed rule
+      });
+      return data;
+    } catch (err) {
+      const e = normalizeErr(err);
+      throw e;
     }
   },
 
