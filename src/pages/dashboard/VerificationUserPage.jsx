@@ -11,10 +11,10 @@ import VerificationDetailModal from "../../components/verification/VerficationDe
 import VerificationDecisionModal from "../../components/verification/VerificationDecisionModal";
 
 const TAB_MAP = [
+  { label: "Semua", type: "all" },
   { label: "Menunggu", type: "pending" },
   { label: "Disetujui", type: "approved" },
   { label: "Ditolak", type: "rejected" },
-  { label: "Semua", type: "all" },
 ];
 
 const mapStatusToBadge = (s) => {
@@ -179,7 +179,7 @@ export default function VerificationUserPage() {
           </div>
         )}
         {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
           <h1 className="text-2xl font-semibold dark:text-[#f5fefd]">
             Verifikasi Identitas
           </h1>
