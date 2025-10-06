@@ -14,6 +14,7 @@ import "./App.css";
 import AuthLayout from "./layouts/AuthLayout";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
+import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import MainLayout from "./layouts/MainLayout";
 import LandingLayout from "./layouts/LandingLayout";
 import VerifyCodePage from "./pages/auth/VerifyCode";
@@ -54,6 +55,7 @@ export default function App() {
         <Route element={<AuthLayout />}>
           <Route path="/forgot-password" element={<ForgotPage />} />
           <Route path="/verify-code" element={<VerifyCodePage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/login" element={<LoginPage />} />
         </Route>
