@@ -74,7 +74,7 @@ export default function RegisterPage() {
       {/* overlay loader */}
       <LoadingOverlay show={isSubmitting} />
 
-      <div className="rounded-lg flex w-full max-w-5xl overflow-hidden bg-white">
+      <div className="rounded-lg flex w-[450px] md:w-[1000px] overflow-hidden bg-white">
         {/* Left Side */}
         <div className="hidden lg:flex lg:w-1/2 bg-[#0256c4] relative flex-col justify-center items-center text-white">
           <div className="absolute top-0 left-0 w-full h-full">

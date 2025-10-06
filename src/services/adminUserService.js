@@ -7,6 +7,15 @@ const normErr = (err) => {
   return { message, errors, status: err?.response?.status };
 };
 
+/** FE -> BE role map */
+const mapRoleToId = (role) => {
+  if (!role) return null;
+  const r = String(role).toLowerCase();
+  if (r === "notaris") return 3;
+  if (r === "klien" || r === "penghadap") return 2;
+  return null;
+};
+
 // NOTE: routes dilindungi ability:admin, pastikan tokenmu punya ability tersebut.
 export const adminUserService = {
   async getAll({ page = 1, per_page = 10, q = "" } = {}) {
@@ -29,6 +38,14 @@ export const adminUserService = {
     } catch (err) {
       throw normErr(err);
     }
+  },
+
+  async create({ name, email, password, role }) {
+    const role_id = mapRoleToId(role);
+    const payload = { name, email, password, role_id };
+
+    const { data } = await api.post("/admin/user", payload);
+    return data;
   },
 
   async destroy(id) {
