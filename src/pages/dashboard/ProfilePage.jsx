@@ -314,7 +314,7 @@ const ProfilePage = () => {
                 name="telepon"
                 value={formData.telepon}
                 onChange={handleInputChange}
-                placeholder="Masukkan nomor telepon"
+                placeholder="Contoh : 0895366141912"
               />
               <SelectInput
                 labelTitle={
@@ -334,7 +334,7 @@ const ProfilePage = () => {
                 name="alamat"
                 value={formData.alamat}
                 onChange={handleInputChange}
-                placeholder="Masukkan alamat lengkap"
+                placeholder="Contoh : Sawo 002/001 Sawocangkring, Wonoayu, Sidoarjo"
                 required={true}
               />
               <InputField
@@ -342,7 +342,7 @@ const ProfilePage = () => {
                 name="provinsi"
                 value={formData.provinsi}
                 onChange={handleInputChange}
-                placeholder="Masukkan provinsi"
+                placeholder="Contoh : Jawa Timur"
                 required={true}
               />
               <InputField
@@ -350,7 +350,7 @@ const ProfilePage = () => {
                 name="kota"
                 value={formData.kota}
                 onChange={handleInputChange}
-                placeholder="Masukkan kota"
+                placeholder="Contoh : Kota Surabaya"
                 required={true}
               />
               <InputField
@@ -358,7 +358,7 @@ const ProfilePage = () => {
                 name="kode_pos"
                 value={formData.kode_pos}
                 onChange={handleInputChange}
-                placeholder="Masukkan kode pos"
+                placeholder="Contoh : 654321"
               />
               <InputField
                 label={<span className="dark:text-[#f5fefd]">Role</span>}

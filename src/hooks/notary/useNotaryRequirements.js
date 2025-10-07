@@ -1,9 +1,9 @@
 // hooks/useNotaryRequirements.js
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { activityService } from "../services/activityService";
-import { userService } from "../services/userService";
-import { documentRequirementNotarisService } from "../services/documentRequirementNotarisService";
-import { showError } from "../utils/toastConfig";
+import { activityService } from "../../services/activityService";
+import { userService } from "../../services/userService";
+import { documentRequirementNotarisService } from "../../services/documentRequirementNotarisService";
+import { showError } from "../../utils/toastConfig";
 
 export function useNotaryRequirements(activityId) {
   // UI/tab & selection

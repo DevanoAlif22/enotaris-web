@@ -37,16 +37,27 @@ export const authService = {
       throw normalizeErr(err);
     }
   },
-  async loginWithGoogle({ idToken, role }) {
-    try {
-      console.log("Login with Google:", { idToken, role });
-      const role_id = mapRoleToId(role);
-      const { data } = await api.post("/auth/google/token-login", {
-        id_token: idToken,
-        role_id,
-      });
 
-      // Simpan token & user
+  async loginWithGoogle({ accessToken, roleId, role, idToken }) {
+    try {
+      // tentukan role_id (prioritas: roleId angka; fallback: role string)
+      const derivedRoleId =
+        typeof roleId === "number" && [2, 3].includes(roleId)
+          ? roleId
+          : mapRoleToId(role);
+
+      const payload = {
+        access_token: accessToken || idToken, // BE expect: access_token
+        ...(derivedRoleId ? { role_id: derivedRoleId } : {}), // ⬅️ penting
+      };
+
+      if (!payload.access_token) {
+        throw { message: "Access token Google tidak ditemukan di FE." };
+      }
+
+      const { data } = await api.post("/auth/google/token-login", payload);
+
+      // simpan token & user
       const token = data?.data?.token;
       tokenStore.set(token);
       localStorage.setItem("auth_user", JSON.stringify(data?.data?.user || {}));
@@ -56,7 +67,6 @@ export const authService = {
       throw normalizeErr(err);
     }
   },
-
   async verify({ email, kode }) {
     try {
       const { data } = await api.post("/auth/verify", { email, kode });
