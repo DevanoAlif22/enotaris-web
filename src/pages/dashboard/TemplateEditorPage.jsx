@@ -10,7 +10,6 @@ import { labelPdfSummary } from "../../helpers/template/pdfDefaults";
 export default function TemplateEditorPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-
   const {
     // data
     name,

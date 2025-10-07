@@ -74,7 +74,7 @@ export default function TopBar({
             {theme === "dark" ? (
               <SunIcon className="w-6 h-6 text-yellow-300" />
             ) : (
-              <MoonIcon className="w-6 h-6 text-gray-700" />
+              <MoonIcon className="w-6 h-6 text-[#f5fefd]" />
             )}
           </button>
 
