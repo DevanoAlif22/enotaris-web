@@ -13,7 +13,6 @@ import PdfSettingPanel from "../../components/deed/PdfSettingPanel";
 import { templateService } from "../../services/templateService";
 import { showError, showSuccess } from "../../utils/toastConfig";
 
-// helper: preserve spasi & tab saat disimpan / dikirim
 function preserveSpaces(html) {
   if (html == null) return html;
   let out = html.replace(/\t/g, "&nbsp;&nbsp;&nbsp;&nbsp;"); // tab -> 4 NBSP
@@ -33,11 +32,11 @@ export default function TemplateEditorPage() {
   const [exporting, setExporting] = useState(false);
   const [dirty, setDirty] = useState(false);
 
-  const [showPreview, setShowPreview] = useState(false); // preview cepat (HTML asli)
-  const [pagedOpen, setPagedOpen] = useState(false); // preview paged (pakai PdfSettingPanel)
-  const [latestUrl, setLatestUrl] = useState(""); // URL PDF (Cloudinary) dari DB
+  const [showPreview, setShowPreview] = useState(false);
+  const [pagedOpen, setPagedOpen] = useState(false);
+  const [latestUrl, setLatestUrl] = useState("");
 
-  // ==== PDF options (sama seperti Draft) ====
+  // ==== PDF options ====
   const [pdfOptions, setPdfOptions] = useState({
     page_size: "A4",
     orientation: "portrait",
