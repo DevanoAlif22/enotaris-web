@@ -1,133 +1,25 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import QuillEditor from "../../components/common/QuillEditor";
 import FileInput from "../../components/input/FileInput";
-import { blogService } from "../../services/blogService";
-import { categoryBlogService } from "../../services/categoryBlogService";
-import { showError, showSuccess } from "../../utils/toastConfig";
+import useBlogEditor from "../../hooks/admin/useBlogEditor";
 
 export default function BlogEditorPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const blogId = id;
-
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [dirty, setDirty] = useState(false);
-
-  // image states
-  const [imageLocal, setImageLocal] = useState(null);
-  const [imageUrl, setImageUrl] = useState("");
-  const [clearImage, setClearImage] = useState(false);
-
-  // categories
-  const [allCats, setAllCats] = useState([]); // [{id,name}]
-  const [selectedCatIds, setSelectedCatIds] = useState([]); // [id,...]
-
-  const quillRef = useRef(null);
-
-  // Load categories
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await categoryBlogService.all({ min: true });
-        setAllCats(res?.data || []);
-      } catch (e) {
-        showError(e.message || "Gagal memuat kategori.");
-      }
-    })();
-  }, []);
-
-  // Load blog when editing
-  useEffect(() => {
-    if (!blogId) return;
-    if (dirty) return;
-    (async () => {
-      try {
-        setLoading(true);
-        const res = await blogService.get(blogId, { withCategories: true });
-        const item = res?.data;
-        setTitle(item?.title || "");
-        setDescription(String(item?.description || ""));
-        setImageUrl(item?.image || "");
-        setClearImage(false);
-        // prefill categories
-        const ids = Array.isArray(item?.categories)
-          ? item.categories.map((c) => c.id)
-          : [];
-        setSelectedCatIds(ids);
-      } catch (e) {
-        showError(e.message || "Gagal memuat blog.");
-      } finally {
-        setLoading(false);
-      }
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [blogId]);
-
-  const handleDescChange = (val, _delta, source) => {
-    if (source === "user") setDirty(true);
-    setDescription(val);
-  };
-
-  // File input
-  const handleFileChange = ({ updateType, value }) => {
-    if (updateType !== "image") return;
-    const { file, previewUrl } = value;
-    if (file) {
-      setImageLocal(file);
-      setClearImage(false);
-    } else {
-      setImageLocal(null);
-    }
-    setImageUrl(previewUrl);
-  };
-
-  // Category toggle (checkbox)
-  const toggleCategory = (catId) => {
-    setSelectedCatIds((prev) =>
-      prev.includes(catId)
-        ? prev.filter((id) => id !== catId)
-        : [...prev, catId]
-    );
-  };
-
-  const handleSave = async () => {
-    try {
-      setSaving(true);
-
-      const payload = {
-        title,
-        description,
-        imageFile: imageLocal || null,
-        clear_image: !!clearImage && !imageLocal,
-        category_blog_ids: selectedCatIds, // ⬅️ kirim ke server
-      };
-
-      if (blogId) {
-        await blogService.update(blogId, payload);
-        showSuccess("Blog berhasil diperbarui.");
-      } else {
-        await blogService.create(payload);
-        showSuccess("Blog berhasil dibuat.");
-      }
-      navigate("/app/blog");
-    } catch (e) {
-      const firstErr =
-        e?.errors && typeof e.errors === "object"
-          ? (() => {
-              const first = Object.values(e.errors)[0];
-              return Array.isArray(first) ? first[0] : String(first);
-            })()
-          : null;
-      showError(firstErr || e.message || "Gagal menyimpan blog.");
-    } finally {
-      setSaving(false);
-    }
-  };
+  const {
+    isEdit,
+    loading,
+    saving,
+    allCats,
+    form,
+    quillRef,
+    setField,
+    toggleCategory,
+    handleFileChange,
+    handleDescChange,
+    handleSave,
+  } = useBlogEditor(id, navigate);
 
   return (
     <div className="space-y-6 p-6 dark:bg-[#002d6a] rounded-lg">
@@ -139,7 +31,7 @@ export default function BlogEditorPage() {
       </Link>
 
       <h1 className="text-2xl font-semibold dark:text-[#f5fefd]">
-        {blogId ? "Edit Blog" : "Tambah Blog"}
+        {isEdit ? "Edit Blog" : "Tambah Blog"}
       </h1>
 
       {loading ? (
@@ -153,8 +45,8 @@ export default function BlogEditorPage() {
             </label>
             <input
               type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              value={form.title}
+              onChange={(e) => setField("title", e.target.value)}
               className="w-full border rounded px-3 py-2 dark:text-[#f5fefd]"
               placeholder="Masukkan judul blog"
             />
@@ -171,16 +63,16 @@ export default function BlogEditorPage() {
               updateFormValue={handleFileChange}
               updateType="image"
               defaultFile={null}
-              defaultPreviewUrl={imageUrl || ""}
+              defaultPreviewUrl={form.imageUrl || ""}
             />
             <div className="mt-3 flex items-center gap-2">
               <input
                 id="clearImage"
                 type="checkbox"
                 className="checkbox checkbox-sm"
-                checked={clearImage}
-                onChange={(e) => setClearImage(e.target.checked)}
-                disabled={!!imageLocal}
+                checked={form.clearImage}
+                onChange={(e) => setField("clearImage", e.target.checked)}
+                disabled={!!form.imageFile}
               />
               <label
                 htmlFor="clearImage"
@@ -191,8 +83,7 @@ export default function BlogEditorPage() {
             </div>
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-300">
               Centang jika ingin menghapus gambar yang sudah ada di server. Jika
-              kamu memilih file baru, opsi ini akan diabaikan (server otomatis
-              ganti).
+              memilih file baru, opsi ini diabaikan.
             </p>
           </div>
 
@@ -208,16 +99,15 @@ export default function BlogEditorPage() {
             ) : (
               <div className="flex flex-wrap gap-2">
                 {allCats.map((cat) => {
-                  const checked = selectedCatIds.includes(cat.id);
+                  const checked = form.categoryIds.includes(cat.id);
                   return (
                     <label
                       key={cat.id}
-                      className={`px-3 py-1.5 rounded-lg border cursor-pointer text-sm select-none
-                        ${
-                          checked
-                            ? "bg-[#0256c4] text-white border-[#0256c4]"
-                            : "bg-white dark:bg-[#002d6a] text-gray-700 dark:text-[#f5fefd] border-gray-300"
-                        }`}
+                      className={`px-3 py-1.5 rounded-lg border cursor-pointer text-sm select-none ${
+                        checked
+                          ? "bg-[#0256c4] text-white border-[#0256c4]"
+                          : "bg-white dark:bg-[#002d6a] text-gray-700 dark:text-[#f5fefd] border-gray-300"
+                      }`}
                     >
                       <input
                         type="checkbox"
@@ -244,7 +134,7 @@ export default function BlogEditorPage() {
             <div className="border rounded quill-wrap dark:text-[#f5fefd]">
               <QuillEditor
                 ref={quillRef}
-                value={description}
+                value={form.description}
                 onChange={handleDescChange}
                 className="deed-quill dark:text-[#f5fefd]"
                 placeholder="Tulis konten blog…"

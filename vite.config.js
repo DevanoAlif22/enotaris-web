@@ -30,11 +30,10 @@ export default defineConfig({
 
   // Add server configuration for development
   server: {
-    // Enable CORS for CDN resources
     cors: true,
-    // headers: {
-    //   "Cross-Origin-Embedder-Policy": "require-corp",
-    //   "Cross-Origin-Opener-Policy": "same-origin",
-    // },
+    host: true, // ⬅️ penting untuk akses dari luar localhost
+    allowedHosts: [
+      "625b7f61a218.ngrok-free.app", // ⬅️ masukkan host dari ngrok kamu
+    ],
   },
 });

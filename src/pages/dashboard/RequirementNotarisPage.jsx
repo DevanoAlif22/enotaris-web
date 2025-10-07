@@ -8,7 +8,7 @@ import TabBtn from "../../components/requirement/TabBtn";
 import ProfileReadOnly from "../../components/requirement/ProfileReadOnly";
 import DocsList from "../../components/requirement/DocsList";
 import { Link } from "react-router-dom";
-import { useNotaryRequirements } from "../../hooks/useNotaryRequirements";
+import { useNotaryRequirements } from "../../hooks/notary/useNotaryRequirements";
 
 export default function RequirementNotarisPage() {
   const { activityId } = useParams();

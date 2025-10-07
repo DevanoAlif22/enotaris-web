@@ -1,5 +1,6 @@
 // src/App.jsx
 import { Route, Routes } from "react-router-dom";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import LandingHomePage from "./pages/landing/LandingHomePage";
 import LandingBlogPage from "./pages/landing/LandingBlogPage";
 import LandingAboutPage from "./pages/landing/LandingAboutPage";
@@ -44,10 +45,14 @@ import ScrollToTop from "./components/ScrollToTop";
 import PartnerPage from "./pages/dashboard/PartnerPage";
 import SettingPage from "./pages/dashboard/SettingPage";
 
+// Ambil Google Client ID dari environment variable
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
 export default function App() {
   useAOSInit(); // init sekali di sini
+
   return (
-    <>
+    <GoogleOAuthProvider clientId={googleClientId}>
       <ToastContainer />
       <ScrollToTop behavior="smooth" />
       <Routes>
@@ -158,6 +163,6 @@ export default function App() {
           <Route path="/track" element={<LandingTrackPage />} />
         </Route>
       </Routes>
-    </>
+    </GoogleOAuthProvider>
   );
 }

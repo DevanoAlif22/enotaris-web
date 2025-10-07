@@ -1,4 +1,4 @@
-// components/projectflow/RenderStepContent.jsx
+// src/components/projectflow/RenderStepContent.jsx
 import { Link } from "react-router-dom";
 import {
   CheckCircleIcon,
@@ -20,22 +20,19 @@ function buildDraftApprovals(activity, clients = [], draftApprovalsProp = []) {
       ? activity.draft.client_drafts
       : [];
 
-  // Index cepat by user_id dari sumber mana pun yang ada
   const byUserId = new Map();
 
-  // Ambil dari server (activity.draft.client_drafts)
   for (const cd of rawClientDrafts) {
     if (!cd) continue;
     byUserId.set(cd.user_id, {
       id: cd.id ?? `server-${cd.user_id}`,
       user_id: cd.user_id,
       status_approval: (cd.status_approval || "pending").toLowerCase(),
-      user: cd.user, // bisa undefined, nanti fallback pakai clients
+      user: cd.user,
       _source: "server",
     });
   }
 
-  // Jika ada draftApprovals dikirim via props, merge tapi jangan timpa server
   for (const cd of draftApprovalsProp || []) {
     if (!cd) continue;
     if (!byUserId.has(cd.user_id)) {
@@ -49,29 +46,26 @@ function buildDraftApprovals(activity, clients = [], draftApprovalsProp = []) {
     }
   }
 
-  // Pastikan SEMUA clients punya entri
   for (const c of clients || []) {
     if (!byUserId.has(c.id)) {
       byUserId.set(c.id, {
-        id: `phantom-${c.id}`, // key unik untuk React
+        id: `phantom-${c.id}`,
         user_id: c.id,
         status_approval: "pending",
         user: c,
         _source: "phantom",
       });
     } else {
-      // Lengkapi nama/email jika belum ada
       const exist = byUserId.get(c.id);
       if (!exist.user) exist.user = c;
     }
   }
 
-  // Urutkan sesuai urutan klien (pakai pivot.order jika ada, lalu by name)
   const withOrder = Array.from(byUserId.values()).map((row) => {
     const client = (clients || []).find((c) => c.id === row.user_id);
     return {
       ...row,
-      _order: client?.pivot?.order ?? client?.order ?? 999999, // fallback besar biar di akhir
+      _order: client?.pivot?.order ?? client?.order ?? 999999,
       _name: client?.name || row?.user?.name || "",
     };
   });
@@ -86,6 +80,8 @@ function buildDraftApprovals(activity, clients = [], draftApprovalsProp = []) {
 
 export default function renderStepContent(stepId, status, actions = {}) {
   const {
+    isAdminMonitoring = false, // <<— flag penting
+
     markDone,
     onSchedule,
     onViewSchedule,
@@ -103,11 +99,11 @@ export default function renderStepContent(stepId, status, actions = {}) {
     onApproveDraft,
     onRejectDraft,
     draftApprovals = [],
-    onUploadDraft, // <- handler upload dipass dari page
+    onUploadDraft,
   } = actions;
 
   const buttonClass = "px-4 py-2 rounded-lg font-medium transition-colors";
-  const primaryButton = `${buttonClass} inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 dark:text-[#f5fefd] hover:bg-gray-50 dark:hover:bg-[#01043c] dark:bg-gradient-to-r from-blue-500 to-[#0256c4]`;
+  const primaryButton = `${buttonClass} inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 dark:text-[#f5fefd] hover:bg-gray-50 dark:hover:bg-[#01043c]`;
   const secondaryButton = `${buttonClass} inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 dark:text-[#f5fefd] hover:bg-gray-50 dark:hover:bg-[#01043c]`;
 
   const approveButton = `${buttonClass} bg-green-500 text-white hover:bg-green-600`;
@@ -136,22 +132,23 @@ export default function renderStepContent(stepId, status, actions = {}) {
     ) : null;
 
   // helper: tombol upload (dipakai notaris & klien)
-  const UploadButton = ({ label = "Unggah Draft" }) => (
-    <label className={secondaryButton}>
-      {label}
-      <input
-        type="file"
-        accept=".pdf,.doc,.docx,.odt"
-        className="hidden"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file && typeof onUploadDraft === "function") onUploadDraft(file);
-          // reset value biar bisa upload file yang sama lagi kalau perlu
-          e.target.value = "";
-        }}
-      />
-    </label>
-  );
+  const UploadButton = ({ label = "Unggah Draft" }) =>
+    isAdminMonitoring ? null : (
+      <label className={secondaryButton}>
+        {label}
+        <input
+          type="file"
+          accept=".pdf,.doc,.docx,.odt"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file && typeof onUploadDraft === "function")
+              onUploadDraft(file);
+            e.target.value = "";
+          }}
+        />
+      </label>
+    );
 
   switch (stepId) {
     case "docs":
@@ -165,17 +162,21 @@ export default function renderStepContent(stepId, status, actions = {}) {
                   ? "Data & Dokumen Semua Penghadap"
                   : `Data & Dokumen`}
               </h4>
+
+              {/* Admin monitoring: sembunyikan tombol Buka Form */}
               {docsPerm.canSelectAnyParty ? (
-                <Link
-                  to={`/app/requirement-notaris/${activity?.id}`}
-                  className={primaryButton}
-                >
-                  Buka Form
-                </Link>
+                isAdminMonitoring ? null : (
+                  <Link
+                    to={`/app/requirement-notaris/${activity?.id}`}
+                    className={primaryButton}
+                  >
+                    Buka Form
+                  </Link>
+                )
               ) : (
                 (() => {
                   const me = clients.find((c) => c.id === currentUserId);
-                  return (
+                  return isAdminMonitoring ? null : (
                     <Link
                       to={`/app/requirement/${activity?.id}`}
                       className={secondaryButton}
@@ -186,39 +187,42 @@ export default function renderStepContent(stepId, status, actions = {}) {
                 })()
               )}
 
-              {docsPerm.canSelectAnyParty && requirementList.length > 0 && (
-                <div className="mt-4">
-                  <div className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-                    Kelola persyaratan:
+              {/* Kelola persyaratan hanya jika bukan monitoring */}
+              {docsPerm.canSelectAnyParty &&
+                requirementList.length > 0 &&
+                !isAdminMonitoring && (
+                  <div className="mt-4">
+                    <div className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                      Kelola persyaratan:
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {requirementList.map((req) => (
+                        <span
+                          key={req.id}
+                          className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs"
+                          title={req.name}
+                        >
+                          {req.name}
+                          {typeof onDeleteRequirement === "function" && (
+                            <button
+                              onClick={() =>
+                                onDeleteRequirement(req.id, req.name)
+                              }
+                              className="ml-1 text-red-500 hover:text-red-700 font-bold focus:outline-none"
+                              title="Hapus"
+                            >
+                              ×
+                            </button>
+                          )}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {requirementList.map((req) => (
-                      <span
-                        key={req.id}
-                        className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs"
-                        title={req.name}
-                      >
-                        {req.name}
-                        {typeof onDeleteRequirement === "function" && (
-                          <button
-                            onClick={() =>
-                              onDeleteRequirement(req.id, req.name)
-                            }
-                            className="ml-1 text-red-500 hover:text-red-700 font-bold focus:outline-none"
-                            title="Hapus"
-                          >
-                            ×
-                          </button>
-                        )}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
+                )}
             </div>
           </div>
 
-          {status === "todo" && (
+          {status === "todo" && !isAdminMonitoring && (
             <div className="flex gap-3">
               {docsPerm.canSelectAnyParty &&
                 typeof onOpenAddRequirement === "function" && (
@@ -302,20 +306,18 @@ export default function renderStepContent(stepId, status, actions = {}) {
       );
       const draftFileUrl = activity?.draft?.file || "";
 
-      // NORMALISASI: bikin array approvals yang sudah digabung
       const viewDraftApprovals = buildDraftApprovals(
         activity,
         clients,
         draftApprovals
       );
 
-      // Tombol link ke file draft (preview/download)
       const DraftLinkButton = ({
         label = "Lihat Draft",
         downloadFile = false,
       }) => {
         const disabled = !hasDraftFile || !draftFileUrl;
-        return (
+        return isAdminMonitoring ? null : (
           <a
             href={disabled ? undefined : draftFileUrl}
             target="_blank"
@@ -335,7 +337,6 @@ export default function renderStepContent(stepId, status, actions = {}) {
         <div className="space-y-4">
           {RejectNotice}
 
-          {/* Info singkat */}
           <div className="p-4 border border-gray-200 rounded-lg">
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
               Unggah atau buat draft akta untuk direview oleh para pihak.
@@ -349,7 +350,6 @@ export default function renderStepContent(stepId, status, actions = {}) {
             )}
           </div>
 
-          {/* Ringkasan status persetujuan semua penghadap */}
           {viewDraftApprovals.length > 0 && (
             <div className="space-y-2">
               <div className="text-sm font-medium dark:text-[#f5fefd]">
@@ -403,12 +403,10 @@ export default function renderStepContent(stepId, status, actions = {}) {
             </div>
           )}
 
-          {/* Aksi */}
           <div className="flex flex-wrap gap-3">
             {/* NOTARIS */}
-            {isNotary && (
+            {isNotary && !isAdminMonitoring && (
               <>
-                {/* Lihat Draft (Editor) disembunyikan bila step draft sudah 'done' */}
                 {status !== "done" && (
                   <Link
                     to={`/app/project-flow/draft/${activity?.id}`}
@@ -418,23 +416,20 @@ export default function renderStepContent(stepId, status, actions = {}) {
                   </Link>
                 )}
 
-                {/* Link ke file PDF bila tersedia */}
                 {hasDraftFile && (
                   <DraftLinkButton label="Unduh Draft" downloadFile />
                 )}
 
-                {/* Opsi unggah draft (kalau diizinkan) */}
+                {/* Jika ingin mengaktifkan upload: */}
                 {/* {typeof onUploadDraft === "function" && <UploadButton />} */}
               </>
             )}
 
             {/* KLIEN */}
-            {!isNotary && (
+            {!isNotary && !isAdminMonitoring && (
               <>
-                {/* Klien hanya melihat file PDF (bukan editor). Nonaktif jika belum ada file */}
                 <DraftLinkButton label="Lihat Draft" />
 
-                {/* Setujui/Tolak hanya jika file SUDAH ada & status approval masih pending/empty */}
                 {typeof onApproveDraft === "function" &&
                   status !== "reject" &&
                   hasDraftFile &&
@@ -452,7 +447,6 @@ export default function renderStepContent(stepId, status, actions = {}) {
                     </>
                   )}
 
-                {/* Opsi upload dari sisi klien (kalau workflow mengizinkan) */}
                 {/* {typeof onUploadDraft === "function" && <UploadButton />} */}
               </>
             )}
@@ -473,33 +467,36 @@ export default function renderStepContent(stepId, status, actions = {}) {
             </p>
           </div>
           <div className="flex gap-3">
-            <button
-              className={`${secondaryButton} ${
-                !hasSchedule ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-              onClick={onViewSchedule}
-              disabled={!hasSchedule}
-              title={
-                hasSchedule
-                  ? "Lihat jadwal yang sudah dibuat"
-                  : "Belum ada jadwal"
-              }
-            >
-              Lihat Jadwal
-            </button>
+            {!isAdminMonitoring && (
+              <button
+                className={`${secondaryButton} ${
+                  !hasSchedule ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+                onClick={onViewSchedule}
+                disabled={!hasSchedule}
+                title={
+                  hasSchedule
+                    ? "Lihat jadwal yang sudah dibuat"
+                    : "Belum ada jadwal"
+                }
+              >
+                Lihat Jadwal
+              </button>
+            )}
 
             {permissions?.schedule?.canEdit &&
               status !== "reject" &&
-              !hasSchedule && (
+              !hasSchedule &&
+              !isAdminMonitoring && (
                 <button className={secondaryButton} onClick={onSchedule}>
                   Jadwalkan
                 </button>
               )}
 
-            {/* Jika ingin tampilkan tombol “Edit Jadwal” ketika sudah ada jadwal */}
             {permissions?.schedule?.canEdit &&
               status !== "reject" &&
-              hasSchedule && (
+              hasSchedule &&
+              !isAdminMonitoring && (
                 <button className={secondaryButton} onClick={onSchedule}>
                   Ubah Jadwal
                 </button>
@@ -510,7 +507,7 @@ export default function renderStepContent(stepId, status, actions = {}) {
     }
 
     case "sign": {
-      const hasSigned = hasSignedFile; // alias
+      const hasSigned = hasSignedFile;
       return (
         <div className="space-y-4">
           {RejectNotice}
@@ -520,8 +517,7 @@ export default function renderStepContent(stepId, status, actions = {}) {
             </p>
           </div>
           <div className="flex gap-3 flex-wrap">
-            {/* Buka Halaman TTD */}
-            {!signDone && status !== "reject" && (
+            {!signDone && status !== "reject" && !isAdminMonitoring && (
               <button
                 className={primaryButton}
                 onClick={() =>
@@ -535,35 +531,39 @@ export default function renderStepContent(stepId, status, actions = {}) {
               </button>
             )}
 
-            {/* Lihat File TTD (final) */}
-            <a
-              href={hasSigned ? signedUrl : undefined}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`${secondaryButton} ${
-                hasSigned ? "" : "opacity-50 pointer-events-none"
-              }`}
-              title={hasSigned ? "Buka hasil TTD (PDF)" : "Belum ada hasil TTD"}
-            >
-              Lihat File TTD
-            </a>
-
-            {/* Tandai Selesai → disembunyikan jika sudah done */}
-            {!signDone && status !== "reject" && canMarkDone && (
-              <button
-                className={secondaryButton}
-                onClick={() => markDone?.("sign")}
+            {!isAdminMonitoring && (
+              <a
+                href={hasSigned ? signedUrl : undefined}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${secondaryButton} ${
+                  hasSigned ? "" : "opacity-50 pointer-events-none"
+                }`}
+                title={
+                  hasSigned ? "Buka hasil TTD (PDF)" : "Belum ada hasil TTD"
+                }
               >
-                Tandai Selesai
-              </button>
+                Lihat File TTD
+              </a>
             )}
+
+            {!signDone &&
+              status !== "reject" &&
+              canMarkDone &&
+              !isAdminMonitoring && (
+                <button
+                  className={secondaryButton}
+                  onClick={() => markDone?.("sign")}
+                >
+                  Tandai Selesai
+                </button>
+              )}
           </div>
         </div>
       );
     }
 
     case "print": {
-      // Unduh PDF Final = file_ttd
       const disabled = !hasSignedFile;
       return (
         <div className="space-y-4">
@@ -574,28 +574,24 @@ export default function renderStepContent(stepId, status, actions = {}) {
             </p>
           </div>
           <div className="flex gap-3">
-            <a
-              href={disabled ? undefined : signedUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`${secondaryButton} ${
-                disabled ? "opacity-50 pointer-events-none" : ""
-              }`}
-              title={
-                disabled ? "Belum ada hasil TTD" : "Unduh PDF final (hasil TTD)"
-              }
-              download
-            >
-              Unduh PDF Final
-            </a>
-            {/* {canMarkDone && status !== "reject" && (
-              <button
-                className={primaryButton}
-                onClick={() => actions?.markDone?.("print")}
+            {!isAdminMonitoring && (
+              <a
+                href={disabled ? undefined : signedUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${secondaryButton} ${
+                  disabled ? "opacity-50 pointer-events-none" : ""
+                }`}
+                title={
+                  disabled
+                    ? "Belum ada hasil TTD"
+                    : "Unduh PDF final (hasil TTD)"
+                }
+                download
               >
-                Tandai Selesai
-              </button>
-            )} */}
+                Unduh PDF Final
+              </a>
+            )}
           </div>
         </div>
       );
