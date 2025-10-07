@@ -1,10 +1,9 @@
 "use client";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import {
   Squares2X2Icon, // Dashboard
   DocumentTextIcon, // Akta (group)
-  ClipboardDocumentListIcon, // Template Akta (child icon kalau mau dipakai terpisah)
   UserGroupIcon, // Pengguna (group)
   IdentificationIcon, // Verifikasi Identitas
   DocumentDuplicateIcon, // Proyek (group)
@@ -16,8 +15,10 @@ import {
   XMarkIcon,
   ChevronDownIcon,
   BuildingOffice2Icon, // Partner
+  ArrowRightOnRectangleIcon, // Logout
 } from "@heroicons/react/24/outline";
 import { authService } from "../services/authService";
+import { showSuccess } from "../utils/toastConfig";
 
 /** Susun menu berdasarkan role */
 function getMenuByRole(roleId) {
@@ -81,7 +82,7 @@ function getMenuByRole(roleId) {
         ],
       },
 
-      // Blog (tetap group)
+      // Blog
       {
         id: "group-blog",
         label: "Blog",
@@ -130,7 +131,7 @@ function getMenuByRole(roleId) {
         ],
       },
 
-      // Group: Proyek (hanya notaris)
+      // Group: Proyek
       {
         id: "group-proyek",
         label: "Proyek",
@@ -163,9 +164,10 @@ function getMenuByRole(roleId) {
 
 export default function Sidebar({ className = "", open, onClose }) {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+
   const user = authService.getLocalUser(); // { id, role_id, ... }
   const roleId = user?.role_id;
-
   const menuItems = useMemo(() => getMenuByRole(roleId), [roleId]);
 
   // auto-buka group yang berisi current path
@@ -193,6 +195,18 @@ export default function Sidebar({ className = "", open, onClose }) {
   const base =
     "fixed inset-y-0 left-0 z-40 w-72 bg-[#0256c4] dark:bg-[#002d6a] text-white flex flex-col transition-transform duration-200 h-screen overflow-y-auto";
   const visible = open ? "translate-x-0" : "-translate-x-full";
+
+  // ====== LOGOUT handler (sesuai contoh TopBar) ======
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+      showSuccess("Anda berhasil logout!");
+      navigate("/login", { replace: true });
+    } catch (err) {
+      console.error("Logout error:", err);
+      navigate("/login", { replace: true });
+    }
+  };
 
   return (
     <>
@@ -232,7 +246,7 @@ export default function Sidebar({ className = "", open, onClose }) {
         </div>
 
         {/* Menu */}
-        <nav className="flex-1 px-2 pb-6 mt-5">
+        <nav className="flex-1 px-2 mt-5">
           {menuItems.map((item) => {
             // simple link
             if (!item.children?.length) {
@@ -316,6 +330,19 @@ export default function Sidebar({ className = "", open, onClose }) {
             );
           })}
         </nav>
+
+        {/* ===== Logout Button (bottom) ===== */}
+        <div className="mt-6 p-4 border-t border-white/10">
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="w-full inline-flex items-center gap-3 px-3 py-2 rounded-[8px]  text-red-500 font-semibold transition"
+            aria-label="Keluar"
+          >
+            <ArrowRightOnRectangleIcon className="h-6 w-6" />
+            Logout
+          </button>
+        </div>
       </aside>
     </>
   );

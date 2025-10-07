@@ -1,149 +1,85 @@
-import { useEffect, useRef, useState } from "react";
-import InputField from "../../components/input/InputField";
-import { showSuccess, showError } from "../../utils/toastConfig";
-import LoadingOverlay from "../../components/common/LoadingOverlay";
-import { authService } from "../../services/authService";
+// src/pages/auth/LoginPage.jsx
+"use client";
+import { useState } from "react";
+import { useGoogleLogin } from "@react-oauth/google";
 import { useNavigate, Link } from "react-router-dom";
+import LoadingOverlay from "../../components/common/LoadingOverlay";
+import { showSuccess, showError } from "../../utils/toastConfig";
+import { authService } from "../../services/authService";
+import InputField from "../../components/input/InputField";
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isGoogleBusy, setIsGoogleBusy] = useState(false);
+  const [isBusy, setIsBusy] = useState(false);
   const navigate = useNavigate();
 
-  // ====== GOOGLE LOGIN SETUP ======
-  const googleClientId =
-    "816117972123-dtf1c0kgiijr673k8p32ji83ajea2dpq.apps.googleusercontent.com";
-  const googleInitializedRef = useRef(false);
-  const roleRef = useRef("klien");
-  const scriptLoadedRef = useRef(false);
+  const afterLoginRoute = (role_id) =>
+    role_id === 3 ? "/app/project-notaris" : "/app";
 
-  // Lazy-load script Google Identity
-  useEffect(() => {
-    if (scriptLoadedRef.current) return;
-    const s = document.createElement("script");
-    s.src = "https://accounts.google.com/gsi/client";
-    s.async = true;
-    s.defer = true;
-    s.onload = () => {
-      scriptLoadedRef.current = true;
-    };
-    document.head.appendChild(s);
-  }, []);
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      const accessToken = tokenResponse?.access_token;
+      if (!accessToken) return showError("Tidak ada access token dari Google.");
 
-  // Initialize Google (dipanggil ketika user klik tombol Google)
-  const ensureGoogleInit = () => {
-    if (googleInitializedRef.current) return true;
-    if (!window.google || !googleClientId) return false;
-
-    window.google.accounts.id.initialize({
-      client_id: googleClientId,
-      // callback akan dipanggil ketika user pilih akun → kita kirim ke BE
-      callback: async (credentialResponse) => {
-        const idToken = credentialResponse?.credential;
-        if (!idToken) {
-          showError("Gagal mendapatkan token Google.");
-          setIsGoogleBusy(false);
-          return;
-        }
-        try {
-          setIsGoogleBusy(true);
-          const res = await authService.loginWithGoogle({
-            idToken,
-            role: roleRef.current, // "klien" | "notaris"
+      try {
+        setIsBusy(true);
+        const res = await authService.loginWithGoogle({ accessToken });
+        showSuccess(res?.message || "Login berhasil!");
+        const roleId = res?.data?.user?.role_id ?? res?.data?.role_applied;
+        navigate(afterLoginRoute(roleId), { replace: true });
+      } catch (err) {
+        const code = err?.response?.data?.code || err?.code;
+        if (code === "ROLE_REQUIRED") {
+          // Simpan access_token sementara agar bisa dipakai di Register (opsional)
+          try {
+            sessionStorage.setItem("pending_google_access_token", accessToken);
+          } catch {
+            console.warn("gagal menyimpan token di sessionStorage");
+          }
+          // Redirect ke register dengan pesan
+          navigate("/register", {
+            replace: true,
+            state: {
+              notice:
+                "Akun Google kamu belum terdaftar. Silakan pilih peran dan lanjutkan pendaftaran.",
+            },
           });
-          showSuccess(res?.message || "Login Google berhasil!");
-          const roleId = res?.data?.user?.role_id ?? res?.data?.role_applied;
-          navigate(afterLoginRoute(roleId), { replace: true });
-        } catch (err) {
-          showError(err.message || "Login Google gagal.");
-        } finally {
-          setIsGoogleBusy(false);
+        } else {
+          showError(
+            err?.response?.data?.message || err?.message || "Login gagal."
+          );
         }
-      },
-      // optional—biar bisa One Tap / auto prompt
-      auto_select: false,
-      ux_mode: "popup", // gunakan popup; hindari full redirect di SPA
-      use_fedcm_for_prompt: false,
-    });
+      } finally {
+        setIsBusy(false);
+      }
+    },
+    onError: () => showError("Login Google gagal. Coba lagi."),
+    flow: "implicit",
+    scope: "openid profile email",
+  });
 
-    googleInitializedRef.current = true;
-    return true;
-  };
-
-  // Trigger login Google untuk role tertentu
-  const handleGoogleLogin = async (role = "klien") => {
-    roleRef.current = role; // simpan role yang dipilih user
-    if (!ensureGoogleInit()) {
-      showError(
-        !googleClientId
-          ? "VITE_GOOGLE_CLIENT_ID belum diset."
-          : "Script Google belum siap. Coba lagi sebentar."
-      );
-      return;
-    }
-    try {
-      setIsGoogleBusy(true);
-      // Tampilkan One Tap / pilih akun (kalau One Tap disable, Google akan munculkan account chooser)
-      window.google.accounts.id.prompt((notification) => {
-        // Kalau user close / dismiss, hentikan loading
-        const dismissed =
-          notification.getDismissedReason && notification.getDismissedReason();
-        if (
-          dismissed === "user_cancel" ||
-          dismissed === "tap_outside" ||
-          dismissed === "credential_returned" // akan ditangani di callback di initialize
-        ) {
-          setIsGoogleBusy(false);
-        }
-      });
-    } catch (e) {
-      console.log(e);
-      setIsGoogleBusy(false);
-      showError(
-        "Tidak bisa membuka popup Google. Periksa blokir popup browser."
-      );
-    }
-  };
-
-  // ====== EMAIL/PASSWORD LOGIN ======
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const afterLoginRoute = (role_id) => {
-    // Silakan sesuaikan mapping route setelah login
-    if (role_id === 3) return "/app/project-notaris"; // Notaris
-    return "/app"; // Penghadap/user
-  };
-
-  const handleSubmit = async (e) => {
+  const handleSubmitEmail = async (e) => {
     e.preventDefault();
-
-    if (form.email.trim() === "" || form.password.trim() === "") {
-      showError("Email dan password wajib diisi!");
-      return;
+    if (!form.email.trim() || !form.password.trim()) {
+      return showError("Email dan password wajib diisi.");
     }
-
     try {
-      setIsSubmitting(true);
+      setIsBusy(true);
       const res = await authService.login(form);
-      showSuccess(res?.message || "Login berhasil! Selamat datang kembali!");
-      const roleId = res?.data?.role_id;
-      navigate(afterLoginRoute(roleId), { replace: true });
+      showSuccess(res?.message || "Login berhasil!");
+      navigate(afterLoginRoute(res?.data?.role_id), { replace: true });
     } catch (err) {
-      showError(err.message);
+      showError(err?.response?.data?.message || err?.message);
     } finally {
-      setIsSubmitting(false);
+      setIsBusy(false);
     }
   };
 
   return (
-    <div className="rounded-lg flex overflow-hidden mx-4 lg:m-5 m-9 sm:m-6">
-      {/* overlay loader */}
-      <LoadingOverlay show={isSubmitting || isGoogleBusy} />
+    <div className="rounded-lg flex overflow-hidden mx-4 lg:m-5 m-9 sm:m-6 relative">
+      <LoadingOverlay show={isBusy} />
 
-      {/* Left side */}
+      {/* Left visual */}
       <div className="hidden rounded-xl lg:flex lg:w-1/2 bg-[#0256c4] flex-col justify-center items-center text-white">
         <div className="flex flex-col items-center mb-6">
           <img src="/images/logo-enotaris.png" alt="Logo" className="w-50" />
@@ -154,42 +90,39 @@ export default function LoginPage() {
         <img
           src="/images/team-photo.png"
           alt="Login Illustration"
-          className="w-full rounded-xl"
+          className="w-full rounded-xl mb-[-90px]"
         />
       </div>
 
-      {/* Right side */}
+      {/* Right */}
       <div className="w-full lg:w-1/2 p-10 flex flex-col justify-center">
         <h1 className="text-xl sm:text-2xl lg:text-[30px] text-center font-bold mb-2">
           Selamat datang kembali!
         </h1>
         <p className="text-gray-500 text-center mb-6 text-sm sm:text-base">
-          Masukkan detail Anda.
+          Masukkan detail Anda atau lanjutkan dengan Google.
         </p>
 
-        {/* Email/password form */}
-        <form onSubmit={handleSubmit}>
+        {/* Email/password */}
+        <form onSubmit={handleSubmitEmail}>
           <InputField
             label="Email"
             type="email"
             name="email"
             placeholder="Masukkan email"
             value={form.email}
-            onChange={handleChange}
-            disabled={isSubmitting || isGoogleBusy}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            disabled={isBusy}
           />
-
           <InputField
             label="Kata Sandi"
             type="password"
             name="password"
             placeholder="Masukkan kata sandi"
             value={form.password}
-            onChange={handleChange}
-            disabled={isSubmitting || isGoogleBusy}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            disabled={isBusy}
           />
-
-          {/* Forgot password */}
           <div className="flex justify-end mb-6">
             <a
               href="/forgot-password"
@@ -198,12 +131,10 @@ export default function LoginPage() {
               Lupa kata sandi?
             </a>
           </div>
-
-          {/* Submit */}
           <button
             type="submit"
-            disabled={isSubmitting || isGoogleBusy}
-            className="w-full bg-[#0256c4] text-white rounded-full py-2 sm:py-3 text-sm sm:text-lg font-semibold hover:bg-blue-700 transition"
+            disabled={isBusy}
+            className="w-full bg-[#0256c4] text-white rounded-full py-2 sm:py-3 text-sm sm:text-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50"
           >
             Masuk
           </button>
@@ -216,40 +147,22 @@ export default function LoginPage() {
           <div className="flex-1 h-px bg-gray-200" />
         </div>
 
-        {/* Google Buttons with role choice */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <button
-            type="button"
-            disabled={isSubmitting || isGoogleBusy}
-            onClick={() => handleGoogleLogin("klien")}
-            className="w-full flex items-center justify-center gap-2 border border-gray-300 rounded-full py-2 sm:py-3 font-medium hover:bg-gray-50"
-            title="Masuk dengan Google sebagai Klien/Penghadap"
-          >
-            <img
-              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-              alt=""
-              className="w-5 h-5"
-            />
-            Google (Klien)
-          </button>
+        {/* 1 tombol Google */}
+        <button
+          type="button"
+          disabled={isBusy}
+          onClick={() => googleLogin()}
+          className="w-full flex items-center justify-center gap-2 border border-gray-300 rounded-full py-3 font-medium hover:bg-gray-50 transition disabled:opacity-50"
+          title="Masuk dengan Google"
+        >
+          <img
+            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+            alt=""
+            className="w-5 h-5"
+          />
+          Masuk dengan Google
+        </button>
 
-          <button
-            type="button"
-            disabled={isSubmitting || isGoogleBusy}
-            onClick={() => handleGoogleLogin("notaris")}
-            className="w-full flex items-center justify-center gap-2 border border-gray-300 rounded-full py-2 sm:py-3 font-medium hover:bg-gray-50"
-            title="Masuk dengan Google sebagai Notaris"
-          >
-            <img
-              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-              alt=""
-              className="w-5 h-5"
-            />
-            Google (Notaris)
-          </button>
-        </div>
-
-        {/* Register link */}
         <p className="mt-6 text-center text-sm text-gray-600">
           Belum punya akun?{" "}
           <Link
