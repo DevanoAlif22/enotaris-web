@@ -184,7 +184,7 @@ export default function VerificationUserPage() {
             Verifikasi Identitas
           </h1>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 ">
             {/* Tabs */}
             <div className="flex rounded-lg border dark:border-[#f5fefd] overflow-hidden w-full sm:w-auto">
               {TAB_MAP.map((t) => {
@@ -220,8 +220,8 @@ export default function VerificationUserPage() {
         </div>
         {/* Divider */}
         <div className="mt-4 h-px bg-gray-200 dark:bg-white/10" />
-        <div className="text-center mt-3 -mx-5 overflow-x-auto">
-          <table className="w-full min-w-max">
+        <div className="mt-3 overflow-x-auto">
+          <table className="w-full min-w-max border-collapse border-b border-gray-200/80 text-center">
             <thead>
               <tr className="text-center text-gray-500 border-b border-gray-200/80">
                 <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">
