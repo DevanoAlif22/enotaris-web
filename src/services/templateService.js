@@ -29,6 +29,22 @@ const normalizeErr = (err) => {
   return { message: msg, errors, status: err?.response?.status };
 };
 
+// Helper buat kirim payload (otomatis jadi FormData kalau ada file)
+function buildPayload(obj = {}) {
+  const hasFile = obj.logoFile instanceof File;
+  if (!hasFile) return obj;
+
+  const form = new FormData();
+  if (obj.name) form.append("name", obj.name);
+  if (obj.description !== undefined)
+    form.append("description", obj.description ?? "");
+  if (obj.custom_value !== undefined)
+    form.append("custom_value", obj.custom_value);
+  if (obj.clear_logo) form.append("clear_logo", "1");
+  if (obj.logoFile) form.append("logo", obj.logoFile);
+  return form;
+}
+
 const BASE = "/admin/templates";
 
 export const templateService = {
@@ -39,7 +55,7 @@ export const templateService = {
         BASE,
         withAuth({ params: { page, per_page, search } })
       );
-      return data; // { success, data:[...], meta:{...} }
+      return data;
     } catch (err) {
       throw normalizeErr(err);
     }
@@ -49,17 +65,34 @@ export const templateService = {
   async get(id) {
     try {
       const { data } = await api.get(`${BASE}/${id}`, withAuth());
-      return data; // { success, data:{...} }
+      return data;
     } catch (err) {
       throw normalizeErr(err);
     }
   },
 
   // POST /admin/templates
-  async create({ name, custom_value }) {
+  async create({
+    name,
+    description = "",
+    custom_value,
+    logoFile = null,
+    clear_logo = false,
+  }) {
     try {
-      const payload = { name, custom_value };
-      const { data } = await api.post(BASE, payload, withAuth());
+      const body = buildPayload({
+        name,
+        description,
+        custom_value,
+        logoFile,
+        clear_logo,
+      });
+      const headers =
+        body instanceof FormData
+          ? { "Content-Type": "multipart/form-data" }
+          : undefined;
+
+      const { data } = await api.post(BASE, body, { ...withAuth(), headers });
       return data;
     } catch (err) {
       throw normalizeErr(err);
@@ -67,14 +100,33 @@ export const templateService = {
   },
 
   // POST /admin/templates/update/{id}
-  async update(id, { name, custom_value }) {
+  async update(
+    id,
+    {
+      name,
+      description = "",
+      custom_value,
+      logoFile = null,
+      clear_logo = false,
+    }
+  ) {
     try {
-      const payload = { name, custom_value };
-      const { data } = await api.post(
-        `${BASE}/update/${id}`,
-        payload,
-        withAuth()
-      );
+      const body = buildPayload({
+        name,
+        description,
+        custom_value,
+        logoFile,
+        clear_logo,
+      });
+      const headers =
+        body instanceof FormData
+          ? { "Content-Type": "multipart/form-data" }
+          : undefined;
+
+      const { data } = await api.post(`${BASE}/update/${id}`, body, {
+        ...withAuth(),
+        headers,
+      });
       return data;
     } catch (err) {
       throw normalizeErr(err);
@@ -103,35 +155,33 @@ export const templateService = {
           headers: { "Content-Type": "multipart/form-data" },
         })
       );
-      return data; // { success, data:{ html } }
+      return data;
     } catch (err) {
       throw normalizeErr(err);
     }
   },
 
-  // ===== RENDER PDF (UPLOAD ke Cloudinary) =====
-  // POST /admin/templates/{id}/render-pdf  body: { html_rendered, pdf_options, upload:true, filename? }
+  // POST /admin/templates/{id}/render-pdf (upload ke Cloudinary)
   async renderPdf(id, { html, pdf_options, filename }) {
     try {
       const payload = {
-        html_rendered: html, // kirim HTML final (sudah preserve NBSP)
+        html_rendered: html,
         pdf_options,
         upload: true,
-        filename, // tanpa .pdf (opsional)
+        filename,
       };
       const { data } = await api.post(
         `${BASE}/${id}/render-pdf`,
         payload,
         withAuth()
       );
-      return data; // { success, data:{ file, file_path, filename, template_id } }
+      return data;
     } catch (err) {
       throw normalizeErr(err);
     }
   },
 
-  // ===== RENDER PDF (DOWNLOAD langsung) =====
-  // POST /admin/templates/{id}/render-pdf  body: { html_rendered, pdf_options, upload:false, filename? }
+  // POST /admin/templates/{id}/render-pdf (download langsung)
   async renderPdfDownload(id, { html, pdf_options, filename }) {
     try {
       const payload = {
@@ -143,9 +193,10 @@ export const templateService = {
       const res = await api.post(
         `${BASE}/${id}/render-pdf`,
         payload,
-        withAuth({ responseType: "blob" }) // <- penting: terima file
+        withAuth({
+          responseType: "blob",
+        })
       );
-      // kembalikan Blob & suggested filename (jika ada di header)
       const blob = res?.data;
       const dispo = res?.headers?.["content-disposition"] || "";
       const match = dispo.match(/filename="?([^"]+)"?/i);

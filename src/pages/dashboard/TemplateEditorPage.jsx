@@ -4,6 +4,7 @@ import QuillEditor from "../../components/common/QuillEditor";
 import HtmlPreviewModal from "../../components/common/HtmlPreviewModal";
 import PagedPreview from "../../components/deed/PagedPreview";
 import PdfSettingPanel from "../../components/deed/PdfSettingPanel";
+import FileInput from "../../components/input/FileInput";
 import useTemplateEditor from "../../hooks/useTemplateEditor";
 import { labelPdfSummary } from "../../helpers/template/pdfDefaults";
 
@@ -12,15 +13,15 @@ export default function TemplateEditorPage() {
   const navigate = useNavigate();
 
   const {
-    // data
     name,
     setName,
+    description,
+    setDescription,
     html,
     latestUrl,
     pdfOptions,
     setPdfOptions,
     htmlPreviewPaged,
-    // flags
     loading,
     saving,
     exporting,
@@ -28,15 +29,15 @@ export default function TemplateEditorPage() {
     setShowPreview,
     pagedOpen,
     setPagedOpen,
-    // refs
     quillRef,
     fileInputRef,
-    // handlers
     handleChange,
     handleSave,
     clickImport,
     handleImportDocxClient,
     handleExportPdf,
+    logoPreviewUrl,
+    updateLogoFromInput,
   } = useTemplateEditor(id, navigate);
 
   return (
@@ -84,6 +85,7 @@ export default function TemplateEditorPage() {
         <>
           <div className="grid grid-cols-1 gap-6">
             <div className="lg:col-span-2">
+              {/* Nama */}
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-1 dark:text-[#f5fefd]">
                   Nama Template
@@ -97,6 +99,40 @@ export default function TemplateEditorPage() {
                 />
               </div>
 
+              {/* Deskripsi */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-1 dark:text-[#f5fefd]">
+                  Deskripsi
+                </label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full border rounded px-3 py-2 dark:text-[#f5fefd] min-h-[80px]"
+                  placeholder="Tuliskan deskripsi singkat mengenai template ini..."
+                />
+              </div>
+
+              {/* Logo */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-1 dark:text-[#f5fefd]">
+                  Logo (opsional)
+                </label>
+                <FileInput
+                  labelTitle=""
+                  accept=".jpg,.jpeg,.png,.webp"
+                  maxSizeMB={5}
+                  required={false}
+                  updateFormValue={updateLogoFromInput}
+                  updateType="template_logo"
+                  defaultFile={null}
+                  defaultPreviewUrl={logoPreviewUrl}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Rekomendasi: PNG transparan, maksimal 5MB.
+                </p>
+              </div>
+
+              {/* Isi Template */}
               <div className="mb-2">
                 <div className="text-sm font-medium mb-2 dark:text-[#f5fefd]">
                   Isi Template
@@ -115,6 +151,7 @@ export default function TemplateEditorPage() {
                 </div>
               </div>
 
+              {/* Actions */}
               <div className="mt-8 flex flex-wrap gap-3 items-center">
                 <button
                   type="button"
@@ -133,15 +170,6 @@ export default function TemplateEditorPage() {
                   Lihat Preview
                 </button>
 
-                {/* Optional: buka preview paged (pakai opsi PDF yang sama) */}
-                {/* <button
-                  type="button"
-                  onClick={() => setPagedOpen(true)}
-                  className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 transition-colors"
-                >
-                  Preview Paged (PDF Options)
-                </button> */}
-
                 <button
                   type="button"
                   onClick={handleExportPdf}
@@ -157,7 +185,6 @@ export default function TemplateEditorPage() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="px-4 py-2 rounded bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition-colors"
-                    title="Lihat PDF terakhir"
                   >
                     Lihat File PDF
                   </a>
@@ -173,11 +200,11 @@ export default function TemplateEditorPage() {
             title="Preview Template"
           />
 
+          {/* Preview paged */}
           {pagedOpen && (
             <div
               className="fixed inset-0 z-50 flex items-center justify-center"
               role="dialog"
-              aria-modal="true"
             >
               <div
                 className="absolute inset-0 bg-black/50"

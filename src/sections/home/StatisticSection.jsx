@@ -5,44 +5,66 @@ import {
   FileText,
   TrendingUp,
 } from "lucide-react";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { landingService } from "../../services/landingService";
 
 export default function StatisticSection() {
   const [isVisible, setIsVisible] = useState(false);
-  const [values, setValues] = useState([0, 0, 0, 0]);
+  const [values, setValues] = useState([0, 0, 0, 0]); // angka berjalan
+  const [target, setTarget] = useState([0, 0, 0, 0]); // angka dari API
+  const [loading, setLoading] = useState(true);
 
-  // Data statistik (silakan ganti angkanya dengan data backend-mu)
+  // Ambil dari API saat mount
+  useEffect(() => {
+    (async () => {
+      try {
+        setLoading(true);
+        const res = await landingService.statistics();
+        const d = res?.data || {};
+        // urut: projects, notaries, clients, deeds
+        setTarget([
+          Number(d.projects || 0),
+          Number(d.notaries || 0),
+          Number(d.clients || 0),
+          Number(d.deeds || 0),
+        ]);
+      } catch (e) {
+        console.error("Gagal load statistik:", e);
+        setTarget([0, 0, 0, 0]);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  // Data kartu (judul & ikon)
   const stats = useMemo(
     () => [
       {
         icon: <Briefcase size={32} className="text-white" />,
         title: "Jumlah Proyek",
-        value: 128,
         desc: "Total proyek notaris yang terdaftar di sistem.",
       },
       {
         icon: <Building2 size={32} className="text-white" />,
         title: "Jumlah Notaris",
-        value: 42,
         desc: "Notaris aktif yang menggunakan platform.",
       },
       {
         icon: <Users size={32} className="text-white" />,
         title: "Jumlah Penghadap",
-        value: 560,
         desc: "Penghadap yang terverifikasi dan aktif.",
       },
       {
         icon: <FileText size={32} className="text-white" />,
         title: "Jumlah Akta",
-        value: 910,
         desc: "Akta yang dibuat dan terdokumentasi.",
       },
     ],
     []
   );
 
-  // Trigger animasi saat section terlihat
+  // Observer: jalankan animasi saat section terlihat
   useEffect(() => {
     const ob = new IntersectionObserver(
       (entries) => entries[0].isIntersecting && setIsVisible(true),
@@ -53,12 +75,11 @@ export default function StatisticSection() {
     return () => ob.disconnect();
   }, []);
 
-  // Animasi counter
+  // Animasi counter ke target dari API
   useEffect(() => {
-    if (!isVisible) return;
-    const timers = stats.map((s, i) => {
+    if (!isVisible || loading) return;
+    const timers = target.map((end, i) => {
       let cur = 0;
-      const end = s.value;
       const duration = 1600; // ms
       const step = Math.max(1, Math.floor(end / (duration / 16)));
 
@@ -76,9 +97,9 @@ export default function StatisticSection() {
       }, 16);
     });
     return () => timers.forEach((t) => clearInterval(t));
-  }, [isVisible, stats]);
+  }, [isVisible, loading, target]);
 
-  const formatID = (n) => n.toLocaleString("id-ID");
+  const formatID = (n) => Number(n || 0).toLocaleString("id-ID");
 
   return (
     <section
@@ -126,10 +147,8 @@ export default function StatisticSection() {
                         }`}
             style={{ transitionDelay: `${i * 120}ms` }}
           >
-            {/* overlay hover (tidak terima pointer) */}
             <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-[#0256c4] to-[#002d6a] opacity-0 group-hover:opacity-5 transition-opacity duration-500" />
 
-            {/* Icon + glow */}
             <div className="relative mb-6">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-[#0256c4] rounded-2xl shadow-lg group-hover:scale-105 group-hover:shadow-xl transition-all duration-500">
                 {s.icon}
@@ -144,10 +163,14 @@ export default function StatisticSection() {
               {s.title}
             </h3>
 
-            <div className="mb-3">
-              <span className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-[#0256c4] to-[#002d6a] bg-clip-text text-transparent">
-                {formatID(values[i])}
-              </span>
+            <div className="mb-3 min-h-[48px] flex items-end">
+              {loading ? (
+                <span className="text-sm text-gray-400">Memuat…</span>
+              ) : (
+                <span className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-[#0256c4] to-[#002d6a] bg-clip-text text-transparent">
+                  {formatID(values[i])}
+                </span>
+              )}
             </div>
 
             <p className="text-gray-600 text-sm leading-relaxed group-hover:text-gray-700 transition-colors duration-300">
@@ -157,7 +180,6 @@ export default function StatisticSection() {
         ))}
       </div>
 
-      {/* Divider bawah */}
       <div className="mt-16 flex justify-center">
         <div className="w-24 h-1 bg-gradient-to-r from-blue-400 via-purple-400 to-emerald-400 rounded-full" />
       </div>
