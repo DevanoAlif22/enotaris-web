@@ -207,7 +207,7 @@ export default function VerificationUserPage() {
             </div>
 
             {/* Search */}
-            <div className="relative w-full sm:w-72">
+            <div className="relative w-full sm:w-72 flex sm:justify-center">
               <input
                 defaultValue={query}
                 onChange={onChangeSearch}
