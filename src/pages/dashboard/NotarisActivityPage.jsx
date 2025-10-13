@@ -170,7 +170,7 @@ export default function NotaryActivityPage() {
 
         {/* Table */}
         <div className="mt-3 -mx-5 overflow-x-auto">
-          <table className="text-center w-full min-w-max">
+          <table className="text-center w-full min-w-max border-collapse border-b border-gray-200/80">
             <thead>
               <tr className="text-center text-gray-500 border-b border-gray-200/80">
                 <th className="py-3 px-5 font-semibold dark:text-[#f5fefd] whitespace-nowrap">

@@ -162,30 +162,24 @@ export default function RegisterPage() {
       {/* overlay loader */}
       <LoadingOverlay show={isSubmitting} />
 
-      <div className="rounded-lg flex w-[450px] md:w-[1000px] overflow-hidden bg-white">
+      <div className="rounded-lg flex overflow-hidden mx-4 lg:m-5 m-9 sm:m-6 relative">
         {/* Left Side */}
-        <div className="hidden lg:flex lg:w-1/2 bg-[#0256c4] relative flex-col justify-center items-center text-white">
-          <div className="absolute top-0 left-0 w-full h-full">
-            <div className="flex flex-col items-center mb-6">
-              <img
-                src="/images/logo-enotaris.png"
-                alt="Logo"
-                className="w-40 pt-10"
-              />
-              <h2 className="text-xl font-semibold text-center">
-                Membangun Pasti di Atas Janji
-              </h2>
-            </div>
-            <img
-              src="/images/team-photo.png"
-              alt="Register Illustration"
-              className="w-full object-contain absolute bottom-0"
-            />
+        <div className="hidden rounded-xl lg:flex lg:w-1/2 bg-[#0256c4] flex-col justify-center items-center text-white">
+          <div className="flex flex-col items-center mb-6">
+            <img src="/images/logo-enotaris.png" alt="Logo" className="w-50" />
+            <h2 className="text-xl font-semibold text-center">
+              Membangun Pasti di Atas Janji
+            </h2>
           </div>
+          <img
+            src="/images/team-photo.png"
+            alt="Register Illustration"
+            className="w-full rounded-xl mb-[-85px]"
+          />
         </div>
 
         {/* Right Side */}
-        <div className="w-full lg:w-1/2 p-10 flex flex-col justify-center overflow-y-auto h-[85vh]">
+        <div className="p-5 w-[37vh] sm:w-1/2 sm:p-15 flex flex-col justify-center overflow-y-auto h-[70vh] sm:h-[75vh]">
           <h1 className="text-[26px] text-center font-bold mb-2 mt-[250px]">
             Selamat datang!
           </h1>
