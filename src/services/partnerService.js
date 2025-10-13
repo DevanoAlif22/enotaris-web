@@ -10,13 +10,14 @@ const normalizeErr = (err) => {
 
 // Ganti ke "/admin/partners" jika API kamu diprefix "admin"
 const BASE = "/admin/partners";
+const BASENOADMIN = "/partners";
 
 export const partnerService = {
   // GET /partners (?search=, ?per_page=, ?page=)
   async list({ page = 1, per_page = 10, search = "" } = {}) {
     try {
       const params = { page, per_page, search };
-      const { data } = await api.get(BASE, { params });
+      const { data } = await api.get(BASENOADMIN, { params });
       return data; // { success, data:[...], meta:{...} }
     } catch (err) {
       throw normalizeErr(err);
@@ -84,7 +85,7 @@ export const partnerService = {
   async all({ min = false } = {}) {
     try {
       const params = { min };
-      const { data } = await api.get(`${BASE}/all/partner`, { params });
+      const { data } = await api.get(`/partners/all/partner`, { params });
       return data; // { success, data:[...], meta:{count:n} }
     } catch (err) {
       throw normalizeErr(err);

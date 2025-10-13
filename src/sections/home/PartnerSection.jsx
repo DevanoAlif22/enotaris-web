@@ -1,22 +1,24 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import Marquee from "react-fast-marquee";
+import { partnerService } from "../../services/partnerService";
 
-const logos = [
-  { src: "/images/google.png", alt: "Google" },
-  { src: "/images/microsoft.png", alt: "Microsoft" },
-  { src: "/images/aws.png", alt: "AWS" },
-  { src: "/images/vercel.png", alt: "Vercel" },
-  { src: "/images/cloudinary.png", alt: "Cloudinary" },
-  { src: "/images/docker.png", alt: "Docker" },
-  { src: "/images/github.png", alt: "GitHub" },
-];
+export default function PartnerSection() {
+  const [partners, setPartners] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-// Duplikasi untuk efek loop mulus
-const loopLogos = [...logos, ...logos];
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await partnerService.all({ min: true });
+        setPartners(res?.data || []);
+      } catch (err) {
+        console.error("Gagal memuat partner:", err);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
-export default function PartnerSection({
-  speed = 30, // detik untuk satu putaran
-  height = 56, // tinggi logo (px)
-}) {
   return (
     <section className="relative w-full bg-white py-10">
       {/* Title */}
@@ -29,57 +31,60 @@ export default function PartnerSection({
         </p>
       </div>
 
-      {/* Wrapper marquee */}
-      <div
-        className="group relative overflow-hidden"
-        aria-label="Daftar logo partner yang bergerak otomatis"
-      >
-        {/* Fade edges */}
-        <div className="pointer-events-none absolute left-0 top-0 h-full w-16 bg-gradient-to-r from-white to-transparent z-10" />
-        <div className="pointer-events-none absolute right-0 top-0 h-full w-16 bg-gradient-to-l from-white to-transparent z-10" />
-
-        {/* Track */}
-        <div
-          className="flex w-max items-center gap-10 will-change-transform animate-[marquee_linear_infinite] group-hover:[animation-play-state:paused]"
-          style={{
-            // durasi bisa diubah via prop
-            animationDuration: `${speed}s`,
-          }}
-          role="list"
+      {/* Content */}
+      {loading ? (
+        <div className="flex justify-center items-center py-8">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-transparent"></div>
+          <span className="ml-3 text-sm text-gray-500">Memuat partner…</span>
+        </div>
+      ) : partners.length === 0 ? (
+        <p className="text-center text-sm text-gray-500 py-8">
+          Belum ada partner ditambahkan.
+        </p>
+      ) : (
+        <Marquee
+          pauseOnHover={true}
+          speed={50}
+          gradient={true}
+          gradientColor={[255, 255, 255]}
+          gradientWidth={60}
         >
-          {loopLogos.map((logo, i) => (
+          {partners.map((p, i) => (
             <div
-              key={`${logo.alt}-${i}`}
-              role="listitem"
-              className="opacity-80 hover:opacity-100 transition-opacity"
-              title={logo.alt}
+              key={p.id || i}
+              className="mx-10 flex items-center justify-center"
             >
-              <img
-                src={logo.src}
-                alt={logo.alt}
-                className="h-10 md:h-12 object-contain"
-                style={{ height }}
-                loading="lazy"
-              />
+              {p.image ? (
+                <a
+                  href={p.link || "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={p.name}
+                  className="opacity-80 hover:opacity-100 transition-opacity"
+                >
+                  <img
+                    src={p.image}
+                    alt={p.name}
+                    className="h-12 object-contain"
+                    loading="lazy"
+                  />
+                </a>
+              ) : (
+                <div
+                  className="flex items-center justify-center h-12 w-12 bg-gray-100 text-gray-600 font-semibold rounded-md"
+                  title={p.name}
+                >
+                  {(p.name || "?")
+                    .split(/\s+/)
+                    .slice(0, 2)
+                    .map((s) => s[0]?.toUpperCase())
+                    .join("")}
+                </div>
+              )}
             </div>
           ))}
-        </div>
-      </div>
-
-      {/* Keyframes (inline, agar tanpa config Tailwind) */}
-      <style>
-        {`
-          @keyframes marquee {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-          }
-          .animate-[marquee_linear_infinite] {
-            animation-name: marquee;
-            animation-timing-function: linear;
-            animation-iteration-count: infinite;
-          }
-        `}
-      </style>
+        </Marquee>
+      )}
     </section>
   );
 }

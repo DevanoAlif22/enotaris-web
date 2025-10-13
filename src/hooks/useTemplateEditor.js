@@ -6,12 +6,18 @@ import { preserveSpaces, sanitizeHtml } from "../helpers/template/htmlPreserve";
 import { defaultPdfOptions } from "../helpers/template/pdfDefaults";
 
 export default function useTemplateEditor(templateId, navigate) {
-  // state utama
+  // ===== State utama =====
   const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   const [html, setHtml] = useState("");
   const [latestUrl, setLatestUrl] = useState("");
 
-  // UI state
+  // ===== Logo =====
+  const [logoFile, setLogoFile] = useState(null);
+  const [logoPreviewUrl, setLogoPreviewUrl] = useState("");
+  const [clearLogo, setClearLogo] = useState(false);
+
+  // ===== UI =====
   const [pdfOptions, setPdfOptions] = useState(defaultPdfOptions);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -20,22 +26,25 @@ export default function useTemplateEditor(templateId, navigate) {
   const [showPreview, setShowPreview] = useState(false);
   const [pagedOpen, setPagedOpen] = useState(false);
 
-  // refs
   const quillRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  // ===== helpers =====
+  // ===== reload dari server =====
   const reloadTemplate = useCallback(async (tid) => {
     const res = await templateService.get(tid);
     const tpl = res?.data;
     setName(tpl?.name || "");
+    setDescription(tpl?.description || "");
     setHtml(String(tpl?.custom_value || ""));
     setLatestUrl(tpl?.file || "");
+    setLogoPreviewUrl(tpl?.logo || "");
+    setLogoFile(null);
+    setClearLogo(false);
     setDirty(false);
     return tpl;
   }, []);
 
-  // initial load
+  // ===== initial load =====
   useEffect(() => {
     if (!templateId || dirty) return;
     (async () => {
@@ -50,47 +59,70 @@ export default function useTemplateEditor(templateId, navigate) {
     })();
   }, [templateId, dirty, reloadTemplate]);
 
-  // editor onChange
+  // ===== Logo input handler =====
+  const updateLogoFromInput = ({ value }) => {
+    const f = value?.file || null;
+    const url = value?.previewUrl || "";
+    setLogoFile(f);
+    setLogoPreviewUrl(url);
+    if (!f && !url && !!logoPreviewUrl) setClearLogo(true);
+    else setClearLogo(false);
+  };
+
+  // ===== Editor change =====
   const handleChange = useCallback((val, _delta, source) => {
     if (source === "user") setDirty(true);
     setHtml(val);
   }, []);
 
-  // simpan
+  // ===== Save =====
   const handleSave = useCallback(async () => {
     try {
       setSaving(true);
       if (!name?.trim()) return showError("Nama template wajib diisi.");
-      if (!html || !String(html).trim())
-        return showError("Isi template wajib diisi.");
+      if (!description?.trim())
+        return showError("Deskripsi template wajib diisi.");
+      if (!html?.trim()) return showError("Isi template wajib diisi.");
 
-      const payload = { name, custom_value: preserveSpaces(html) };
+      const payload = {
+        name,
+        description,
+        custom_value: preserveSpaces(html),
+        logoFile,
+        clear_logo: clearLogo,
+      };
 
       if (templateId) {
         await templateService.update(templateId, payload);
         await reloadTemplate(templateId);
         showSuccess("Template berhasil diperbarui.");
       } else {
-        const resCreate = await templateService.create(payload);
-        const newId = resCreate?.data?.id;
+        const res = await templateService.create(payload);
+        const newId = res?.data?.id;
         showSuccess("Template berhasil dibuat.");
         navigate(newId ? `/app/template/${newId}/edit` : "/app/template");
       }
     } catch (e) {
       const firstErr =
         e?.errors && typeof e.errors === "object"
-          ? (() => {
-              const first = Object.values(e.errors)[0];
-              return Array.isArray(first) ? first[0] : String(first);
-            })()
+          ? Object.values(e.errors)[0]?.[0] || Object.values(e.errors)[0]
           : null;
       showError(firstErr || e.message || "Gagal menyimpan template.");
     } finally {
       setSaving(false);
     }
-  }, [html, name, navigate, reloadTemplate, templateId]);
+  }, [
+    html,
+    name,
+    description,
+    logoFile,
+    clearLogo,
+    navigate,
+    reloadTemplate,
+    templateId,
+  ]);
 
-  // import word
+  // ===== Import DOCX =====
   const clickImport = () => fileInputRef.current?.click();
   const handleImportDocxClient = async (e) => {
     const file = e.target.files?.[0];
@@ -105,16 +137,7 @@ export default function useTemplateEditor(templateId, navigate) {
       const { value: rawHtml } = await mammoth.convertToHtml(
         { arrayBuffer },
         {
-          styleMap: [
-            "p[style-name='Normal'] => p",
-            "u => u",
-            "b => strong",
-            "i => em",
-            "h1 => h1",
-            "h2 => h2",
-            "h3 => h3",
-            "table => table.table",
-          ].join("\n"),
+          styleMap: ["p[style-name='Normal'] => p", "b => strong", "i => em"],
           convertImage: mammoth.images.inline(async (elem) => {
             const buffer = await elem.read("base64");
             const contentType = elem.contentType || "image/png";
@@ -134,20 +157,18 @@ export default function useTemplateEditor(templateId, navigate) {
     }
   };
 
-  // export PDF
+  // ===== Export PDF =====
   const handleExportPdf = useCallback(async () => {
     if (!templateId)
-      return showError("Simpan template terlebih dahulu sebelum export PDF.");
+      return showError("Simpan template dahulu sebelum export PDF.");
     try {
       setExporting(true);
-      const htmlFinalPreserved = preserveSpaces(html);
       const resp = await templateService.renderPdf(templateId, {
-        html: htmlFinalPreserved,
+        html: preserveSpaces(html),
         pdf_options: pdfOptions,
         upload: true,
         filename: `template_${templateId}_${Date.now()}`,
       });
-
       if (resp?.success) {
         const url = resp?.data?.file || "";
         setLatestUrl(url);
@@ -157,30 +178,25 @@ export default function useTemplateEditor(templateId, navigate) {
         showError(resp?.message || "Gagal membuat PDF.");
       }
     } catch (e) {
-      const msg = e?.errors?.unknown_tokens?.length
-        ? `Ada variabel belum terganti: ${e.errors.unknown_tokens.join(", ")}`
-        : e?.message || "Terjadi kesalahan saat membuat PDF.";
-      showError(msg);
+      showError(e?.message || "Terjadi kesalahan saat membuat PDF.");
     } finally {
       setExporting(false);
     }
   }, [html, pdfOptions, reloadTemplate, templateId]);
 
-  // memo preview paged
   const htmlPreviewPaged = useMemo(() => html, [html]);
 
   return {
-    // data
     name,
     setName,
+    description,
+    setDescription,
     html,
     setHtml,
     latestUrl,
     pdfOptions,
     setPdfOptions,
     htmlPreviewPaged,
-
-    // flags
     loading,
     saving,
     exporting,
@@ -188,16 +204,14 @@ export default function useTemplateEditor(templateId, navigate) {
     setShowPreview,
     pagedOpen,
     setPagedOpen,
-
-    // refs
     quillRef,
     fileInputRef,
-
-    // handlers
     handleChange,
     handleSave,
     clickImport,
     handleImportDocxClient,
     handleExportPdf,
+    logoPreviewUrl,
+    updateLogoFromInput,
   };
 }

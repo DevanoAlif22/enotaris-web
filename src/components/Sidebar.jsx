@@ -108,7 +108,7 @@ function getMenuByRole(roleId) {
 
       {
         id: "setting",
-        label: "Setting",
+        label: "Pengaturan",
         icon: Cog6ToothIcon,
         to: "/app/setting",
       },
