@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { dashboardService } from "../../services/dashboardService";
 
 // Icons
@@ -47,7 +47,7 @@ export default function HomePage() {
         Array.isArray(res?.recent_activities) ? res.recent_activities : []
       );
     } catch (e) {
-      console.error(e.message);
+      console.error(e?.message || e);
     } finally {
       setLoading(false);
     }
@@ -65,14 +65,14 @@ export default function HomePage() {
             title: "Total Notaris",
             value: metrics.total_notaris,
             icon: (
-              <UserGroupIcon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+              <UserGroupIcon className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
             ),
           },
           {
             title: "Total Penghadap",
             value: metrics.total_penghadap,
             icon: (
-              <UserGroupIcon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+              <UserGroupIcon className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
             ),
           },
         ]
@@ -80,7 +80,7 @@ export default function HomePage() {
     {
       title: "Total Akta",
       value: metrics.total_akta,
-      icon: <CircleStackIcon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />,
+      icon: <CircleStackIcon className="w-6 h-6 sm:w-7 sm:h-7 text-white" />,
     },
     {
       title:
@@ -88,7 +88,7 @@ export default function HomePage() {
           ? "Total Aktivitas Pengguna"
           : "Total Aktivitas Notaris",
       value: metrics.total_aktivitas,
-      icon: <ChartBarSquareIcon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />,
+      icon: <ChartBarSquareIcon className="w-6 h-6 sm:w-7 sm:h-7 text-white" />,
     },
   ];
 
@@ -100,64 +100,162 @@ export default function HomePage() {
     return `${year}-${month}-${day} ~ ${year}-${month}-${day}`;
   };
 
+  const chartData = useMemo(() => {
+    // fallback dummy bila tidak ada data; panjang 12 bulan
+    const base = [5, 9, 7, 14, 10, 13, 15, 12, 16, 18, 14, 19];
+    return base;
+  }, []);
+
+  const buildPath = (data, width, height, padX = 16, padY = 16) => {
+    if (!data?.length) return "";
+    const max = Math.max(...data);
+    const min = Math.min(...data);
+    const len = data.length - 1;
+    const w = width - padX * 2;
+    const h = height - padY * 2;
+
+    const toPoint = (i, v) => {
+      const x = padX + (w * i) / len;
+      const nv = max === min ? 0 : (v - min) / (max - min);
+      const y = padY + h - nv * h;
+      return [x, y];
+    };
+
+    let d = "";
+    data.forEach((v, i) => {
+      const [x, y] = toPoint(i, v);
+      d += i === 0 ? `M ${x},${y}` : ` L ${x},${y}`;
+    });
+    return d;
+  };
+
   return (
     <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
       {/* Date */}
-      <span className="flex items-start justify-between pl-5 font-bold text-2xl mt-4 mb-4 py-2 rounded-lg sm:text-sm text-white bg-gradient-to-r from-blue-500 to-[#0256c4]">
+      <span className="flex items-start justify-between pl-5 font-bold text-2xl mt-4 mb-4 py-2 rounded-lg sm:text-xl text-white bg-gradient-to-r from-blue-500 to-[#0256c4]">
         {getCurrentDate()}
       </span>
 
       {/* Header */}
-      <div className="bg-white dark:bg-[#002d6a] rounded-xl p-3 sm:p-4 shadow-sm">
-        <div className="flex flex-col gap-3">
-          {/* Action buttons */}
-          <div className="flex items-center gap-2 ml-auto">
+      <div className="bg-white dark:bg-[#002d6a] rounded-2xl p-3 sm:p-4 shadow-sm">
+        <div className="flex items-center justify-end gap-2">
+          <button
+            onClick={load}
+            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-[#f5fefd] hover:bg-gray-100 dark:hover:bg-[#0256c4] rounded-lg transition-colors"
+          >
+            <ArrowPathIcon className="w-4 h-4" />
+            <span className="hidden sm:inline">Refresh Data</span>
+          </button>
+          <button
+            onClick={() => console.log("Sharing data...")}
+            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-[#f5fefd] hover:bg-gray-100 dark:hover:bg-[#0256c4] rounded-lg transition-colors"
+          >
+            <ShareIcon className="w-4 h-4" />
+            <span className="hidden sm:inline">Share</span>
+          </button>
+          <div className="relative">
             <button
-              onClick={load}
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 dark:text-[#f5fefd] hover:bg-gray-100 dark:hover:bg-[#0256c4] rounded-lg transition-colors"
+              onClick={() => setIsOpen(!isOpen)}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-[#0256c4] rounded-lg transition-colors"
             >
-              <ArrowPathIcon className="w-4 h-4" />
-              <span className="hidden sm:inline">Refresh Data</span>
+              <EllipsisHorizontalIcon className="w-5 h-5 text-gray-700 dark:text-[#f5fefd]" />
             </button>
-            <button
-              onClick={() => console.log("Sharing data...")}
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 dark:text-[#f5fefd] hover:bg-gray-100 dark:hover:bg-[#0256c4] rounded-lg transition-colors"
-            >
-              <ShareIcon className="w-4 h-4" />
-              <span className="hidden sm:inline">Share</span>
-            </button>
-
-            {/* Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-[#0256c4] rounded-lg transition-colors"
-              >
-                <EllipsisHorizontalIcon className="w-5 h-5 text-gray-600 dark:text-[#f5fefd]" />
-              </button>
-
-              {isOpen && (
-                <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-[#01043c] rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-                  <button
-                    onClick={() => {
-                      console.log("Email Digests");
-                      setIsOpen(false);
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 dark:text-[#f5fefd] hover:bg-[#0256c4] dark:hover:bg-[#003782] hover:text-white duration-100 ease-in text-left"
-                  >
-                    <EnvelopeIcon className="w-4 h-4" />
-                    Email Digests
-                  </button>
-                </div>
-              )}
-            </div>
+            {isOpen && (
+              <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-[#01043c] rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                <button
+                  onClick={() => {
+                    console.log("Email Digests");
+                    setIsOpen(false);
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 dark:text-[#f5fefd] hover:bg-[#0256c4] dark:hover:bg-[#003782] hover:text-white duration-100 ease-in text-left"
+                >
+                  <EnvelopeIcon className="w-4 h-4" />
+                  Email Digests
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
+      {/* Stats & Analytics layout seperti referensi */}
+      <section className="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6">
+        {/* Kiri: Kartu metrik (2 baris x 2) */}
+        <div className="xl:col-span-2 space-y-4">
+          <h2 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-[#f5fefd]">
+            Statistik dan Analitis
+          </h2>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            {metricCards.map((m, idx) => (
+              <div
+                key={idx}
+                className="bg-white dark:bg-gradient-to-r from-blue-500 to-[#0256c4] rounded-2xl p-5 sm:p-5 shadow-[0_8px_24px_rgba(2,86,196,0.12)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-gray-100/60 dark:border-[#002d6a] min-h-[160px] sm:min-h-[190px] flex flex-col justify-between"
+              >
+                <div className="flex items-start justify-between w-full h-4 sm:h-49">
+                  <p className="text-[14px] sm:text-[14px] sm:p-1 text-gray-500 dark:text-[#f5fefd]">
+                    {m.title}
+                  </p>
+                  <span className="inline-flex items-center justify-center rounded-xl w-13 h-13 sm:w-12 sm:h-12 sm:p-1">
+                    {m.icon}
+                  </span>
+                </div>
+                <p className="text-4xl sm:text-5xl font-extrabold text-[#0b3a82] dark:text-[#f5fefd]">
+                  {m.value}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Kanan: Card grafik */}
+        <div className="space-y-3">
+          <h2 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-[#f5fefd]">
+            Grafik Aktivitas Bulanan
+          </h2>
+          <div className="bg-white dark:bg-[#003782] rounded-2xl p-4 sm:p-5 shadow-[0_8px_24px_rgba(2,86,196,0.12)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-gray-100/60 dark:border-[#002d6a]">
+            <div className="text-[11px] sm:text-xs text-right text-gray-500 dark:text-[#cfe0ff] mb-2">
+              2025
+            </div>
+            <div className="w-full h-48 sm:h-56">
+              <svg viewBox="0 0 400 200" className="w-full h-full">
+                <path
+                  d={`${buildPath(chartData, 400, 200)} L 384,184 L 16,184 Z`}
+                  fill="url(#areaFill)"
+                  stroke="none"
+                />
+                <path
+                  d={buildPath(chartData, 400, 200)}
+                  fill="none"
+                  stroke="url(#lineGrad)"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                />
+                <line
+                  x1="16"
+                  y1="184"
+                  x2="384"
+                  y2="184"
+                  stroke="rgba(2,86,196,0.2)"
+                />
+                <defs>
+                  <linearGradient id="lineGrad" x1="0" x2="1">
+                    <stop offset="0%" stopColor="#60a5fa" />
+                    <stop offset="100%" stopColor="#0256c4" />
+                  </linearGradient>
+                  <linearGradient id="areaFill" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stopColor="rgba(2,86,196,0.25)" />
+                    <stop offset="100%" stopColor="rgba(2,86,196,0.02)" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Banner Verifikasi Notaris */}
       {role === "notaris" && metrics?.status_verifikasi && (
-        <div className="bg-white dark:bg-[#003782] rounded-xl p-3 sm:p-4 shadow-sm">
+        <div className="bg-white dark:bg-[#003782] rounded-2xl p-3 sm:p-4 shadow-sm border border-gray-100/60 dark:border-[#002d6a]">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-[#f5fefd]">
               Status Verifikasi Notaris
@@ -177,95 +275,85 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Metrics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
-        {metricCards.map((metric, index) => (
-          <div
-            key={index}
-            className="bg-gradient-to-r from-blue-500 to-[#0256c4] text-white p-4 sm:p-5 rounded-[15px] min-h-[100px] sm:min-h-[120px]"
-          >
-            <div className="flex items-start justify-between mb-2 sm:mb-3">
-              <h3 className="text-xs sm:text-sm md:text-base font-medium leading-tight pr-2">
-                {metric.title}
-              </h3>
-            </div>
-            <div className="flex justify-between items-end">
-              <p className="text-xl sm:text-2xl md:text-3xl font-bold">
-                {metric.value}
-              </p>
-              <div className="flex-shrink-0">{metric.icon}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-
       {/* Section Verifikasi (Admin only) */}
       {role === "admin" && (
-        <div className="bg-white dark:bg-[#003782] rounded-xl shadow-sm overflow-hidden">
-          <div className="text-base sm:text-lg md:text-xl font-medium text-gray-600 dark:text-white px-4 sm:px-6 py-3 sm:py-4">
+        <div className="space-y-4">
+          <h2 className="text-base sm:text-lg md:text-xl font-semibold text-gray-800 dark:text-[#f5fefd]">
             Verifikasi Pengguna
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-gray-200">
-            {[
-              {
-                label: "Disetujui",
-                value: verifikasi?.approved ?? 0,
-                badge: "bg-green-50 text-green-700 ring-green-600/20",
-              },
-              {
-                label: "Menunggu",
-                value: verifikasi?.pending ?? 0,
-                badge: "bg-yellow-50 text-yellow-800 ring-yellow-600/20",
-              },
-              {
-                label: "Ditolak",
-                value: verifikasi?.rejected ?? 0,
-                badge: "bg-red-50 text-red-700 ring-red-600/10",
-              },
-            ].map((v) => (
-              <div key={v.label} className="relative p-4 sm:p-6">
-                <div className="absolute top-3 sm:top-4 right-3 sm:right-4">
-                  <span
-                    className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${v.badge}`}
-                  >
-                    {v.label}
-                  </span>
-                </div>
-                <div className="pt-8 sm:pt-10 text-center">
-                  <div className="text-3xl sm:text-4xl font-bold mb-2 text-blue-600 dark:text-[#f5fefd]">
-                    {v.value}
+          </h2>
+          <div className="bg-white dark:bg-[#003782] rounded-2xl shadow-[0_8px_24px_rgba(2,86,196,0.12)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-gray-100/60 dark:border-[#002d6a] overflow-hidden">
+            {/* GRID 3 BUBBLE */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 p-4 sm:p-7 gap-4 sm:gap-6">
+              {[
+                {
+                  label: "Disetujui",
+                  value: verifikasi?.approved ?? 0,
+                  badgeClass: "bg-green-50 text-green-700 ring-green-600/20",
+                },
+                {
+                  label: "Menunggu",
+                  value: verifikasi?.pending ?? 0,
+                  badgeClass: "bg-yellow-50 text-yellow-800 ring-yellow-600/20",
+                },
+                {
+                  label: "Ditolak",
+                  value: verifikasi?.rejected ?? 0,
+                  badgeClass: "bg-red-50 text-red-700 ring-red-600/10",
+                },
+              ].map((v) => (
+                <div
+                  key={v.label}
+                  className="p-5 sm:p-6 bg-[#edf4ff] dark:bg-[#002d6a] rounded-xl transition-all duration-300 hover:scale-[1.02] cursor-default border border-gray-200 dark:border-[#002d6a]"
+                >
+                  <div className="flex items-center justify-between h-full">
+                    {/* Sisi Kiri: Label */}
+                    <span
+                      className={`inline-flex items-center rounded-full px-4 py-[3px] text-sm font-bold ${v.badgeClass} shadow-md`}
+                    >
+                      {v.label}
+                    </span>
+
+                    {/* Sisi Kanan: Nilai (Value) */}
+                    <span className="text-3xl sm:text-4xl font-extrabold text-[#0b3a82] dark:text-white transition-colors duration-300">
+                      {v.value}
+                    </span>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-          <div className="px-4 sm:px-6">
-            <button className="w-full mt-4 mb-4 sm:mb-6 px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-[#0256c4] hover:from-blue-600 hover:to-blue-700 transition-colors">
-              Lihat Detail
-            </button>
+              ))}
+            </div>
+
+            {/* BUTTON DETAIL DI BAWAH GRID */}
+            <div className="px-5 sm:px-6 pt-0 pb-4 sm:pb-6">
+              <button className="w-full px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl text-sm font-semibold dark:text-[#f5fefd] bg-gradient-to-r from-blue-500 to-[#0256c4] hover:from-blue-600 hover:to-blue-700 transition-colors ">
+                Lihat Detail
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Recent Activities */}
-      <div className="bg-white dark:bg-[#003782] rounded-xl p-3 sm:p-4 md:p-6 shadow-sm">
-        <h2 className="text-base sm:text-lg md:text-xl font-semibold text-gray-800 dark:text-[#f5fefd] mb-3 sm:mb-4 md:mb-6">
-          Aktivitas Terkini
-        </h2>
+      <h2 className="text-base sm:text-lg md:text-xl font-semibold text-gray-800 dark:text-[#f5fefd] mb-3 sm:mb-4">
+        Aktivitas Terkini
+      </h2>
+      <div className="relative bg-white dark:bg-[#003782] rounded-2xl p-4 sm:p-5 md:p-6 shadow-[0_8px_24px_rgba(2,86,196,0.12)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-gray-100/60 dark:border-[#002d6a] overflow-hidden">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-20 -left-16 h-48 w-48 rounded-full bg-blue-500/10 blur-2xl"
+        />
 
         {/* Mobile Card */}
-        <div className="block lg:hidden space-y-3">
+        <div className="block lg:hidden space-x-3 sm:space-x-4 space-y-3 sm:space-y-4">
           {recent.map((a, index) => (
             <div
               key={a.id || index}
-              className="border border-gray-200 dark:border-[#7b9cc9] rounded-lg p-3 sm:p-4"
+              className="border border-gray-200 dark:border-[#7b9cc9] rounded-xl p-3.5 sm:p-4 bg-white/70 dark:bg-[#002d6a]/40 transition-shadow hover:shadow-md hover:border-blue-300/60"
             >
               <div className="flex justify-between items-start mb-2 sm:mb-3">
                 <span className="font-medium text-sm sm:text-base text-gray-900 dark:text-[#f5fefd]">
                   #{index + 1}
                 </span>
                 <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
                     a.status_approval === "approved"
                       ? "bg-green-100 text-green-800"
                       : a.status_approval === "rejected"
@@ -273,6 +361,7 @@ export default function HomePage() {
                       : "bg-yellow-100 text-yellow-800"
                   }`}
                 >
+                  <span className="w-1.5 h-1.5 rounded-full bg-current" />
                   {a.status_approval || "pending"}
                 </span>
               </div>
@@ -291,8 +380,23 @@ export default function HomePage() {
             </div>
           ))}
           {!recent.length && (
-            <div className="text-center text-xs sm:text-sm py-6 sm:py-8 opacity-70 dark:text-[#f5fefd]">
-              Belum ada aktivitas
+            <div className="rounded-xl border border-dashed border-gray-200 dark:border-[#7b9cc9]/60 p-6 text-center text-xs sm:text-sm bg-white/60 dark:bg-[#002d6a]/40">
+              <svg
+                viewBox="0 0 24 24"
+                className="mx-auto mb-2 h-6 w-6 text-blue-400"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M8 7h8m-8 4h5m3 8H6a2 2 0 01-2-2V7a2 2 0 012-2h7l5 5v9a2 2 0 01-2 2z"
+                />
+              </svg>
+              <p className="text-gray-600 dark:text-[#cfe0ff]">
+                Belum ada aktivitas. Aktivitas baru akan muncul di sini.
+              </p>
             </div>
           )}
         </div>

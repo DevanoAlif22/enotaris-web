@@ -90,13 +90,13 @@ export default function LoginPage() {
         <img
           src="/images/team-photo.png"
           alt="Login Illustration"
-          className="w-full rounded-xl mb-[-90px]"
+          className="w-full rounded-xl mb-[-74px]"
         />
       </div>
 
       {/* Right */}
-      <div className="w-full lg:w-1/2 p-10 flex flex-col justify-center">
-        <h1 className="text-xl sm:text-2xl lg:text-[30px] text-center font-bold mb-2">
+      <div className="w-full lg:w-1/2 p-8 flex flex-col justify-center">
+        <h1 className="text-xl sm:text-2xl lg:text-[30px] text-center font-bold mb-2 mt-4">
           Selamat datang kembali!
         </h1>
         <p className="text-gray-500 text-center mb-6 text-sm sm:text-base">
