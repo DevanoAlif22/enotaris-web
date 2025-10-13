@@ -1,16 +1,41 @@
 import { FileText } from "lucide-react";
+import { useSettings } from "../../contexts/SettingContext";
+
+function buildWaUrl(
+  rawPhone,
+  text = "Halo, saya tertarik menggunakan E-Notaris."
+) {
+  const fallback = "62895366141915";
+  let digits = String(rawPhone || "").replace(/\D/g, "");
+  if (!digits) digits = fallback;
+  // normalisasi: 08xxxxx -> 62xxxxxxxxx, 8xxxx -> 62xxxx, +62... -> 62...
+  if (digits.startsWith("0")) digits = "62" + digits.slice(1);
+  if (digits.startsWith("8")) digits = "62" + digits;
+  if (digits.startsWith("620")) digits = "62" + digits.slice(3); // guard
+  return `https://wa.me/${digits}?text=${encodeURIComponent(text)}`;
+}
 
 const Hero = () => {
+  const { settings } = useSettings();
+
+  const titleText =
+    settings?.title_hero || "Praktik Kenotariatan Dalam Satu Platform";
+  const descText =
+    settings?.desc_hero ||
+    "E-Notaris membantu Anda mengelola praktik notaris secara efisien. Mulai dari pembuatan akta, penyimpanan dokumen, hingga pelacakan aktivitas. Semua dalam satu platform digital yang aman dan terpercaya.";
+
+  const waUrl = buildWaUrl(settings?.telepon);
+
   return (
     <section className="w-full bg-[#edf4ff] relative px-[30px] md:px-[80px]">
       <img
         src="/images/wave.png"
-        alt="Office"
+        alt="Decor"
         className="h-full object-cover absolute right-0 hidden md:block"
       />
       <img
         src="/images/hero-people.png"
-        alt="Office"
+        alt="Illustration"
         className="absolute right-10 top-10 hidden md:block w-[550px]"
         data-aos="fade-up"
         data-aos-delay="300"
@@ -37,29 +62,25 @@ const Hero = () => {
             </h4>
           </div>
 
-          {/* Heading */}
+          {/* Heading (ambil dari settings) */}
           <h1
-            className="leading-[50px] md:leading-[60px] md:text-left text-center mb-[30px] mt-[15px] tracking-[-1.2px] text-[30px] md:text-[45px] text-[#0256c4] font-bold"
+            className="md:text-left text-center mb-[30px] mt-[15px] tracking-[-1.2px] text-[30px] md:text-[45px] text-[#0256c4] font-bold leading-[50px] md:leading-[60px]"
             data-aos="fade-up"
             data-aos-delay="120"
           >
-            Praktik Kenotariatan Dalam{" "}
-            <span className="text-primary-greenText">Satu Platform</span>
+            {titleText}
           </h1>
 
-          {/* Description */}
+          {/* Description (ambil dari settings) */}
           <p
             className="tracking-[-0.48px] md:text-left text-center md:leading-[40px] text-[18px] leading-[25px] md:text-[20px] mb-[30px] text-primary-blackText font-normal"
             data-aos="fade-up"
             data-aos-delay="200"
           >
-            E-Notaris membantu Anda mengelola praktik notaris secara efisien.
-            Mulai dari pembuatan akta, penyimpanan dokumen, hingga pelacakan
-            aktivitas. Semua dalam satu platform digital yang aman dan
-            terpercaya.
+            {descText}
           </p>
 
-          {/* CTA */}
+          {/* CTA (WA dari settings.telepon) */}
           <div
             className="md:m-0 m-auto w-[300px] text-center py-3 px-4 rounded-[20px]"
             style={{
@@ -72,7 +93,7 @@ const Hero = () => {
             data-aos-delay="260"
           >
             <a
-              href="https://wa.me/62895366141915"
+              href={waUrl}
               className="text-white text-[20px] font-semibold block"
               target="_blank"
               rel="noreferrer"
@@ -82,7 +103,7 @@ const Hero = () => {
           </div>
         </div>
 
-        {/* Right (optional) */}
+        {/* Right (spacer / ilustrasi) */}
         <div className="flex-1 p-4" data-aos="fade-left" data-aos-delay="150" />
       </div>
     </section>
