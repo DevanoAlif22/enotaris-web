@@ -178,80 +178,161 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Stats & Analytics layout seperti referensi */}
-      <section className="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6">
-        {/* Kiri: Kartu metrik (2 baris x 2) */}
-        <div className="xl:col-span-2 space-y-4">
-          <h2 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-[#f5fefd]">
-            Statistik dan Analitis
-          </h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {metricCards.map((m, idx) => (
-              <div
-                key={idx}
-                className="bg-white dark:bg-gradient-to-r from-blue-500 to-[#0256c4] rounded-2xl p-5 sm:p-5 shadow-[0_8px_24px_rgba(2,86,196,0.12)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-gray-100/60 dark:border-[#002d6a] min-h-[160px] sm:min-h-[190px] flex flex-col justify-between"
-              >
-                <div className="flex items-start justify-between w-full h-4 sm:h-49">
-                  <p className="text-[14px] sm:text-[14px] sm:p-1 text-gray-500 dark:text-[#f5fefd]">
-                    {m.title}
+      {/* Stats & Analytics */}
+      {role === "penghadap" || role === "notaris" ? (
+        <section className="grid grid-cols-1 lg:grid-cols-[30%_70%] gap-4 md:gap-6 items-stretch">
+          {/* Kiri: 2 kartu (2 baris × 1 kolom) */}
+          <div className="space-y-4 flex flex-col">
+            <h2 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-[#f5fefd]">
+              Statistik dan Analitis
+            </h2>
+            <div className="grid grid-rows-2 gap-3 sm:gap-4 auto-rows-fr flex-1">
+              {metricCards.map((m, idx) => (
+                <div
+                  key={idx}
+                  className="bg-gradient-to-r from-blue-500 to-[#0256c4] rounded-2xl p-5 sm:p-5 shadow-[0_8px_24px_rgba(2,86,196,0.12)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-gray-100/60 dark:border-[#002d6a] flex flex-col justify-between h-full"
+                >
+                  <div className="flex items-start justify-between w-full">
+                    <p className="text-[14px] sm:text-[14px] sm:p-1 text-[#f5fefd]">
+                      {m.title}
+                    </p>
+                    <span className="inline-flex items-center justify-center rounded-xl">
+                      {m.icon}
+                    </span>
+                  </div>
+                  <p className="text-4xl sm:text-5xl font-extrabold text-[#f5fefd]">
+                    {m.value}
                   </p>
-                  <span className="inline-flex items-center justify-center rounded-xl w-13 h-13 sm:w-12 sm:h-12 sm:p-1">
-                    {m.icon}
-                  </span>
                 </div>
-                <p className="text-4xl sm:text-5xl font-extrabold text-[#0b3a82] dark:text-[#f5fefd]">
-                  {m.value}
-                </p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Kanan: Card grafik */}
-        <div className="space-y-3">
-          <h2 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-[#f5fefd]">
-            Grafik Aktivitas Bulanan
-          </h2>
-          <div className="bg-white dark:bg-[#003782] rounded-2xl p-4 sm:p-5 shadow-[0_8px_24px_rgba(2,86,196,0.12)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-gray-100/60 dark:border-[#002d6a]">
-            <div className="text-[11px] sm:text-xs text-right text-gray-500 dark:text-[#cfe0ff] mb-2">
-              2025
-            </div>
-            <div className="w-full h-48 sm:h-56">
-              <svg viewBox="0 0 400 200" className="w-full h-full">
-                <path
-                  d={`${buildPath(chartData, 400, 200)} L 384,184 L 16,184 Z`}
-                  fill="url(#areaFill)"
-                  stroke="none"
-                />
-                <path
-                  d={buildPath(chartData, 400, 200)}
-                  fill="none"
-                  stroke="url(#lineGrad)"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                />
-                <line
-                  x1="16"
-                  y1="184"
-                  x2="384"
-                  y2="184"
-                  stroke="rgba(2,86,196,0.2)"
-                />
-                <defs>
-                  <linearGradient id="lineGrad" x1="0" x2="1">
-                    <stop offset="0%" stopColor="#60a5fa" />
-                    <stop offset="100%" stopColor="#0256c4" />
-                  </linearGradient>
-                  <linearGradient id="areaFill" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor="rgba(2,86,196,0.25)" />
-                    <stop offset="100%" stopColor="rgba(2,86,196,0.02)" />
-                  </linearGradient>
-                </defs>
-              </svg>
+          {/* Kanan: Grafik */}
+          <div className="space-y-3 flex flex-col">
+            <h2 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-[#f5fefd]">
+              Grafik Aktivitas Bulanan
+            </h2>
+
+            {/* HAPUS flex-1 di sini */}
+            <div className="bg-white dark:bg-[#003782] rounded-2xl p-4 sm:p-5 shadow-[0_8px_24px_rgba(2,86,196,0.12)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-gray-100/60 dark:border-[#002d6a] flex flex-col">
+              <div className="text-[11px] sm:text-xs text-right text-gray-500 dark:text-[#cfe0ff] mb-2">
+                2025
+              </div>
+
+              {/* GANTI h-full jadi tinggi fix */}
+              <div className="w-full h-48 sm:h-56 lg:h-[260px]">
+                <svg viewBox="0 0 400 200" className="w-full h-full">
+                  <path
+                    d={`${buildPath(chartData, 400, 200)} L 384,184 L 16,184 Z`}
+                    fill="url(#areaFill)"
+                    stroke="none"
+                  />
+                  <path
+                    d={buildPath(chartData, 400, 200)}
+                    fill="none"
+                    stroke="url(#lineGrad)"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                  />
+                  <line
+                    x1="16"
+                    y1="184"
+                    x2="384"
+                    y2="184"
+                    stroke="rgba(2,86,196,0.2)"
+                  />
+                  <defs>
+                    <linearGradient id="lineGrad" x1="0" x2="1">
+                      <stop offset="0%" stopColor="#60a5fa" />
+                      <stop offset="100%" stopColor="#0256c4" />
+                    </linearGradient>
+                    <linearGradient id="areaFill" x1="0" x2="0" y1="0" y2="1">
+                      <stop offset="0%" stopColor="rgba(2,86,196,0.25)" />
+                      <stop offset="100%" stopColor="rgba(2,86,196,0.02)" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : (
+        // layout lama kamu untuk admin/notaris (biarkan seperti semula)
+        <section className="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6">
+          {/* Kiri: Kartu metrik (2 baris x 2) */}
+          <div className="xl:col-span-2 space-y-4">
+            <h2 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-[#f5fefd]">
+              Statistik dan Analitis
+            </h2>
+            <div className="grid grid-cols-2 lg:grid-cols-2 gap-3 sm:gap-4">
+              {metricCards.map((m, idx) => (
+                <div
+                  key={idx}
+                  className="bg-gradient-to-r from-blue-500 to-[#0256c4] rounded-2xl p-5 sm:p-5 shadow-[0_8px_24px_rgba(2,86,196,0.12)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-gray-100/60 dark:border-[#002d6a] min-h-[160px] sm:min-h-[135px] flex flex-col justify-between"
+                >
+                  <div className="flex items-start justify-between w-full">
+                    <p className="text-[14px] sm:text-[14px] sm:p-1 text-[#f5fefd]">
+                      {m.title}
+                    </p>
+                    <span className="inline-flex items-center justify-center rounded-xl">
+                      {m.icon}
+                    </span>
+                  </div>
+                  <p className="text-4xl sm:text-5xl font-extrabold text-[#f5fefd]">
+                    {m.value}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Kanan: Card grafik */}
+          <div className="space-y-3">
+            <h2 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-[#f5fefd]">
+              Grafik Aktivitas Bulanan
+            </h2>
+            <div className="bg-white dark:bg-[#003782] rounded-2xl p-4 sm:p-5 shadow-[0_8px_24px_rgba(2,86,196,0.12)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-gray-100/60 dark:border-[#002d6a]">
+              <div className="text-[11px] sm:text-xs text-right text-gray-500 dark:text-[#cfe0ff] mb-2">
+                2025
+              </div>
+              <div className="w-full h-48 sm:h-56">
+                <svg viewBox="0 0 400 200" className="w-full h-full">
+                  <path
+                    d={`${buildPath(chartData, 400, 200)} L 384,184 L 16,184 Z`}
+                    fill="url(#areaFill)"
+                    stroke="none"
+                  />
+                  <path
+                    d={buildPath(chartData, 400, 200)}
+                    fill="none"
+                    stroke="url(#lineGrad)"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                  />
+                  <line
+                    x1="16"
+                    y1="184"
+                    x2="384"
+                    y2="184"
+                    stroke="rgba(2,86,196,0.2)"
+                  />
+                  <defs>
+                    <linearGradient id="lineGrad" x1="0" x2="1">
+                      <stop offset="0%" stopColor="#60a5fa" />
+                      <stop offset="100%" stopColor="#0256c4" />
+                    </linearGradient>
+                    <linearGradient id="areaFill" x1="0" x2="0" y1="0" y2="1">
+                      <stop offset="0%" stopColor="rgba(2,86,196,0.25)" />
+                      <stop offset="100%" stopColor="rgba(2,86,196,0.02)" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Banner Verifikasi Notaris */}
       {role === "notaris" && metrics?.status_verifikasi && (
@@ -324,7 +405,7 @@ export default function HomePage() {
 
             {/* BUTTON DETAIL DI BAWAH GRID */}
             <div className="px-5 sm:px-6 pt-0 pb-4 sm:pb-6">
-              <button className="w-full px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl text-sm font-semibold dark:text-[#f5fefd] bg-gradient-to-r from-blue-500 to-[#0256c4] hover:from-blue-600 hover:to-blue-700 transition-colors ">
+              <button className="w-full px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl text-sm font-semibold text-[#f5fefd] bg-gradient-to-r from-blue-500 to-[#0256c4] hover:from-blue-600 hover:to-blue-700 transition-colors ">
                 Lihat Detail
               </button>
             </div>
