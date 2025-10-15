@@ -179,7 +179,7 @@ export default function RegisterPage() {
         </div>
 
         {/* Right Side */}
-        <div className="p-5 w-[37vh] sm:w-1/2 sm:p-15 flex flex-col justify-center overflow-y-auto h-[70vh] sm:h-[75vh]">
+        <div className="p-5 w-[45vh] md:w-1/2 sm:p-15 flex flex-col justify-center overflow-y-auto h-[70vh] sm:h-[75vh]">
           <h1 className="text-[26px] text-center font-bold mb-2 mt-[250px]">
             Selamat datang!
           </h1>
